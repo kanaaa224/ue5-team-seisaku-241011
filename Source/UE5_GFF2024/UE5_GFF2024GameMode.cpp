@@ -3,6 +3,7 @@
 #include "UE5_GFF2024GameMode.h"
 #include "UE5_GFF2024Character.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Game/Player_Box.h"
 
 AUE5_GFF2024GameMode::AUE5_GFF2024GameMode()
 {
@@ -12,4 +13,5 @@ AUE5_GFF2024GameMode::AUE5_GFF2024GameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+	//DefaultPawnClass = APlayer_Box::StaticClass();
 }
