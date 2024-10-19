@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/Player_Box.h"
+#include "Game/Player_Cube.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -11,27 +12,30 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
-#include "Components/ArrowComponent.h"
-#include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/TimelineComponent.h"
 
 // Sets default values
-APlayer_Box::APlayer_Box()
+APlayer_Cube::APlayer_Cube()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	BoxComponent->InitBoxExtent(FVector(34.f));
-	BoxComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
 
-	BoxComponent->CanCharacterStepUpOn = ECB_No;
-	BoxComponent->SetShouldUpdatePhysicsVolume(true);
-	BoxComponent->SetCanEverAffectNavigation(false);
-	BoxComponent->bDynamicObstacle = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 
-	RootComponent = BoxComponent;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1000.0f, 0.0f);
+
+	GetCharacterMovement()->JumpZVelocity = 0.f;
+	GetCharacterMovement()->AirControl = 0.35f;
+	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -42,9 +46,6 @@ APlayer_Box::APlayer_Box()
 	//マテリアルを追加する
 	UMaterial* material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
 	Cube->SetMaterial(0, material);
-
-	//SimulatePhysicsを有効にする
-	Cube->SetSimulatePhysics(true);
 
 	//CollisionPresetを「PhysicsActor」に変更する
 	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
@@ -65,34 +66,6 @@ APlayer_Box::APlayer_Box()
 
 	//MotoinBlurをオフにする
 	FollowCamera->PostProcessSettings.MotionBlurAmount = 0.f;
-	
-	//Arrowを追加する
-	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	Arrow->SetupAttachment(FollowCamera);
-	
-	//頭上に移動するようにLocationを設定する
-	Arrow->SetRelativeLocation(FVector(400.f, 0.f, 130.f));
-
-	//Arrowを表示されるようにする
-	//Arrow->bHiddenInGame = false;
-
-	//FloatingPawnMovementを追加する
-	//FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloationgPawnMovement"));
-
-	CharacterMovement = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("CharacterMovement"));
-	if (CharacterMovement)
-	{
-		CharacterMovement->UpdatedComponent = BoxComponent;
-	}
-
-	CharacterMovement->bOrientRotationToMovement = true;
-	CharacterMovement->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-
-	CharacterMovement->JumpZVelocity = 700.f;
-	CharacterMovement->AirControl = 0.35f;
-	CharacterMovement->MaxWalkSpeed = 500.f;
-	CharacterMovement->MinAnalogWalkSpeed = 20.f;
-	CharacterMovement->BrakingDecelerationWalking = 2000.f;
 
 	//IM_Defaultを読みこむ
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/ThirdPerson/Input/IMC_Default"));
@@ -104,10 +77,36 @@ APlayer_Box::APlayer_Box()
 	//IA_Boostを読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Look"));
 
+	//カーブの作成
+	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
+	if (BlinkCurve)
+	{
+		BlinkCurve->FloatCurve.AddKey(0.f, 0.f);
+		BlinkCurve->FloatCurve.AddKey(0.5f, 100.f);
+	}
+
+	//タイムラインの追加
+	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TimelineComponent"));
+	if (BlinkTimeline)
+	{
+		//タイムライン更新時に呼び出されるメソッドの定義
+		FOnTimelineFloat TimelineUpdateFunc;
+		TimelineUpdateFunc.BindUFunction(this, TEXT("BlinkTimelineUpdate"));
+		BlinkTimeline->AddInterpFloat(BlinkCurve, TimelineUpdateFunc);
+
+		//タイムライン終了時に呼び出されるメソッドの定義
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, TEXT("BlinkTimelineFinished"));
+		BlinkTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
+	}
+
+	Timer = 0.f;
+
+	BlinkFlg = false;
 }
 
 // Called when the game starts or when spawned
-void APlayer_Box::BeginPlay()
+void APlayer_Cube::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -119,18 +118,18 @@ void APlayer_Box::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
 }
 
 // Called every frame
-void APlayer_Box::Tick(float DeltaTime)
+void APlayer_Cube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	Timer += DeltaTime;
 }
 
 // Called to bind functionality to input
-void APlayer_Box::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -138,66 +137,53 @@ void APlayer_Box::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		//Move
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayer_Box::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayer_Cube::Move);
 
 		//Look
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayer_Box::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayer_Cube::Look);
 
 		//Blink
-		EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this, &APlayer_Box::Blink);
+		EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this, &APlayer_Cube::Blink);
 	}
 }
 
-void APlayer_Box::Move(const FInputActionValue& Value)
+void APlayer_Cube::BlinkTimelineUpdate(float Value)
+{
+	//前方のベクトルを取得
+	FVector ForwardVector = GetActorForwardVector();
+	//ブリンクの初期座標から前方のベクトルに10かけた値を取得
+	FVector NewLocation = (ForwardVector * (Value * 10.f)) + BlinkInitLocation;
+	SetActorLocation(NewLocation, true);
+}
+
+void APlayer_Cube::BlinkTimelineFinished()
+{
+	BlinkFlg = false;
+}
+
+void APlayer_Cube::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !BlinkFlg)
 	{
 		//進行方向を探す
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-		
+
 		//前方向を取得
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
 		//右方向を取得
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		
+
 		//動きを加える
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-
-		if (CharacterMovement)
-		{
-			CharacterMovement->AddInputVector(ForwardDirection * MovementVector.Y);
-			CharacterMovement->AddInputVector(RightDirection * MovementVector.X);
-		}
-		//else
-		//{
-		//	Internal_AddMovementInput(ForwardDirection * MovementVector.Y);
-		//	Internal_AddMovementInput(RightDirection * MovementVector.X);
-		//}
-
-		//SetActorRotation(UKismetMathLibrary::Conv_VectorToRotator(GetVelocity()));
 	}
-	//inputのValueはVector2Dに変換できる
-	const FVector2D V = Value.Get<FVector2D>();
-
-	//Vectorを計算する
-	FVector ForceVector = FVector(V.Y, V.X, 0.f) * 1000.f;
-
-	//Arrowの進行方向のVectorを計算する
-	FVector ArrowForceVector = Arrow->GetComponentToWorld().TransformVectorNoScale(ForceVector);
-
-	ArrowForce = ArrowForceVector;
-
-	////Sphereに力を加える
-	//Cube->AddForce(ArrowForceVector, TEXT("NONE"), true);
-
 }
 
-void APlayer_Box::Look(const FInputActionValue& Value)
+void APlayer_Cube::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -209,29 +195,14 @@ void APlayer_Box::Look(const FInputActionValue& Value)
 	}
 }
 
-void APlayer_Box::Blink(const FInputActionValue& Value)
+void APlayer_Cube::Blink(const FInputActionValue& Value)
 {
 	//inputのvalueはboolに変換できる
-	if (const bool v = Value.Get<bool>())
+	if (const bool v = Value.Get<bool>() && BlinkTimeline && !BlinkFlg)
 	{
-		////Arrowが向いている前方方向のVector情報を取得する
-		//FVector ForwardVector = Arrow->GetForwardVector().GetSafeNormal(0.0001f);
-
-		////torqueとして与えるVectorを作成する
-		//FVector TorqueVector = FVector(ForwardVector.Y * 1000 * -1.f, ForwardVector.X * 1000, 0.f);
-
-
-		//Cube->AddImpulse(ArrowForce * 2, TEXT("None"), true);
-		
-
-		////torqueを与えて加速する
-		//Cube->AddTorqueInRadians(TorqueVector, TEXT("None"), true);
-
-		FVector ActorLocation = GetActorLocation();
-		FVector ActorForwardVector = GetActorForwardVector();
-
-		SetActorLocation(ActorLocation + (ActorForwardVector * 10.f), true);
+		BlinkInitLocation = GetActorLocation();
+		BlinkTimeline->PlayFromStart();
+		BlinkFlg = true;
 	}
-
 }
 
