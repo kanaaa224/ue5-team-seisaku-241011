@@ -8,7 +8,7 @@
 void AMainMenuHUD::BeginPlay()
 {
 	// WidgetBlueprintのClassを取得する
-	FString Path = TEXT("/Game/Game/stage/mainmeum/title/WBP_Title.WBP_Title_C");
+	FString Path = TEXT("/Game/Game/stage/mainmeum/title/BPW_Title.BPW_Title_C");
 	TSubclassOf<UUserWidget> WidgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*Path)).LoadSynchronous();
 
 	// PlayerControllerを取得する
