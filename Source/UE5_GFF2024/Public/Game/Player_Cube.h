@@ -33,33 +33,47 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
-	//ジャンプのインプットアクション
+	//ブリンクのインプットアクション
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* BlinkAction;
-
 	//移動のインプットアクション
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
-
 	//視点操作のインプットアクション
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+	//攻撃のインプットアクション
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AttackAction;
 
 public:
 	//ブリンク用のカーブ
 	class UCurveFloat* BlinkCurve;
+	//攻撃用のカーブ
+	class UCurveFloat* AttackCurve;
 
 	//ブリンクのタイムラインコンポーネント
 	class UTimelineComponent* BlinkTimeline;
+	//攻撃のタイムラインコンポーネント
+	class UTimelineComponent* AttackTimeline;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
 
+	//ブリンクのクールタイム
+	int BlinkCoolTime;
+
 	//タイマー
 	float Timer;
+	//HP
+	float Health;
 
 	//ブリンクのフラグ
 	bool BlinkFlg;
+	//攻撃のフラグ
+	bool AttackFlg;
+	//無敵のフラグ
+	bool InvincibleFlg;
 
 public:
 	//コンストラクタ
@@ -68,6 +82,9 @@ public:
 protected:
 	//ゲーム開始時に一度だけ呼ばれる関数
 	virtual void BeginPlay() override;
+
+	//接触時に呼ばれる関数
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)override;
 
 public:	
 	//毎フレーム呼ばれる関数
@@ -80,10 +97,16 @@ private:
 	//ブリンクのタイムライン更新時に呼ばれる処理
 	UFUNCTION()
 	void BlinkTimelineUpdate(float Value);
+	//攻撃のタイムライン更新時に呼ばれる処理
+	UFUNCTION()
+	void AttackTimelineUpdate(float Value);
 
 	//ブリンクのタイムライン終了時に呼ばれる処理
 	UFUNCTION()
 	void BlinkTimelineFinished();
+	//攻撃のタイムライン終了時に呼ばれる処理
+	UFUNCTION()
+	void AttackTimelineFinished();
 
 private:
 	//移動処理
@@ -94,6 +117,9 @@ private:
 
 	//ブリンク処理
 	void Blink(const FInputActionValue& Value);
+
+	//攻撃処理
+	void Attack(const FInputActionValue& Value);
 
 public:
 	//CameraBoomを取得

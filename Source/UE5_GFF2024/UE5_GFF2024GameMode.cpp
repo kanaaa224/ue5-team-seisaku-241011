@@ -15,5 +15,5 @@ AUE5_GFF2024GameMode::AUE5_GFF2024GameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 	//DefaultPawnClass = APlayer_Box::StaticClass();
-	//DefaultPawnClass = APlayer_Cube::StaticClass();
+	DefaultPawnClass = APlayer_Cube::StaticClass();
 }

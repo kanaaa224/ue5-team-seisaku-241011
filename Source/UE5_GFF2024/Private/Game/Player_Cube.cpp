@@ -14,7 +14,10 @@
 #include "InputMappingContext.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Components/TimelineComponent.h"
+
+#define	BLINK_COOLTIME	90
 
 // Sets default values
 APlayer_Cube::APlayer_Cube()
@@ -33,7 +36,7 @@ APlayer_Cube::APlayer_Cube()
 
 	GetCharacterMovement()->JumpZVelocity = 0.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+	GetCharacterMovement()->MaxWalkSpeed = 900.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -76,6 +79,8 @@ APlayer_Cube::APlayer_Cube()
 	MoveAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Move"));
 	//IA_Boostを読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Look"));
+	//IA_Attackを読み込む
+	AttackAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Attack"));
 
 	//カーブの作成
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
@@ -84,9 +89,15 @@ APlayer_Cube::APlayer_Cube()
 		BlinkCurve->FloatCurve.AddKey(0.f, 0.f);
 		BlinkCurve->FloatCurve.AddKey(0.5f, 100.f);
 	}
+	AttackCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("AttackCurve"));
+	if (AttackCurve)
+	{
+		AttackCurve->FloatCurve.AddKey(0.f, 0.f);
+		AttackCurve->FloatCurve.AddKey(0.5f, 1.f);
+	}
 
 	//タイムラインの追加
-	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("TimelineComponent"));
+	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("BlinkTimelineComponent"));
 	if (BlinkTimeline)
 	{
 		//タイムライン更新時に呼び出されるメソッドの定義
@@ -99,10 +110,28 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("BlinkTimelineFinished"));
 		BlinkTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	AttackTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AttackTimelineComponent"));
+	if (AttackTimeline)
+	{
+		//タイムライン更新時に呼び出されるメソッドの定義
+		FOnTimelineFloat TimelineUpdateFunc;
+		TimelineUpdateFunc.BindUFunction(this, TEXT("AttackTimelineUpdate"));
+		AttackTimeline->AddInterpFloat(AttackCurve, TimelineUpdateFunc);
+
+		//タイムライン終了時に呼び出されるメソッドの定義
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, TEXT("AttackTimelineFinished"));
+		AttackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
+	}
+
+	BlinkCoolTime = 0;
 
 	Timer = 0.f;
+	Health = 100.f;
 
 	BlinkFlg = false;
+	AttackFlg = false;
+	InvincibleFlg = false;
 }
 
 // Called when the game starts or when spawned
@@ -120,12 +149,26 @@ void APlayer_Cube::BeginPlay()
 	}
 }
 
+void APlayer_Cube::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+	if (!InvincibleFlg)
+	{
+		UKismetSystemLibrary::PrintString(this, TEXT("damage"));
+	}
+}
+
 // Called every frame
 void APlayer_Cube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	Timer += DeltaTime;
+
+	if (BlinkCoolTime > 0)
+	{
+		BlinkCoolTime--;
+	}
 }
 
 // Called to bind functionality to input
@@ -144,6 +187,9 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		//Blink
 		EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this, &APlayer_Cube::Blink);
+
+		//Attack
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayer_Cube::Attack);
 	}
 }
 
@@ -156,9 +202,22 @@ void APlayer_Cube::BlinkTimelineUpdate(float Value)
 	SetActorLocation(NewLocation, true);
 }
 
+void APlayer_Cube::AttackTimelineUpdate(float Value)
+{
+	FRotator ActorRotarion = GetActorRotation();
+	SetActorRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
+}
+
 void APlayer_Cube::BlinkTimelineFinished()
 {
 	BlinkFlg = false;
+	InvincibleFlg = false;
+}
+
+void APlayer_Cube::AttackTimelineFinished()
+{
+	AttackFlg = false;
+	InvincibleFlg = false;
 }
 
 void APlayer_Cube::Move(const FInputActionValue& Value)
@@ -198,11 +257,24 @@ void APlayer_Cube::Look(const FInputActionValue& Value)
 void APlayer_Cube::Blink(const FInputActionValue& Value)
 {
 	//inputのvalueはboolに変換できる
-	if (const bool v = Value.Get<bool>() && BlinkTimeline && !BlinkFlg)
+	if (const bool v = Value.Get<bool>() && BlinkTimeline && !BlinkFlg && !AttackFlg && BlinkCoolTime <= 0)
 	{
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
+		BlinkCoolTime = BLINK_COOLTIME;
 		BlinkFlg = true;
+		InvincibleFlg = true;
+	}
+}
+
+void APlayer_Cube::Attack(const FInputActionValue& Value)
+{
+	//inputのvalueはboolに変換できる
+	if (const bool v = Value.Get<bool>() && AttackTimeline && !AttackFlg && !BlinkFlg)
+	{
+		AttackTimeline->PlayFromStart();
+		AttackFlg = true;
+		InvincibleFlg = true;
 	}
 }
 
