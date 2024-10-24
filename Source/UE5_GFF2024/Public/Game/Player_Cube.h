@@ -49,11 +49,15 @@ private:
 public:
 	//ブリンク用のカーブ
 	class UCurveFloat* BlinkCurve;
+	//ブリンクのZ軸用のカーブ
+	class UCurveFloat* BlinkZCurve;
 	//攻撃用のカーブ
 	class UCurveFloat* AttackCurve;
 
 	//ブリンクのタイムラインコンポーネント
 	class UTimelineComponent* BlinkTimeline;
+	//ブリンクのZ軸のタイムラインコンポーネント
+	class UTimelineComponent* BlinkZTimeline;
 	//攻撃のタイムラインコンポーネント
 	class UTimelineComponent* AttackTimeline;
 
@@ -72,6 +76,8 @@ public:
 	bool BlinkFlg;
 	//攻撃のフラグ
 	bool AttackFlg;
+	//攻撃のダメージフラグ
+	bool InflictDamageFlg;
 	//無敵のフラグ
 	bool InvincibleFlg;
 
@@ -93,6 +99,11 @@ public:
 	//関数をバインドするために呼ばれる関数
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//ダメージを受ける処理
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
+
+	//ダメージを与える処理
+	void InflictDamage(class AActor* Other);
 private:
 	//ブリンクのタイムライン更新時に呼ばれる処理
 	UFUNCTION()
