@@ -49,20 +49,27 @@ private:
 public:
 	//ブリンク用のカーブ
 	class UCurveFloat* BlinkCurve;
-	//ブリンクのZ軸用のカーブ
-	class UCurveFloat* BlinkZCurve;
 	//攻撃用のカーブ
 	class UCurveFloat* AttackCurve;
+	//ノックバック用のカーブ
+	class UCurveFloat* KnockBackCurve;
 
 	//ブリンクのタイムラインコンポーネント
 	class UTimelineComponent* BlinkTimeline;
-	//ブリンクのZ軸のタイムラインコンポーネント
-	class UTimelineComponent* BlinkZTimeline;
 	//攻撃のタイムラインコンポーネント
 	class UTimelineComponent* AttackTimeline;
+	//ノックバックのタイムラインコンポーネント
+	class UTimelineComponent* KnockBackTimeline;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
+	//ノックバックの初期座標
+	FVector KnockBackInitLocation;
+
+	//ブリンクの前方方向
+	FVector BlinkForwardVector;
+	//ノックバックの前方方向
+	FVector KnockBackForwardVector;
 
 	//ブリンクのクールタイム
 	int BlinkCoolTime;
@@ -80,6 +87,8 @@ public:
 	bool InflictDamageFlg;
 	//無敵のフラグ
 	bool InvincibleFlg;
+	//ノックバックのフラグ
+	bool KnockBackFlg;
 
 public:
 	//コンストラクタ
@@ -111,6 +120,9 @@ private:
 	//攻撃のタイムライン更新時に呼ばれる処理
 	UFUNCTION()
 	void AttackTimelineUpdate(float Value);
+	//ノックバックのタイムライン更新時に呼ばれる処理
+	UFUNCTION()
+	void KnockBackTimelineUpdate(float Value);
 
 	//ブリンクのタイムライン終了時に呼ばれる処理
 	UFUNCTION()
@@ -118,17 +130,17 @@ private:
 	//攻撃のタイムライン終了時に呼ばれる処理
 	UFUNCTION()
 	void AttackTimelineFinished();
+	//ノックバックのタイムライン終了時に呼ばれる処理
+	UFUNCTION()
+	void KnockBackTimelineFinished();
 
 private:
 	//移動処理
 	void Move(const FInputActionValue& Value);
-
 	//視点操作処理
 	void Look(const FInputActionValue& Value);
-
 	//ブリンク処理
 	void Blink(const FInputActionValue& Value);
-
 	//攻撃処理
 	void Attack(const FInputActionValue& Value);
 

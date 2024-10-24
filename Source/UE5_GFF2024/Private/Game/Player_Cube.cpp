@@ -96,6 +96,12 @@ APlayer_Cube::APlayer_Cube()
 		AttackCurve->FloatCurve.AddKey(0.f, 0.f);
 		AttackCurve->FloatCurve.AddKey(0.5f, 1.f);
 	}
+	KnockBackCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("KnockBackCurve"));
+	if (KnockBackCurve)
+	{
+		KnockBackCurve->FloatCurve.AddKey(0.f, 0.f);
+		KnockBackCurve->FloatCurve.AddKey(0.5f, 100.f);
+	}
 
 	//タイムラインの追加
 	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("BlinkTimelineComponent"));
@@ -124,6 +130,25 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("AttackTimelineFinished"));
 		AttackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	KnockBackTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("KnockBackTimelineComponent"));
+	if (KnockBackTimeline)
+	{
+		//タイムライン更新時に呼び出されるメソッドの定義
+		FOnTimelineFloat TimelineUpdateFunc;
+		TimelineUpdateFunc.BindUFunction(this, TEXT("KnockBackTimelineUpdate"));
+		KnockBackTimeline->AddInterpFloat(KnockBackCurve, TimelineUpdateFunc);
+
+		//タイムライン終了時に呼び出されるメソッドの定義
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, TEXT("KnockBackTimelineFinished"));
+		KnockBackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
+	}
+
+	BlinkInitLocation = FVector(0.f);
+	KnockBackInitLocation = FVector(0.f);
+
+	BlinkForwardVector = FVector(0.f);
+	KnockBackForwardVector = FVector(0.f);
 
 	BlinkCoolTime = 0;
 
@@ -134,6 +159,7 @@ APlayer_Cube::APlayer_Cube()
 	AttackFlg = false;
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
+	KnockBackFlg = false;
 }
 
 // Called when the game starts or when spawned
@@ -199,11 +225,21 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	Health = Health - DamageAmount;
-
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
-
-	if (Health <= 0)
+	if (!InvincibleFlg)
+	{
+		Health = Health - DamageAmount;
+		Health = Health <= 0 ? 0 : Health;
+		if (KnockBackTimeline && !KnockBackFlg)
+		{
+			KnockBackInitLocation = GetActorLocation();
+			KnockBackForwardVector = GetActorForwardVector();
+			KnockBackTimeline->PlayFromStart();
+			KnockBackFlg = true;
+			InvincibleFlg = true;
+		}
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
+	}
+	else
 	{
 
 	}
@@ -232,14 +268,12 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 
 void APlayer_Cube::BlinkTimelineUpdate(float Value)
 {
-	//前方のベクトルを取得
-	FVector ForwardVector = GetActorForwardVector();
 	//上方向のベクトルを取得
 	FVector UpVector = GetActorUpVector();
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
 	//ブリンクの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
-	FVector NewLocation = (ForwardVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
+	FVector NewLocation = (BlinkForwardVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
 
 	SetActorLocation(NewLocation, true);
 }
@@ -250,6 +284,24 @@ void APlayer_Cube::AttackTimelineUpdate(float Value)
 	FRotator ActorRotarion = GetActorRotation();
 
 	SetActorRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
+}
+
+void APlayer_Cube::KnockBackTimelineUpdate(float Value)
+{
+	//上方向のベクトルを取得
+	FVector UpVector = GetActorUpVector();
+	//上方向のベクトルにかける値
+	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
+	//ノックバックの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
+	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 5.f) + KnockBackInitLocation;
+
+	SetActorLocation(NewLocation, true);
+
+	//回転情報を取得
+	FRotator ActorRotarion = GetActorRotation();
+	float Pitch = Value / 2;
+
+	SetActorRotation(ActorRotarion + FRotator(6.f, 0.f, 0.f));
 }
 
 void APlayer_Cube::BlinkTimelineFinished()
@@ -265,11 +317,18 @@ void APlayer_Cube::AttackTimelineFinished()
 	InvincibleFlg = false;
 }
 
+void APlayer_Cube::KnockBackTimelineFinished()
+{
+	KnockBackFlg = false;
+	InvincibleFlg = false;
+	SetActorRotation(FRotator(0.f, 0.f, 0.f));
+}
+
 void APlayer_Cube::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && !BlinkFlg)
+	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg)
 	{
 		//進行方向を探す
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -306,9 +365,11 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		BlinkTimeline &&						//BlinkTimelineがnullptrではないなら
 		!BlinkFlg &&							//ブリンク判定ではないなら
 		!AttackFlg &&							//攻撃判定ではないなら
+		!KnockBackFlg&&							//ノックバック判定ではないなら
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		BlinkInitLocation = GetActorLocation();
+		BlinkForwardVector = GetActorForwardVector();
 		BlinkTimeline->PlayFromStart();
 		BlinkCoolTime = BLINK_COOLTIME;
 		BlinkFlg = true;
@@ -322,7 +383,9 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 	if (const bool v = Value.Get<bool>() &&		//入力されたら
 		AttackTimeline &&						//AttackTimelineがnullptrではないなら
 		!AttackFlg &&							//攻撃判定なら
-		!BlinkFlg)								//ブリンク判定ではないなら
+		!BlinkFlg &&							//ブリンク判定ではないなら
+		!KnockBackFlg							//ノックバック判定ではないなら
+		)
 	{
 		AttackTimeline->PlayFromStart();
 		AttackFlg = true;
