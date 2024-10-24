@@ -201,6 +201,8 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 {
 	Health = Health - DamageAmount;
 
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
+
 	if (Health <= 0)
 	{
 
