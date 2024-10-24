@@ -16,6 +16,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/TimelineComponent.h"
+#include "Engine/DamageEvents.h"
 
 #define	BLINK_COOLTIME	90
 
@@ -59,7 +60,7 @@ APlayer_Cube::APlayer_Cube()
 	//camera boomを追加する
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;			//SpringArmの長さを調整する
+	CameraBoom->TargetArmLength = 500.0f;			//SpringArmの長さを調整する
 	CameraBoom->bUsePawnControlRotation = true; 	//PawnのControllerRotationを使用する
 
 	//follow cameraを追加する
@@ -131,6 +132,7 @@ APlayer_Cube::APlayer_Cube()
 
 	BlinkFlg = false;
 	AttackFlg = false;
+	InflictDamageFlg = false;
 	InvincibleFlg = false;
 }
 
@@ -152,9 +154,10 @@ void APlayer_Cube::BeginPlay()
 void APlayer_Cube::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	if (!InvincibleFlg)
+	
+	if (AttackFlg && !InflictDamageFlg)
 	{
-		UKismetSystemLibrary::PrintString(this, TEXT("damage"));
+		InflictDamage(Other);
 	}
 }
 
@@ -168,6 +171,7 @@ void APlayer_Cube::Tick(float DeltaTime)
 	if (BlinkCoolTime > 0)
 	{
 		BlinkCoolTime--;
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), BlinkCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
 }
 
@@ -193,18 +197,56 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Health = Health - DamageAmount;
+
+	if (Health <= 0)
+	{
+
+	}
+
+	return Health;
+}
+
+void APlayer_Cube::InflictDamage(AActor* Other)
+{
+	AActor* ImpactActor = Other;
+	if ((ImpactActor != nullptr) && (ImpactActor != this))
+	{
+		//ダメージイベントの作成
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+
+		//ダメージ量
+		const float DamageAmount = 25.0f;
+		ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
+
+		//攻撃のダメージフラグを設定
+		InflictDamageFlg = true;
+		UKismetSystemLibrary::PrintString(this, TEXT("Attack"));
+	}
+}
+
 void APlayer_Cube::BlinkTimelineUpdate(float Value)
 {
 	//前方のベクトルを取得
 	FVector ForwardVector = GetActorForwardVector();
-	//ブリンクの初期座標から前方のベクトルに10かけた値を取得
-	FVector NewLocation = (ForwardVector * (Value * 10.f)) + BlinkInitLocation;
+	//上方向のベクトルを取得
+	FVector UpVector = GetActorUpVector();
+	//上方向のベクトルにかける値
+	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
+	//ブリンクの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
+	FVector NewLocation = (ForwardVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
+
 	SetActorLocation(NewLocation, true);
 }
 
 void APlayer_Cube::AttackTimelineUpdate(float Value)
 {
+	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
+
 	SetActorRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
 }
 
@@ -217,6 +259,7 @@ void APlayer_Cube::BlinkTimelineFinished()
 void APlayer_Cube::AttackTimelineFinished()
 {
 	AttackFlg = false;
+	InflictDamageFlg = false;
 	InvincibleFlg = false;
 }
 
@@ -257,7 +300,11 @@ void APlayer_Cube::Look(const FInputActionValue& Value)
 void APlayer_Cube::Blink(const FInputActionValue& Value)
 {
 	//inputのvalueはboolに変換できる
-	if (const bool v = Value.Get<bool>() && BlinkTimeline && !BlinkFlg && !AttackFlg && BlinkCoolTime <= 0)
+	if (const bool v = Value.Get<bool>() &&		//入力されたら
+		BlinkTimeline &&						//BlinkTimelineがnullptrではないなら
+		!BlinkFlg &&							//ブリンク判定ではないなら
+		!AttackFlg &&							//攻撃判定ではないなら
+		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
@@ -270,7 +317,10 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 void APlayer_Cube::Attack(const FInputActionValue& Value)
 {
 	//inputのvalueはboolに変換できる
-	if (const bool v = Value.Get<bool>() && AttackTimeline && !AttackFlg && !BlinkFlg)
+	if (const bool v = Value.Get<bool>() &&		//入力されたら
+		AttackTimeline &&						//AttackTimelineがnullptrではないなら
+		!AttackFlg &&							//攻撃判定なら
+		!BlinkFlg)								//ブリンク判定ではないなら
 	{
 		AttackTimeline->PlayFromStart();
 		AttackFlg = true;
