@@ -46,10 +46,10 @@ APlayer_Box::APlayer_Box()
 	Cube->SetMaterial(0, material);
 
 	//SimulatePhysicsを有効にする
-	Cube->SetSimulatePhysics(true);
+	//Cube->SetSimulatePhysics(true);
 
 	//CollisionPresetを「PhysicsActor」に変更する
-	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
+	//Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
 
 	//HitEventを有効にする
 	Cube->BodyInstance.bNotifyRigidBodyCollision = true;
