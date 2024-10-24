@@ -26,4 +26,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	UPROPERTY(VisibleAnywhere, Category= "AI")
+	class UPawnSensingComponent* PawnSensingComp;
+
+	UFUNCTION()
+	void OnSeePlayer(APawn* Pawn);
+
 };
