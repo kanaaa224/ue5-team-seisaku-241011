@@ -51,14 +51,25 @@ public:
 	class UCurveFloat* BlinkCurve;
 	//攻撃用のカーブ
 	class UCurveFloat* AttackCurve;
+	//ノックバック用のカーブ
+	class UCurveFloat* KnockBackCurve;
 
 	//ブリンクのタイムラインコンポーネント
 	class UTimelineComponent* BlinkTimeline;
 	//攻撃のタイムラインコンポーネント
 	class UTimelineComponent* AttackTimeline;
+	//ノックバックのタイムラインコンポーネント
+	class UTimelineComponent* KnockBackTimeline;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
+	//ノックバックの初期座標
+	FVector KnockBackInitLocation;
+
+	//ブリンクの前方方向
+	FVector BlinkForwardVector;
+	//ノックバックの前方方向
+	FVector KnockBackForwardVector;
 
 	//ブリンクのクールタイム
 	int BlinkCoolTime;
@@ -72,8 +83,12 @@ public:
 	bool BlinkFlg;
 	//攻撃のフラグ
 	bool AttackFlg;
+	//攻撃のダメージフラグ
+	bool InflictDamageFlg;
 	//無敵のフラグ
 	bool InvincibleFlg;
+	//ノックバックのフラグ
+	bool KnockBackFlg;
 
 public:
 	//コンストラクタ
@@ -93,6 +108,11 @@ public:
 	//関数をバインドするために呼ばれる関数
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//ダメージを受ける処理
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
+
+	//ダメージを与える処理
+	void InflictDamage(class AActor* Other);
 private:
 	//ブリンクのタイムライン更新時に呼ばれる処理
 	UFUNCTION()
@@ -100,6 +120,9 @@ private:
 	//攻撃のタイムライン更新時に呼ばれる処理
 	UFUNCTION()
 	void AttackTimelineUpdate(float Value);
+	//ノックバックのタイムライン更新時に呼ばれる処理
+	UFUNCTION()
+	void KnockBackTimelineUpdate(float Value);
 
 	//ブリンクのタイムライン終了時に呼ばれる処理
 	UFUNCTION()
@@ -107,17 +130,17 @@ private:
 	//攻撃のタイムライン終了時に呼ばれる処理
 	UFUNCTION()
 	void AttackTimelineFinished();
+	//ノックバックのタイムライン終了時に呼ばれる処理
+	UFUNCTION()
+	void KnockBackTimelineFinished();
 
 private:
 	//移動処理
 	void Move(const FInputActionValue& Value);
-
 	//視点操作処理
 	void Look(const FInputActionValue& Value);
-
 	//ブリンク処理
 	void Blink(const FInputActionValue& Value);
-
 	//攻撃処理
 	void Attack(const FInputActionValue& Value);
 
