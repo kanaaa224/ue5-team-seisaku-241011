@@ -10,7 +10,8 @@ AAIC_Enemy2::AAIC_Enemy2(const FObjectInitializer& ObjectInitializer)
 	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
 
 	// 作成したビヘイビアツリーを設定
-	ConstructorHelpers::FObjectFinder<UBehaviorTree> BTFinder(TEXT("/Game/Game/enemy/2/AI/BT_Enemy_2.BT_Enemy_2"));
+	ConstructorHelpers::FObjectFinder<UBehaviorTree> BTFinder(TEXT("/Game/Game/enemy/2/AI/BT_Enemy_2.BT_Enemy2"));
+
 	BehaviorTree = BTFinder.Object;
 
 	PlayerKeyName = "Player";
