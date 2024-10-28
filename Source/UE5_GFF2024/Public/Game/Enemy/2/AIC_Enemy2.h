@@ -17,7 +17,7 @@ UCLASS()
 class UE5_GFF2024_API AAIC_Enemy2 : public AAIController
 {
 	GENERATED_BODY()
-	
+
 public:
 	AAIC_Enemy2(const class FObjectInitializer& ObjectInitializer);
 
@@ -50,4 +50,5 @@ protected:
 
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
+	
 };

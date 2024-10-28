@@ -12,25 +12,27 @@ class UE5_GFF2024_API AEnemy2Character : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AEnemy2Character();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
+public:
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
+	/*:::::変数:::::*/
+	//体力
+	float health;
 
 public:
-	UPROPERTY(VisibleAnywhere, Category= "AI")
+	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UPawnSensingComponent* PawnSensingComp;
 
 	UFUNCTION()
 	void OnSeePlayer(APawn* Pawn);
 
+public:
+	//ダメージを受ける処理
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
 };

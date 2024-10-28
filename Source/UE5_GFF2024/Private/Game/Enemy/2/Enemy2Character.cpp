@@ -1,5 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Game/Enemy/2/Enemy2Character.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -10,7 +9,11 @@
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	/*:::::変数:::::*/
+	//体力
+	health = 100.0f;
+
+	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
@@ -20,6 +23,7 @@ AEnemy2Character::AEnemy2Character()
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy2Character::OnSeePlayer);
+
 }
 
 // Called when the game starts or when spawned
@@ -36,13 +40,6 @@ void AEnemy2Character::Tick(float DeltaTime)
 
 }
 
-// Called to bind functionality to input
-void AEnemy2Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
 void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 {
 	AAIC_Enemy2* AIController = Cast<AAIC_Enemy2>(GetController());
@@ -56,6 +53,11 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 	}
 
 	// 視野に入ったら画面に"See"と表示
-	UKismetSystemLibrary::PrintString(this, "Enemy2 : SeePlayer", true, true, FColor::Blue, 2.f);
+	UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
+}
+
+float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	return 0.0f;
 }
 
