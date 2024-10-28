@@ -57,6 +57,8 @@ public:
 private:
 	FVector ArrowForce = FVector();
 
+	float Health;
+
 public:
 	// Sets default values for this pawn's properties
 	APlayer_Box();
@@ -65,12 +67,21 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//接触時に呼ばれる関数
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//ダメージを受ける処理
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
+
+	//ダメージを与える処理
+	void InflictDamage(class AActor* Other);
 
 protected:
 	/** Called for movement input */

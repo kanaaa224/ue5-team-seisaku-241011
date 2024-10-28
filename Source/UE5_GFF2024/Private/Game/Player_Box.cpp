@@ -15,6 +15,8 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 APlayer_Box::APlayer_Box()
@@ -44,10 +46,10 @@ APlayer_Box::APlayer_Box()
 	Cube->SetMaterial(0, material);
 
 	//SimulatePhysicsを有効にする
-	Cube->SetSimulatePhysics(true);
+	//Cube->SetSimulatePhysics(true);
 
 	//CollisionPresetを「PhysicsActor」に変更する
-	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
+	//Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
 
 	//HitEventを有効にする
 	Cube->BodyInstance.bNotifyRigidBodyCollision = true;
@@ -104,6 +106,8 @@ APlayer_Box::APlayer_Box()
 	//IA_Boostを読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Look"));
 
+	Health = 100.f;
+
 }
 
 // Called when the game starts or when spawned
@@ -120,6 +124,11 @@ void APlayer_Box::BeginPlay()
 		}
 	}
 
+}
+
+void APlayer_Box::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	InflictDamage(Other);
 }
 
 // Called every frame
@@ -145,6 +154,35 @@ void APlayer_Box::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 		//Blink
 		EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this, &APlayer_Box::Blink);
+	}
+}
+
+float APlayer_Box::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Health = Health - DamageAmount;
+
+	if (Health <= 0)
+	{
+		Health = 0;
+	}
+
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Box Health:%f"), Health));
+
+	return Health;
+}
+
+void APlayer_Box::InflictDamage(AActor* Other)
+{
+	AActor* ImpactActor = Other;
+	if ((ImpactActor != nullptr) && (ImpactActor != this))
+	{
+		//ダメージイベントの作成
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+
+		//ダメージ量
+		const float DamageAmount = 25.0f;
+		ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
 	}
 }
 
