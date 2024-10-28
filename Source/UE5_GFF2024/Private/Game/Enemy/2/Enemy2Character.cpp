@@ -9,6 +9,11 @@
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
+	/*:::::変数:::::*/
+	//体力
+	health = 100.0f;
+
+	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
@@ -49,5 +54,10 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 
 	// 視野に入ったら画面に"See"と表示
 	UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
+}
+
+float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	return 0.0f;
 }
 

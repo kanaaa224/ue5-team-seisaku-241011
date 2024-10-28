@@ -20,6 +20,11 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	/*:::::変数:::::*/
+	//体力
+	float health;
+
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UPawnSensingComponent* PawnSensingComp;
@@ -27,4 +32,7 @@ public:
 	UFUNCTION()
 	void OnSeePlayer(APawn* Pawn);
 
+public:
+	//ダメージを受ける処理
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
 };
