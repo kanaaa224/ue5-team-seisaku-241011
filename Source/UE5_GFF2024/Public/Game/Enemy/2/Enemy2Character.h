@@ -1,0 +1,30 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Character.h"
+#include "Enemy2Character.generated.h"
+
+UCLASS()
+class UE5_GFF2024_API AEnemy2Character : public ACharacter
+{
+	GENERATED_BODY()
+
+public:
+	AEnemy2Character();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "AI")
+	class UPawnSensingComponent* PawnSensingComp;
+
+	UFUNCTION()
+	void OnSeePlayer(APawn* Pawn);
+
+};
