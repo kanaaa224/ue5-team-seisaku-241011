@@ -51,4 +51,14 @@ protected:
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
 	
+public:
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName DistanceFromPlayerKeyName;
+	/// <summary>
+	/// SetBBDistanceFromPlayer
+	/// </summary>
+	/// プレヤーまでの距離をブラックボードに設定する
+	/// <param name="player"></param>
+	void SetBBDistanceFromPlayer(APlayer_Cube* player);
 };

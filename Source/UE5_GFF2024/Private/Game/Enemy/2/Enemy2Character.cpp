@@ -6,6 +6,8 @@
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/2/AIC_Enemy2.h"
 
+#include "Math/UnrealMathUtility.h"
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -60,4 +62,17 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	return 0.0f;
 }
+
+//float AEnemy2Character::GetDistanceFromPlayer(APlayer_Cube* player)
+//{
+//	FVector playerLocation = player->GetActorLocation();
+//	FVector myLocation = this->GetActorLocation();
+//
+//	float x = FMath::Square(myLocation.X - playerLocation.X);//x-xの二乗
+//	float y = FMath::Square(myLocation.Y - playerLocation.Y);//y-yの二乗
+//
+//	float r = FMath::Sqrt(x + y);//√x+y
+//
+//	return r;
+//}
 
