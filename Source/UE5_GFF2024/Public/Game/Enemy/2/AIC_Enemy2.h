@@ -17,7 +17,7 @@ UCLASS()
 class UE5_GFF2024_API AAIC_Enemy2 : public AAIController
 {
 	GENERATED_BODY()
-	
+
 public:
 	AAIC_Enemy2(const class FObjectInitializer& ObjectInitializer);
 
@@ -50,4 +50,15 @@ protected:
 
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
+	
+public:
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName DistanceFromPlayerKeyName;
+	/// <summary>
+	/// SetBBDistanceFromPlayer
+	/// </summary>
+	/// プレヤーまでの距離をブラックボードに設定する
+	/// <param name="player"></param>
+	void SetBBDistanceFromPlayer(APlayer_Cube* player);
 };

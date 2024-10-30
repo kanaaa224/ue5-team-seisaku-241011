@@ -10,8 +10,7 @@ AAIC_Enemy2::AAIC_Enemy2(const FObjectInitializer& ObjectInitializer)
 	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
 
 	// 作成したビヘイビアツリーを設定
-	ConstructorHelpers::FObjectFinder<UBehaviorTree> BTFinder(TEXT("/Game/Game/enemy/2/AI/BT_Enemy_2.BT_Enemy2"));
-
+	ConstructorHelpers::FObjectFinder<UBehaviorTree> BTFinder(TEXT("/Game/Game/enemy/2/AI/BT_Enemy2.BT_Enemy2"));
 	BehaviorTree = BTFinder.Object;
 
 	PlayerKeyName = "Player";
@@ -50,4 +49,20 @@ APlayer_Cube* AAIC_Enemy2::GetPlayerKey()
 	ensure(BlackboardComp);
 
 	return Cast<APlayer_Cube>(BlackboardComp->GetValueAsObject(PlayerKeyName));
+}
+
+void AAIC_Enemy2::SetBBDistanceFromPlayer(APlayer_Cube* player)
+{
+	//プレヤーまでの距離
+	float distance = 0.0f;
+	//プレヤーの場所
+	FVector playerLocation = player->GetActorLocation();
+	//自分の場所
+	//FVector myLocation = this->GetActorLocation();
+	ensure(BlackboardComp);
+
+
+
+	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
+	BlackboardComp->SetValueAsFloat(DistanceFromPlayerKeyName, distance);
 }
