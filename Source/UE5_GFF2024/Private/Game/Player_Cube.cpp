@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -82,6 +83,23 @@ APlayer_Cube::APlayer_Cube()
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Look"));
 	//IA_Attackを読み込む
 	AttackAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Attack"));
+	//IA_LockOnを読み込む
+	LockOnAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_LockOn"));
+
+	//SphereComponentを追加する
+	LockOnCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	LockOnCollision->SetupAttachment(RootComponent);
+	LockOnCollision->SetSphereRadius(500.f);
+	//コリジョンプリセットをカスタムに設定
+	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	//コリジョンを無効にする
+	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//コリジョンのオブジェクトタイプをLockOnにする
+	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
+	//コリジョンに対する反応をすべてIgnoreにする
+	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	//コリジョンに対する反応をPawnだけOverlapにする
+	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
 	//カーブの作成
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
@@ -160,12 +178,16 @@ APlayer_Cube::APlayer_Cube()
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
 	KnockBackFlg = false;
+	LockOnFlg = false;
 }
 
 // Called when the game starts or when spawned
 void APlayer_Cube::BeginPlay()
 {
 	Super::BeginPlay();
+
+	LockOnCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionBeginOverlap);
+	LockOnCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionEndOverlap);
 
 	//InputMappingContextの追加
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -220,6 +242,9 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayer_Cube::Attack);
+
+		//LockOn
+		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &APlayer_Cube::LockOn);
 	}
 }
 
@@ -324,11 +349,21 @@ void APlayer_Cube::KnockBackTimelineFinished()
 	SetActorRotation(FRotator(0.f, 0.f, 0.f));
 }
 
+void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
+}
+
+void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
+}
+
 void APlayer_Cube::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg)
+	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg && !AttackFlg)
 	{
 		//進行方向を探す
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -390,6 +425,22 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		AttackTimeline->PlayFromStart();
 		AttackFlg = true;
 		InvincibleFlg = true;
+	}
+}
+
+void APlayer_Cube::LockOn(const FInputActionValue& Value)
+{
+	if (!LockOnFlg)
+	{
+		LockOnFlg = true;
+		LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		UKismetSystemLibrary::PrintString(this, TEXT("ON"));
+	}
+	else
+	{
+		LockOnFlg = false;
+		LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
 	}
 }
 
