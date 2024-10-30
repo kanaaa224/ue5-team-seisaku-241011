@@ -17,6 +17,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/DamageEvents.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 APlayer_Box::APlayer_Box()
@@ -105,6 +108,25 @@ APlayer_Box::APlayer_Box()
 	MoveAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Move"));
 	//IA_Boostを読み込む
 	LookAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_Look"));
+
+	//WidgetComponentを追加する
+	LockOnMarkerWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
+	LockOnMarkerWidget->SetupAttachment(RootComponent);
+	LockOnMarkerWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	//設定したいウィジェットのクラスを作成
+	FString LockOnMarkerWidgetPath = TEXT("/Game/Game/UI/WBP_LockOn.WBP_LockOn_C");
+	TSubclassOf<UUserWidget>LockOnMarkerWidgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*LockOnMarkerWidgetPath)).LoadSynchronous();
+	//SetWidgetでnullptrを入れないとクラッシュする
+	LockOnMarkerWidget->SetWidget(nullptr);
+	//WidgetClassを設定
+	LockOnMarkerWidget->SetWidgetClass(LockOnMarkerWidgetClass);
+	//非表示にする
+	LockOnMarkerWidget->SetVisibility(false);
+
+	BoxComponent->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	BoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+
 
 	Health = 100.f;
 
