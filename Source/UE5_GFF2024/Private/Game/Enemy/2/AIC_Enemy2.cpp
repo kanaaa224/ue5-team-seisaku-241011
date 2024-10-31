@@ -50,3 +50,19 @@ APlayer_Cube* AAIC_Enemy2::GetPlayerKey()
 
 	return Cast<APlayer_Cube>(BlackboardComp->GetValueAsObject(PlayerKeyName));
 }
+
+void AAIC_Enemy2::SetBBDistanceFromPlayer(APlayer_Cube* player)
+{
+	//プレヤーまでの距離
+	float distance = 0.0f;
+	//プレヤーの場所
+	FVector playerLocation = player->GetActorLocation();
+	//自分の場所
+	//FVector myLocation = this->GetActorLocation();
+	ensure(BlackboardComp);
+
+
+
+	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
+	BlackboardComp->SetValueAsFloat(DistanceFromPlayerKeyName, distance);
+}

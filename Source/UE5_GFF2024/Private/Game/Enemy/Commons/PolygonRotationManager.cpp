@@ -78,16 +78,16 @@ void PolygonRotationManager::DrawPolyhedronFaceCenters(UWorld* World, PolygonRot
 
     for (const FVector& FaceCenter : FaceCenters)
     {
-        DrawDebugSphere(World, FaceCenter, 10.0f, 12, FColor::Green, false, 2.0f);
+        DrawDebugSphere(World, FaceCenter, 10.0f, 12, FColor::Green, false, 0.1f);
     }
 
-    //回転テスト
-    FVector v = FaceCenters[2];
-    FVector a;
+    ////回転テスト
+    //FVector v = FaceCenters[2];
+    //FVector a;
 
-    //回転の中心を箱の原点にするためにこのPositionの使い方をしている。しないとマップの中心を回転の中心にしちゃう
-    a = NowRotation.RotateVector(v - Position);
-    DrawDebugSphere(World, a + Position, 15.0f, 12, FColor::Red, false, 2.0f);
+    ////回転の中心を箱の原点にするためにこのPositionの使い方をしている。しないとマップの中心を回転の中心にしちゃう
+    //a = NowRotation.RotateVector(v - Position);
+    DrawDebugSphere(World, CenterPosition, 15.0f, 12, FColor::Red, false, 2.0f);
 }
 
 float PolygonRotationManager::CalculateAngleBetweenVectors(const FVector& VectorA, const FVector& VectorB)
@@ -173,45 +173,47 @@ FVector PolygonRotationManager::GetShareFace(int face1, int face2, const FVector
 
 void PolygonRotationManager::SetNextBottom(FVector Vector, const FVector& Scale, const FVector& Position)
 {
-    //進行方向ベクトルとベクトルの長さ（最初はめっちゃ長くしてる）
-    FVector tmp = Vector * Scale;
-    FVector length = tmp * 1000;
+    if (!IsRotating && Vector.Length() > 0.) {
+        //進行方向ベクトルとベクトルの長さ（最初はめっちゃ長くしてる）
+        FVector tmp = Vector * Scale;
+        FVector length = tmp * 1000;
 
-    SetBottom(Scale, Position);
+        SetBottom(Scale, Position);
 
-    for (int i = 0; i < 6; i++)
-    {
-        if (i == bottom) continue;//自分自身
-        //底面と上面とか隣り合わない奴らの場合はスキップ
-        if (bottom % 2 == 0)
+        for (int i = 0; i < Faces.Num(); i++)
         {
-            if (i == bottom + 1) continue;
-        }
-        else {
-            if (i == bottom - 1) continue;
+            if (i == bottom) continue;//自分自身
+            //底面と上面とか隣り合わない奴らの場合はスキップ
+            if (bottom % 2 == 0)
+            {
+                if (i == bottom + 1) continue;
+            }
+            else {
+                if (i == bottom - 1) continue;
+            }
+
+            FVector len;
+            len = GetFaceCenterLocation(Scale, Position, i) - Position;//相対座標
+            len = tmp - len;
+
+            //進行方向のベクトルに近い面を次の面とする
+            if (length.Length() >= len.Length())
+            {
+                length = len;
+
+                next = i;
+            }
         }
 
-        FVector len;
-        len = GetFaceCenterLocation(Scale, Position, i) - Position;//相対座標
-        len = tmp - len;
-
-        //進行方向のベクトルに近い面を次の面とする
-        if (length.Length() >= len.Length())
-        {
-            length = len;
-
-            next = i;
-        }
+        CalculateRotationDirection(Scale, Position);
+        if (FpsCounter == 0) GetShareFace(bottom, next, Scale, Position);
     }
-
-    CalculateRotationDirection(Scale, Position);
-    if (FpsCounter == 0) GetShareFace(bottom, next, Scale, Position);
 }
 
 void PolygonRotationManager::SetBottom(const FVector& Scale, const FVector& Position)
 {
     //底面の番号を選出
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < Faces.Num(); i++)
     {
         FVector tmp;
         tmp = GetFaceCenterLocation(Scale, Position, i);
@@ -272,4 +274,8 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
 
     // 新しい位置を計算（回転後のベクトルにピボットポイントを足す）
     NewLocation = CenterPosition + NewDirection;
+
+    //回転中かの判定
+    if (FpsCounter == 0) IsRotating = false;
+    else IsRotating = true;
 }

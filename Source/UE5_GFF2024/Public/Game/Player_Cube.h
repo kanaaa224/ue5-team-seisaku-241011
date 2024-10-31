@@ -25,10 +25,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	//ボックスコンポーネント
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* BoxComponent;
-
 	//マッピングコンテキスト
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -45,6 +41,13 @@ private:
 	//攻撃のインプットアクション
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* AttackAction;
+	//ロックオンのインプットアクション
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LockOnAction;
+
+	//スフィアコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* LockOnCollision;
 
 public:
 	//ブリンク用のカーブ
@@ -60,6 +63,12 @@ public:
 	class UTimelineComponent* AttackTimeline;
 	//ノックバックのタイムラインコンポーネント
 	class UTimelineComponent* KnockBackTimeline;
+
+	//ロックオンの候補
+	TArray<class AActor*> LockOnCandidates;
+
+	//ロックオンの対象
+	class AActor* LockOnTarget;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
@@ -89,6 +98,8 @@ public:
 	bool InvincibleFlg;
 	//ノックバックのフラグ
 	bool KnockBackFlg;
+	//ロックオンのフラグ
+	bool LockOnFlg;
 
 public:
 	//コンストラクタ
@@ -134,6 +145,11 @@ private:
 	UFUNCTION()
 	void KnockBackTimelineFinished();
 
+	UFUNCTION()
+	void OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
 	//移動処理
 	void Move(const FInputActionValue& Value);
@@ -143,6 +159,12 @@ private:
 	void Blink(const FInputActionValue& Value);
 	//攻撃処理
 	void Attack(const FInputActionValue& Value);
+	//ロックオン処理
+	void LockOn(const FInputActionValue& Value);
+
+private:
+	//ソートされた配列の最初の要素を取得
+	AActor* GetArraySortingFirstElement(TArray<AActor*> Array);
 
 public:
 	//CameraBoomを取得

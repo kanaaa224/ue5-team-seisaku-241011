@@ -20,6 +20,10 @@ ASampleEnemy::ASampleEnemy()
 
 	Cube = new PolygonRotationManager(CubeVertices, CubeFaces);
 
+	FVector Scale = FVector(100, 100, 100);  // スケール
+	FVector Position = GetActorLocation();  // オブジェクトの位置
+	Cube->DrawPolyhedronFaceCenters(GetWorld(), *Cube, Scale, Position);
+
 }
 
 // Called when the game starts or when spawned
@@ -43,7 +47,8 @@ void ASampleEnemy::Tick(float DeltaTime)
 	FVector Scale = FVector(100, 100, 100);  // スケール
 	FVector Position = GetActorLocation();  // オブジェクトの位置
 
-	Cube->SetNextBottom(FVector(0, 1, 0), Scale, Position);
+	//Cube->SetNextBottom(FVector(0, 1, 0), Scale, Position);
+	Cube->SetNextBottom(FVector(1, 1, 0), Scale, Position);
 
 	Cube->SetNewRotationAndLocation(Position);
 	FRotator rot1 = Cube->GetNowRotation();
@@ -51,6 +56,21 @@ void ASampleEnemy::Tick(float DeltaTime)
 	SetActorLocation(Cube->GetNewLocation());
 
 	Cube->DrawPolyhedronFaceCenters(GetWorld(), *Cube, Scale, Position);
+
+	for (int i = 0; i < CubeFaces.Num(); i++)
+	{
+		for (int j = 0; j < CubeFaces[i].Num(); j++)
+		{
+			int k = j + 1;
+			if (k >= 3)
+			{
+				k = 0;
+			}
+			FVector Start = CubeVertices[CubeFaces[i][j]] * Scale + Position;
+			FVector End = CubeVertices[CubeFaces[i][k]] * Scale + Position;
+			DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 0.1f);
+		}
+	}
 }
 
  //Called to bind functionality to input

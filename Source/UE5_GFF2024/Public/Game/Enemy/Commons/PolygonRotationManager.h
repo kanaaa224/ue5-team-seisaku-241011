@@ -21,6 +21,8 @@ public:
     int32 FpsCounter = 0;
     const int32 Fps = 30;
 
+    bool IsRotating = false;
+
 public:
     PolygonRotationManager();
     ~PolygonRotationManager();
@@ -66,6 +68,7 @@ public:
 
     FVector GetNewLocation() { return NewLocation; }
     FRotator GetNowRotation() { return NowRotation; }
+    bool GetIsRotating() { return IsRotating; }
 private:
     TArray<FVector> Vertices;  // 頂点の配列
     TArray<TArray<int32>> Faces;  // 各面の頂点インデックスを保持する配列
