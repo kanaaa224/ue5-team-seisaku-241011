@@ -78,16 +78,16 @@ void PolygonRotationManager::DrawPolyhedronFaceCenters(UWorld* World, PolygonRot
 
     for (const FVector& FaceCenter : FaceCenters)
     {
-        DrawDebugSphere(World, FaceCenter, 10.0f, 12, FColor::Green, false, 2.0f);
+        DrawDebugSphere(World, FaceCenter, 10.0f, 12, FColor::Green, false, 0.1f);
     }
 
-    //回転テスト
-    FVector v = FaceCenters[2];
-    FVector a;
+    ////回転テスト
+    //FVector v = FaceCenters[2];
+    //FVector a;
 
-    //回転の中心を箱の原点にするためにこのPositionの使い方をしている。しないとマップの中心を回転の中心にしちゃう
-    a = NowRotation.RotateVector(v - Position);
-    DrawDebugSphere(World, a + Position, 15.0f, 12, FColor::Red, false, 2.0f);
+    ////回転の中心を箱の原点にするためにこのPositionの使い方をしている。しないとマップの中心を回転の中心にしちゃう
+    //a = NowRotation.RotateVector(v - Position);
+    DrawDebugSphere(World, CenterPosition, 15.0f, 12, FColor::Red, false, 2.0f);
 }
 
 float PolygonRotationManager::CalculateAngleBetweenVectors(const FVector& VectorA, const FVector& VectorB)
@@ -179,7 +179,7 @@ void PolygonRotationManager::SetNextBottom(FVector Vector, const FVector& Scale,
 
     SetBottom(Scale, Position);
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < Faces.Num(); i++)
     {
         if (i == bottom) continue;//自分自身
         //底面と上面とか隣り合わない奴らの場合はスキップ
@@ -211,7 +211,7 @@ void PolygonRotationManager::SetNextBottom(FVector Vector, const FVector& Scale,
 void PolygonRotationManager::SetBottom(const FVector& Scale, const FVector& Position)
 {
     //底面の番号を選出
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < Faces.Num(); i++)
     {
         FVector tmp;
         tmp = GetFaceCenterLocation(Scale, Position, i);
