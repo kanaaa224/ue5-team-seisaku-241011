@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"
+#include "System/LockOnInterface.h"
 #include "Player_Box.generated.h"
 
 UCLASS()
-class UE5_GFF2024_API APlayer_Box : public APawn
+class UE5_GFF2024_API APlayer_Box : public APawn, public ILockOnInterface
 {
 	GENERATED_BODY()
 
@@ -54,6 +55,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* LockOnMarkerWidget;
+
 private:
 	FVector ArrowForce = FVector();
 
@@ -82,6 +86,9 @@ public:
 
 	//ダメージを与える処理
 	void InflictDamage(class AActor* Other);
+
+	//ロックオンの有効フラグを設定する
+	virtual void SetLockOnEnable(bool Flg)override;
 
 protected:
 	/** Called for movement input */
