@@ -208,6 +208,20 @@ void APlayer_Box::InflictDamage(AActor* Other)
 	}
 }
 
+void APlayer_Box::SetLockOnEnable(bool Flg)
+{
+	LockOnEnable = Flg;
+
+	if (LockOnEnable)
+	{
+		LockOnMarkerWidget->SetVisibility(true);
+	}
+	else
+	{
+		LockOnMarkerWidget->SetVisibility(false);
+	}
+}
+
 void APlayer_Box::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();

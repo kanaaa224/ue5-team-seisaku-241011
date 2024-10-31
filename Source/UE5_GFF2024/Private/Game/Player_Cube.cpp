@@ -16,8 +16,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetArrayLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/TimelineComponent.h"
 #include "Engine/DamageEvents.h"
+#include "Game/System/LockOnInterface.h"
 
 #define	BLINK_COOLTIME	90
 
@@ -93,7 +96,7 @@ APlayer_Cube::APlayer_Cube()
 	//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
 	//コリジョンを無効にする
-	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	//コリジョンのオブジェクトタイプをLockOnにする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
 	//コリジョンに対する反応をすべてIgnoreにする
@@ -168,6 +171,8 @@ APlayer_Cube::APlayer_Cube()
 	BlinkForwardVector = FVector(0.f);
 	KnockBackForwardVector = FVector(0.f);
 
+	LockOnTarget = nullptr;
+
 	BlinkCoolTime = 0;
 
 	Timer = 0.f;
@@ -220,6 +225,15 @@ void APlayer_Cube::Tick(float DeltaTime)
 	{
 		BlinkCoolTime--;
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), BlinkCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
+	}
+
+	if (LockOnFlg)
+	{
+
+		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTarget->GetActorLocation());
+		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FindActorRotation, DeltaTime, 10.f);
+		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, InterpActorRotarion.Roll));
+		Controller->SetControlRotation(FRotator(Controller->GetControlRotation().Pitch, FindActorRotation.Yaw, Controller->GetControlRotation().Roll));
 	}
 }
 
@@ -308,7 +322,7 @@ void APlayer_Cube::AttackTimelineUpdate(float Value)
 	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
+	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
@@ -352,11 +366,20 @@ void APlayer_Cube::KnockBackTimelineFinished()
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
+
+	LockOnCandidates.AddUnique(OtherActor);
 }
 
 void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-
+	if (OtherActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		LockOnFlg = false;
+		ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(OtherActor);
+		LockOnInterface->SetLockOnEnable(false);
+	}
+	LockOnCandidates.Remove(OtherActor);
 }
 
 void APlayer_Cube::Move(const FInputActionValue& Value)
@@ -432,15 +455,56 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 {
 	if (!LockOnFlg)
 	{
-		LockOnFlg = true;
-		LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		UKismetSystemLibrary::PrintString(this, TEXT("ON"));
+		//ロックオンの候補がいるか調べる
+		if (LockOnCandidates.IsValidIndex(0))
+		{		
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			LockOnFlg = true;
+			LockOnTarget = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTarget->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			{
+				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTarget);
+				LockOnInterface->SetLockOnEnable(true);
+			}
+			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
+		}			
 	}
 	else
 	{
-		LockOnFlg = false;
-		LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
+		//ロックオンの候補がいるか調べる
+		if (LockOnCandidates.IsValidIndex(0))
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			LockOnFlg = false;
+			LockOnTarget = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTarget->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			{
+				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTarget);
+				LockOnInterface->SetLockOnEnable(false);
+			}
+			UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
+		}
 	}
+}
+
+AActor* APlayer_Cube::GetArraySortingFirstElement(TArray<AActor*> Array)
+{
+	TArray<AActor*> SortArray = Array;
+
+	//最後の配列番号
+	int32 LastIndex = SortArray.Num() - 1;
+
+	for (int32 I = 0; I < LastIndex; I++)
+	{
+		for (int32 J = I + 1; J < LastIndex; J++)
+		{
+			if (GetDistanceTo(SortArray[I]) > GetDistanceTo(SortArray[J]))
+			{
+				SortArray.Swap(I, J);
+			}
+		}
+	}
+
+	return SortArray[0];
 }
 

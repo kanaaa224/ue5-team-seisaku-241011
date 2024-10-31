@@ -64,7 +64,11 @@ public:
 	//ノックバックのタイムラインコンポーネント
 	class UTimelineComponent* KnockBackTimeline;
 
-	class AActor* LockOnCandidates;
+	//ロックオンの候補
+	TArray<class AActor*> LockOnCandidates;
+
+	//ロックオンの対象
+	class AActor* LockOnTarget;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
@@ -157,6 +161,10 @@ private:
 	void Attack(const FInputActionValue& Value);
 	//ロックオン処理
 	void LockOn(const FInputActionValue& Value);
+
+private:
+	//ソートされた配列の最初の要素を取得
+	AActor* GetArraySortingFirstElement(TArray<AActor*> Array);
 
 public:
 	//CameraBoomを取得
