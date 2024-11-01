@@ -111,7 +111,7 @@ APlayer_Box::APlayer_Box()
 
 	//WidgetComponentを追加する
 	LockOnMarkerWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
-	LockOnMarkerWidget->SetupAttachment(RootComponent);
+	LockOnMarkerWidget->SetupAttachment(Cube);
 	LockOnMarkerWidget->SetWidgetSpace(EWidgetSpace::Screen);
 
 	//設定したいウィジェットのクラスを作成
@@ -150,7 +150,7 @@ void APlayer_Box::BeginPlay()
 
 void APlayer_Box::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
-	InflictDamage(Other);
+	//InflictDamage(Other);
 }
 
 // Called every frame

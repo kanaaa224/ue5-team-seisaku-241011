@@ -22,7 +22,9 @@
 #include "Engine/DamageEvents.h"
 #include "Game/System/LockOnInterface.h"
 
-#define	BLINK_COOLTIME	90
+#define DEFAULT_TARGET_ARM_LENGTH	700.f			//プレイヤーまでのカメラの距離
+#define	BLINK_COOLTIME	90							//回避のクールタイム
+#define ATTACK_COOLTIME	90							//攻撃のクールタイム
 
 // Sets default values
 APlayer_Cube::APlayer_Cube()
@@ -64,13 +66,27 @@ APlayer_Cube::APlayer_Cube()
 	//camera boomを追加する
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 500.0f;			//SpringArmの長さを調整する
-	CameraBoom->bUsePawnControlRotation = true; 	//PawnのControllerRotationを使用する
+	CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;			//SpringArmの長さを調整する
+	CameraBoom->bUsePawnControlRotation = true; 						//PawnのControllerRotationを使用する
+	CameraBoom->bDoCollisionTest = false;
+
+	//SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	//SpringArm->SetupAttachment(CameraBoom);
+	//SpringArm->TargetArmLength = 0.f;
+
+	//SpringArm->bDoCollisionTest = false;
+	//SpringArm->bEnableCameraLag = true;
+	//SpringArm->bEnableCameraRotationLag = true;
+
+	//SpringArm->CameraLagSpeed = 5.f;
+	//SpringArm->CameraRotationLagSpeed = 5.f;
 
 	//follow cameraを追加する
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	//FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; 	//PawnのControllerRotationを使用する
+
 
 	//MotoinBlurをオフにする
 	FollowCamera->PostProcessSettings.MotionBlurAmount = 0.f;
@@ -167,13 +183,14 @@ APlayer_Cube::APlayer_Cube()
 
 	BlinkInitLocation = FVector(0.f);
 	KnockBackInitLocation = FVector(0.f);
-
 	BlinkForwardVector = FVector(0.f);
 	KnockBackForwardVector = FVector(0.f);
+	CameraImpactPoint = FVector(0.f);
 
 	LockOnTarget = nullptr;
 
 	BlinkCoolTime = 0;
+	AttackCoolTime = 0;
 
 	Timer = 0.f;
 	Health = 100.f;
@@ -227,14 +244,27 @@ void APlayer_Cube::Tick(float DeltaTime)
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), BlinkCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
 
+	if (AttackCoolTime > 0)
+	{
+		AttackCoolTime--;
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), AttackCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
+	}
+
 	if (LockOnFlg)
 	{
-
+		//向きたい方向へのプレイヤーの回転値を取得
 		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTarget->GetActorLocation());
+		//向きたい方向へのプレイヤーの回転値の補間
 		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FindActorRotation, DeltaTime, 10.f);
 		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, InterpActorRotarion.Roll));
-		Controller->SetControlRotation(FRotator(Controller->GetControlRotation().Pitch, FindActorRotation.Yaw, Controller->GetControlRotation().Roll));
+		//向きたい方向へのコントローラーの回転値の補間
+		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, DeltaTime, 3.f);
+		//微調整用
+		float Adjustment = 1.5f;
+		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
 	}
+
+	SmoothCameraCollision();
 }
 
 // Called to bind functionality to input
@@ -408,11 +438,21 @@ void APlayer_Cube::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !LockOnFlg)
 	{
 		//ヨーとピッチの入力を加える
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+
+		////Pawnが持っているControlの角度を取得する
+		//FRotator ControlRotate = GetControlRotation();
+
+		////ControllerのPitchの角度を制限する
+		//double LimitPitchAngle = FMath::ClampAngle(ControlRotate.Pitch, -40.f, -10.f);
+
+		////PlayerControllerの角度を設定する
+		//UGameplayStatics::GetPlayerController(this, 0)->SetControlRotation(FRotator(LimitPitchAngle, ControlRotate.Yaw, ControlRotate.Roll));
+
 	}
 }
 
@@ -423,7 +463,7 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		BlinkTimeline &&						//BlinkTimelineがnullptrではないなら
 		!BlinkFlg &&							//ブリンク判定ではないなら
 		!AttackFlg &&							//攻撃判定ではないなら
-		!KnockBackFlg&&							//ノックバック判定ではないなら
+		!KnockBackFlg &&						//ノックバック判定ではないなら
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		BlinkInitLocation = GetActorLocation();
@@ -442,10 +482,11 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		AttackTimeline &&						//AttackTimelineがnullptrではないなら
 		!AttackFlg &&							//攻撃判定なら
 		!BlinkFlg &&							//ブリンク判定ではないなら
-		!KnockBackFlg							//ノックバック判定ではないなら
-		)
+		!KnockBackFlg &&						//ノックバック判定ではないなら
+		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
 		AttackTimeline->PlayFromStart();
+		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
 		InvincibleFlg = true;
 	}
@@ -487,6 +528,41 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 	}
 }
 
+void APlayer_Cube::SmoothCameraCollision()
+{
+	//始点座標
+	FVector StartLocation = CameraBoom->GetComponentLocation();
+	//カメラの方向ベクトル
+	FVector CameraVec = FollowCamera->GetComponentLocation() - StartLocation;
+	//正規化
+	UKismetMathLibrary::Vector_Normalize(CameraVec, 0.00001);
+	//終点座標
+	FVector EndLocation = StartLocation + (CameraVec * DEFAULT_TARGET_ARM_LENGTH);
+	//半径
+	float SphereRadius = 50.f;
+	//無視したいアクター
+	TArray<AActor*> ActorToIgnore{ this };
+	//結果
+	FHitResult OutHit;
+	//スフィアトレース
+	UKismetSystemLibrary::SphereTraceSingle(this, StartLocation, EndLocation, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::None, OutHit, true);
+	if (OutHit.bBlockingHit)
+	{
+		CameraImpactPoint = OutHit.ImpactPoint;
+		
+		double TargetPoint = UKismetMathLibrary::Vector_Distance(StartLocation, CameraImpactPoint) - SphereRadius;
+
+		CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, TargetPoint, GetWorld()->GetDeltaSeconds(), 3);
+	}
+	else
+	{
+		if (!UKismetMathLibrary::NearlyEqual_FloatFloat(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, 1.0))
+		{
+			CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3);
+		}
+	}
+}
+
 AActor* APlayer_Cube::GetArraySortingFirstElement(TArray<AActor*> Array)
 {
 	TArray<AActor*> SortArray = Array;
@@ -507,4 +583,3 @@ AActor* APlayer_Cube::GetArraySortingFirstElement(TArray<AActor*> Array)
 
 	return SortArray[0];
 }
-

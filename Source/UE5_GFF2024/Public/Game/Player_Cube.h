@@ -20,6 +20,9 @@ private:
 	//スプリングアーム
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+	//カメラをスムーズにするためのスプリングアーム
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* SpringArm;
 
 	//カメラ
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -74,14 +77,17 @@ public:
 	FVector BlinkInitLocation;
 	//ノックバックの初期座標
 	FVector KnockBackInitLocation;
-
 	//ブリンクの前方方向
 	FVector BlinkForwardVector;
 	//ノックバックの前方方向
 	FVector KnockBackForwardVector;
+	//カメラの衝突の絶対座標
+	FVector CameraImpactPoint;
 
 	//ブリンクのクールタイム
 	int BlinkCoolTime;
+	//攻撃のクールタイム
+	int AttackCoolTime;
 
 	//タイマー
 	float Timer;
@@ -161,6 +167,9 @@ private:
 	void Attack(const FInputActionValue& Value);
 	//ロックオン処理
 	void LockOn(const FInputActionValue& Value);
+
+	//カメラのコリジョンの処理
+	void SmoothCameraCollision();
 
 private:
 	//ソートされた配列の最初の要素を取得
