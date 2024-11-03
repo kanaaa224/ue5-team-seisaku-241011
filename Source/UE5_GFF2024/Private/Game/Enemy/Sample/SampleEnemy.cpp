@@ -48,7 +48,7 @@ void ASampleEnemy::Tick(float DeltaTime)
 	FVector Position = GetActorLocation();  // オブジェクトの位置
 
 	//Cube->SetNextBottom(FVector(0, 1, 0), Scale, Position);
-	Cube->SetNextBottom(FVector(1, 1, 0), Scale, Position);
+	Cube->SetNextBottom(FVector(1, 0, 0), Scale, Position);
 
 	Cube->SetNewRotationAndLocation(Position);
 	FRotator rot1 = Cube->GetNowRotation();
