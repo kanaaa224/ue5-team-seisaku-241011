@@ -8,7 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 //AIController
 #include "Game/Enemy/2/AIC_Enemy2.h"
-
+//Blackborad
+#include "BehaviorTree/BlackboardComponent.h"
+//Debug用にPrintStringを使用するためにインクルード
 #include "Kismet/KismetSystemLibrary.h"
 
 UBTT_SetParameter::UBTT_SetParameter(FObjectInitializer const& ObjectInitializer)
@@ -23,12 +25,11 @@ UBTT_SetParameter::UBTT_SetParameter(FObjectInitializer const& ObjectInitializer
 
 EBTNodeResult::Type UBTT_SetParameter::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	//ビヘイビアツリーを取得
-	BehaviorComp = &OwnerComp;
-	BlackboardComp = BehaviorComp->GetBlackboardComponent();
-
-	// 作成したビヘイビアツリーを設定
-	BehaviorTree = BTFinder.Object;
+	//BlackboardのComponentを変数に代入
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComp) {
+		return EBTNodeResult::Failed;
+	}
 
 	//プレイヤーのLocationを取得
 	//プレイヤーコントローラーを取得

@@ -18,16 +18,9 @@ class UE5_GFF2024_API UBTT_SetParameter : public UBTTask_BlackboardBase
 	GENERATED_BODY()
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	class UBehaviorTree* BehaviorTree;
-	
-	UPROPERTY()
-	UBehaviorTreeComponent* BehaviorComp;
+	//:::::Blackboard::::://
 
-	//ブラックボード
-	UPROPERTY()
-	UBlackboardComponent* BlackboardComp;
-
+	//Distance(プレイヤーまでの距離を入れる変数)
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName DistanceKeyName;
 
