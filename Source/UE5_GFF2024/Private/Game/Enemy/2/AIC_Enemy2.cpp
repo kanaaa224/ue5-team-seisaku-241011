@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Game/Enemy/2/AIC_Enemy2.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AAIC_Enemy2::AAIC_Enemy2(const FObjectInitializer& ObjectInitializer)
 {
@@ -49,20 +49,4 @@ APlayer_Cube* AAIC_Enemy2::GetPlayerKey()
 	ensure(BlackboardComp);
 
 	return Cast<APlayer_Cube>(BlackboardComp->GetValueAsObject(PlayerKeyName));
-}
-
-void AAIC_Enemy2::SetBBDistanceFromPlayer(APlayer_Cube* player)
-{
-	//プレヤーまでの距離
-	float distance = 0.0f;
-	//プレヤーの場所
-	FVector playerLocation = player->GetActorLocation();
-	//自分の場所
-	//FVector myLocation = this->GetActorLocation();
-	ensure(BlackboardComp);
-
-
-
-	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
-	BlackboardComp->SetValueAsFloat(DistanceFromPlayerKeyName, distance);
 }

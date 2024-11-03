@@ -35,7 +35,4 @@ public:
 public:
 	//ダメージを受ける処理
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
-
-public:
-	//float GetDistanceFromPlayer(APlayer_Cube* player);
 };
