@@ -8,17 +8,16 @@
 #include "Kismet/GameplayStatics.h"
 //AIController
 #include "Game/Enemy/2/AIC_Enemy2.h"
-
+//Blackborad
+#include "BehaviorTree/BlackboardComponent.h"
+//Debug用にPrintStringを使用するためにインクルード
 #include "Kismet/KismetSystemLibrary.h"
 
 UBTT_SetParameter::UBTT_SetParameter(FObjectInitializer const& ObjectInitializer)
 {
-	BehaviorComp = ObjectInitializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
-	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
+	//BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));
 
-	// 作成したビヘイビアツリーを設定
-	ConstructorHelpers::FObjectFinder<UBehaviorTree> BTFinder(TEXT("/Game/Game/enemy/2/AI/BT_Enemy2.BT_Enemy2"));
-	BehaviorTree = BTFinder.Object;
+	//(TEXT("/Game/Game/enemy/2/AI/BT_Enemy2.BT_Enemy2"));
 
 	//ブラックボードにある変数を設定
 	DistanceKeyName = "Distance";
@@ -26,6 +25,12 @@ UBTT_SetParameter::UBTT_SetParameter(FObjectInitializer const& ObjectInitializer
 
 EBTNodeResult::Type UBTT_SetParameter::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//BlackboardのComponentを変数に代入
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComp) {
+		return EBTNodeResult::Failed;
+	}
+
 	//プレイヤーのLocationを取得
 	//プレイヤーコントローラーを取得
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
