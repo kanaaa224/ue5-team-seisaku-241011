@@ -25,6 +25,7 @@
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Game/System/GameMode_InGame.h"
+#include "Engine/World.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	700.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
@@ -329,7 +330,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		if (Health <= 0)
 		{
 			//GameModeを取得して、AGameMode_InGameにCastする
-			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this->GetWorld())))
+			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
 			{
 				GameMode->KillPlayer(this);
 			}
