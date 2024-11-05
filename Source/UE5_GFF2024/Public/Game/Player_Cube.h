@@ -14,8 +14,12 @@ class UE5_GFF2024_API APlayer_Cube : public ACharacter
 
 private:
 	//スタティックメッシュ
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Cube;
+	
+	//マテリアルインスタンス
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	class UMaterialInstanceDynamic* Material_Instance;
 
 	//スプリングアーム
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -50,7 +54,7 @@ private:
 
 	//スフィアコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	class USphereComponent* LockOnCollision;
+	class UBoxComponent* LockOnCollision;
 
 public:
 	//ブリンク用のカーブ
@@ -71,7 +75,7 @@ public:
 	TArray<class AActor*> LockOnCandidates;
 
 	//ロックオンの対象
-	class AActor* LockOnTarget;
+	class AActor* LockOnTargetActor;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
@@ -170,6 +174,10 @@ private:
 
 	//カメラのコリジョンの処理
 	void SmoothCameraCollision();
+	//ロックオン後のカメラやプレイヤーの処理
+	void LockOnTarget();
+	//プレイヤーの透過処理
+	void PlayerTransparent();
 
 private:
 	//ソートされた配列の最初の要素を取得
