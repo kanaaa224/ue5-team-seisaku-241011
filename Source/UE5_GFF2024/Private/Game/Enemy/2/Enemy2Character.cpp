@@ -58,8 +58,33 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 	UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
+bool AEnemy2Character::ApplyDamage(AActor* DamagedActor, float Damage, int DamageType)
+{
+
+	
+	switch(DamageType){//敵がやった攻撃のダメージの種類別でダメージを与える
+		case _DAMAGETYPE_NORMAL_ATTACK_://通常攻撃
+			//DamagedActor->TakeDamage(_DAMAGE_NORMAL_ATTACK,,GetController(),this)
+			break;
+
+		case _DAMAGETYPE_ULT_ATTACK_://特殊攻撃
+
+			break;
+	}
+	return false;
+}
+
 float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	return 0.0f;
+	//受けたダメージ量分HPを減産
+	health -= DamageAmount;
+
+	//ヘルスがゼロ以下なら死亡処理
+	if (health <= 0) {
+		//ここに死亡時に実行する処理、関数を書く
+	}
+
+	//受けたダメージ量を返す
+	return DamageAmount;
 }
 
