@@ -8,11 +8,21 @@
 
 UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
+	//ブラックボードにある変数を設定
+	AttackKeyName = "Attack";
+
 	lifting = false;
+	startAttack = false;
 }
 
 EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//BlackboardのComponentを変数に代入
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComp) {
+		return EBTNodeResult::Failed;
+	}
+
 	//AIコントローラーを取得
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr){
@@ -27,7 +37,10 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 	//:::::Rotation処理::::://
 	//ActorのRotationを変数に代入
-	FRotator CurrentRotaton = ControlledPawn->GetActorRotation();
+
+	if (startAttack == false) {
+		CurrentRotaton = ControlledPawn->GetActorRotation();
+	}
 
 	if (lifting == false) {
 		CurrentRotaton.Pitch -= ATTACK_SPEED;
@@ -38,14 +51,24 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 	if (CurrentRotaton.Pitch <= -90.0f) {
 		lifting = true;
+		startAttack = true;
+		//ブラックボードにあるAttackをtrue
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(AttackKeyName, lifting);
+		UKismetSystemLibrary::PrintString(GetWorld(), "Attack : TRUE");
 	}
 	else if (CurrentRotaton.Pitch >= 0.0f) {
 		lifting = false;
+		startAttack = false;
+		//ブラックボードにあるAttackをfalse
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(AttackKeyName, lifting);
+		UKismetSystemLibrary::PrintString(GetWorld(), "Attack : FALSE");
 	}
-	
-	//新しいRotationを設定
-	ControlledPawn->SetActorRotation(CurrentRotaton);
 
+	//新しいRotationを設定
+	UKismetSystemLibrary::PrintString(GetWorld(), FString::SanitizeFloat(CurrentRotaton.Roll));
+	ControlledPawn->SetActorRotation(CurrentRotaton);
 
 	return EBTNodeResult::Succeeded;
 }

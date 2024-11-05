@@ -50,12 +50,15 @@ APlayer_Cube::APlayer_Cube()
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	Cube->SetupAttachment(RootComponent);
-	UStaticMesh* mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube"));
-	Cube->SetStaticMesh(mesh);
+	UStaticMesh* StaticMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube"));
+	Cube->SetStaticMesh(StaticMesh);
 
 	//マテリアルを追加する
-	UMaterial* material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
-	Cube->SetMaterial(0, material);
+	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Game/Game/Player/Material/M_Player"));	
+	//UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
+
+	Cube->SetMaterial(0, Material);
+	Material_Instance = Cube->CreateAndSetMaterialInstanceDynamic(0);
 
 	//CollisionPresetを「PhysicsActor」に変更する
 	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
@@ -68,13 +71,13 @@ APlayer_Cube::APlayer_Cube()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;			//SpringArmの長さを調整する
 	CameraBoom->bUsePawnControlRotation = true; 						//PawnのControllerRotationを使用する
-	CameraBoom->bDoCollisionTest = false;
+	//CameraBoom->bDoCollisionTest = false;
 
-	//SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	//SpringArm->SetupAttachment(CameraBoom);
-	//SpringArm->TargetArmLength = 0.f;
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(CameraBoom);
+	SpringArm->TargetArmLength = 0.f;
 
-	//SpringArm->bDoCollisionTest = false;
+	SpringArm->bDoCollisionTest = false;
 	//SpringArm->bEnableCameraLag = true;
 	//SpringArm->bEnableCameraRotationLag = true;
 
@@ -83,8 +86,8 @@ APlayer_Cube::APlayer_Cube()
 
 	//follow cameraを追加する
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	//FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; 	//PawnのControllerRotationを使用する
 
 
@@ -106,9 +109,9 @@ APlayer_Cube::APlayer_Cube()
 	LockOnAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_LockOn"));
 
 	//SphereComponentを追加する
-	LockOnCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("SphereComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetSphereRadius(500.f);
+	LockOnCollision->SetBoxExtent(FVector(300.f, 300.f, 100.f));
 	//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
 	//コリジョンを無効にする
@@ -119,6 +122,8 @@ APlayer_Cube::APlayer_Cube()
 	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	//コリジョンに対する反応をPawnだけOverlapにする
 	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	
+	LockOnCollision->bHiddenInGame = false;
 
 	//カーブの作成
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
@@ -187,7 +192,7 @@ APlayer_Cube::APlayer_Cube()
 	KnockBackForwardVector = FVector(0.f);
 	CameraImpactPoint = FVector(0.f);
 
-	LockOnTarget = nullptr;
+	LockOnTargetActor = nullptr;
 
 	BlinkCoolTime = 0;
 	AttackCoolTime = 0;
@@ -250,21 +255,11 @@ void APlayer_Cube::Tick(float DeltaTime)
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), AttackCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
 
-	if (LockOnFlg)
-	{
-		//向きたい方向へのプレイヤーの回転値を取得
-		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTarget->GetActorLocation());
-		//向きたい方向へのプレイヤーの回転値の補間
-		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FindActorRotation, DeltaTime, 10.f);
-		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, InterpActorRotarion.Roll));
-		//向きたい方向へのコントローラーの回転値の補間
-		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, DeltaTime, 3.f);
-		//微調整用
-		float Adjustment = 1.5f;
-		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
-	}
+	LockOnTarget();
 
 	SmoothCameraCollision();
+
+	PlayerTransparent();
 }
 
 // Called to bind functionality to input
@@ -328,6 +323,21 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 		//ダメージ量
 		const float DamageAmount = 25.0f;
 		ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
+		//if ( <= 0.f)
+		//{
+		//	if (LockOnCandidates.IsValidIndex(0))
+		//	{
+		//		GetCharacterMovement()->bOrientRotationToMovement = true;
+		//		LockOnFlg = false;
+		//		LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+		//		if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+		//		{
+		//			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
+		//			LockOnInterface->SetLockOnEnable(false);
+		//		}
+		//		LockOnCandidates.Remove(LockOnTargetActor);
+		//	}
+		//}
 
 		//攻撃のダメージフラグを設定
 		InflictDamageFlg = true;
@@ -398,18 +408,36 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 	UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
 
 	LockOnCandidates.AddUnique(OtherActor);
+
+	//ロックオンの候補がいるか調べる
+	if (LockOnCandidates.IsValidIndex(0))
+	{
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		LockOnFlg = true;
+		LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+		if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+		{
+			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
+			LockOnInterface->SetLockOnEnable(true);
+		}
+		UKismetSystemLibrary::PrintString(this, TEXT("ON"));
+	}
+
 }
 
 void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-	{
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		LockOnFlg = false;
-		ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(OtherActor);
-		LockOnInterface->SetLockOnEnable(false);
-	}
-	LockOnCandidates.Remove(OtherActor);
+	//対象のアクターのLockOnInterfaceを無効にする
+	//if (OtherActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+	//{
+	//	GetCharacterMovement()->bOrientRotationToMovement = true;
+	//	LockOnFlg = false;
+	//	ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(OtherActor);
+	//	LockOnInterface->SetLockOnEnable(false);
+	//	UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
+	//}
+
+	//LockOnCandidates.Remove(OtherActor);
 }
 
 void APlayer_Cube::Move(const FInputActionValue& Value)
@@ -501,10 +529,10 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 		{		
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			LockOnFlg = true;
-			LockOnTarget = GetArraySortingFirstElement(LockOnCandidates);
-			if (LockOnTarget->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 			{
-				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTarget);
+				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
 				LockOnInterface->SetLockOnEnable(true);
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
@@ -517,10 +545,10 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			LockOnFlg = false;
-			LockOnTarget = GetArraySortingFirstElement(LockOnCandidates);
-			if (LockOnTarget->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 			{
-				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTarget);
+				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
 				LockOnInterface->SetLockOnEnable(false);
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
@@ -530,37 +558,70 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 
 void APlayer_Cube::SmoothCameraCollision()
 {
-	//始点座標
-	FVector StartLocation = CameraBoom->GetComponentLocation();
-	//カメラの方向ベクトル
-	FVector CameraVec = FollowCamera->GetComponentLocation() - StartLocation;
-	//正規化
-	UKismetMathLibrary::Vector_Normalize(CameraVec, 0.00001);
-	//終点座標
-	FVector EndLocation = StartLocation + (CameraVec * DEFAULT_TARGET_ARM_LENGTH);
-	//半径
-	float SphereRadius = 50.f;
-	//無視したいアクター
-	TArray<AActor*> ActorToIgnore{ this };
-	//結果
-	FHitResult OutHit;
-	//スフィアトレース
-	UKismetSystemLibrary::SphereTraceSingle(this, StartLocation, EndLocation, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::None, OutHit, true);
-	if (OutHit.bBlockingHit)
+	if (!LockOnFlg)
 	{
-		CameraImpactPoint = OutHit.ImpactPoint;
-		
-		double TargetPoint = UKismetMathLibrary::Vector_Distance(StartLocation, CameraImpactPoint) - SphereRadius;
-
-		CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, TargetPoint, GetWorld()->GetDeltaSeconds(), 3);
-	}
-	else
-	{
-		if (!UKismetMathLibrary::NearlyEqual_FloatFloat(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, 1.0))
+		//始点座標
+		FVector StartLocation = CameraBoom->GetComponentLocation();
+		//カメラの方向ベクトル
+		FVector CameraVec = FollowCamera->GetComponentLocation() - StartLocation;
+		//正規化
+		UKismetMathLibrary::Vector_Normalize(CameraVec, 0.00001);
+		//終点座標
+		FVector EndLocation = StartLocation + (CameraVec * DEFAULT_TARGET_ARM_LENGTH);
+		//半径
+		float SphereRadius = 50.f;
+		//無視したいアクター
+		TArray<AActor*> ActorToIgnore{ this };
+		//結果
+		FHitResult OutHit;
+		//スフィアトレース
+		UKismetSystemLibrary::SphereTraceSingle(this, StartLocation, EndLocation, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::None, OutHit, true);
+		if (OutHit.bBlockingHit)
 		{
-			CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3);
+			CameraImpactPoint = OutHit.ImpactPoint;
+		
+			double TargetPoint = UKismetMathLibrary::Vector_Distance(StartLocation, CameraImpactPoint) - SphereRadius;
+
+			CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, TargetPoint, GetWorld()->GetDeltaSeconds(), 3);
+		}
+		else
+		{
+			if (!UKismetMathLibrary::NearlyEqual_FloatFloat(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, 1.0))
+			{
+				CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3);
+			}
 		}
 	}
+}
+
+void APlayer_Cube::LockOnTarget()
+{
+	if (LockOnFlg)
+	{
+		//向きたい方向へのプレイヤーの回転値を取得
+		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
+		//向きたい方向へのプレイヤーの回転値の補間
+		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 10.f);
+		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, InterpActorRotarion.Roll));
+		//向きたい方向へのコントローラーの回転値の補間
+		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
+		//微調整用
+		float Adjustment = 1.5f;
+		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+	}
+}
+
+void APlayer_Cube::PlayerTransparent()
+{
+	double Distance = UKismetMathLibrary::Vector_Distance(FollowCamera->GetComponentLocation(), GetActorLocation());
+	//Distance:カメラとプレイヤーの距離
+	//InRangeA:カメラがこの値までキャラに近づいたら完全にマテリアルを消す
+	//InRangeB:カメラがこの値までキャラに近づいたらマテリアルのフェードを開始する
+	//OutRangeA:マテリアルが完全に消えるOpacity値
+	//OutRnageB:マテリアルが通常状態のOpacity値
+	double Opacity = UKismetMathLibrary::MapRangeClamped(Distance, 200, 300, 0, 1);
+
+	Material_Instance->SetScalarParameterValue("Opacity", Opacity);
 }
 
 AActor* APlayer_Cube::GetArraySortingFirstElement(TArray<AActor*> Array)
