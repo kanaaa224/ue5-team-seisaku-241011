@@ -251,10 +251,13 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
         NextRotation.Roll = 0.;
     }
 
+    int32 speed = Fps * Speed;
+
     //30はFPSの数字 -> 変数Fpsに切り替える
-    NowRotation += {NextRotation.Pitch / 30, NextRotation.Yaw / 30, NextRotation.Roll / 30};
+    //NowRotation += {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};
+    NowRotation += {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed};
     //とりあえず一秒で回転
-    if (FpsCounter++ >= 29)
+    if (FpsCounter++ >= speed - 1)
     {
         FpsCounter = 0;
         NowRotation = { 0.,0.,0. };
@@ -267,9 +270,10 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
     FVector Direction = ActorLocation - CenterPosition;
 
     // 指定された角度でベクトルを回転
-    FQuat QuatRotation = FQuat({ -NextRotation.Pitch / 30, -NextRotation.Yaw / 30, -NextRotation.Roll / 30 });	//y z x
+    //FQuat QuatRotation = FQuat({ -NextRotation.Pitch / Fps, -NextRotation.Yaw / Fps, -NextRotation.Roll / Fps });	//y z x
+    FQuat QuatRotation = FQuat({ -NextRotation.Pitch / speed, -NextRotation.Yaw / speed, -NextRotation.Roll / speed });	//y z x
     //{1,0,0} pitch {0,1,0} yaw {0,0,1} roll
-//回転後の相対座標
+    //回転後の相対座標
     FVector NewDirection = QuatRotation.RotateVector(Direction);
 
     // 新しい位置を計算（回転後のベクトルにピボットポイントを足す）

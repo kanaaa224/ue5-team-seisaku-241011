@@ -24,5 +24,9 @@ protected:
     // 他にブラックボードキーを追加したい場合
     UPROPERTY(EditAnywhere, Category = "Blackboard")
     FBlackboardKeySelector AdditionalKey;  // 追加のキーが必要であればこちらに宣言
+
+public:
+    int32 Count = 0;
+    FVector Vector;
 	
 };
