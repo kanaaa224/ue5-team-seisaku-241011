@@ -51,4 +51,9 @@ public:
 
 	//ダメージを受ける処理
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
+
+	/// <summary>
+	/// 死亡処理
+	/// </summary>
+	void Die();
 };

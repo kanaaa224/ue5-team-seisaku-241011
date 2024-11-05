@@ -82,9 +82,18 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	//ヘルスがゼロ以下なら死亡処理
 	if (health <= 0) {
 		//ここに死亡時に実行する処理、関数を書く
+		Die();
 	}
 
 	//受けたダメージ量を返す
 	return DamageAmount;
+}
+
+void AEnemy2Character::Die()
+{
+	// コリジョンを無効化
+	SetActorEnableCollision(false);
+	// 一定時間後にオブジェクトを削除
+	SetLifeSpan(5.0f); // 5秒後に削除
 }
 
