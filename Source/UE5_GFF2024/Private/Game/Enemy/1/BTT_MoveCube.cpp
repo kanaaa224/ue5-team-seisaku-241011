@@ -40,7 +40,6 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                 {
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
 
-                    //Enemy->SetActorLocation(Enemy->GetActorLocation() + (EnemyVector / 30));
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                     Normalize = { Normalize.X, Normalize.Y, 0. };
                     Enemy->SetVector(Normalize);

@@ -25,7 +25,37 @@ AEnemy1Character::AEnemy1Character()
 
 	Vector = { 0.,0.,0., };
 
+	//float AngleX = -FMath::Atan2(CubeVertices[11].Z, CubeVertices[11].Y); // x軸回りの回転
+	//float AngleZ = FMath::Atan2(CubeVertices[5].X, CubeVertices[5].Y);    // z軸回りの回転
+	//float AngleY = 0.0f; // 必要ないので 0 に設定
+
+	//// 面0がy軸（地面）に平行になるよう回転
+	//float AngleX = FMath::Atan2(CubeVertices[0].Z, CubeVertices[0].Y);  // x軸回りの回転
+	//float AngleZ = 0.0f;  // z軸回りの回転を固定
+	//float AngleY = 0.0f;  // y軸回りの回転は不要
+
+	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
+	//FVector VertexA = CubeVertices[0];
+	//FVector VertexB = CubeVertices[11];
+	//FVector VertexC = CubeVertices[5];
+
+	//// y軸回りの回転角度を計算
+	//float AngleY = 0;//-FMath::Atan2(VertexA.Z, VertexA.X);
+
+	//// x軸回りの回転角度を計算（面のz軸成分がy軸に水平になるように）
+	//float AngleX = 0;//FMath::Atan2(VertexA.Z, VertexA.Y);
+
+	//// z軸回りの回転は不要または特定の調整で設定
+	//float AngleZ = 0.0f;
+
+	//TArray<FVector> RotatedVertices;
+	//for (const auto& Vertex : CubeVertices) {
+	//	RotatedVertices.Add(RotateVertex(Vertex, AngleX, AngleY, AngleZ));
+	//}
+	//RotVertices = RotatedVertices;
 	RotationManager = new PolygonRotationManager(CubeVertices, CubeFaces);
+	//RotationManager = new PolygonRotationManager(RotatedVertices, CubeFaces);
+
 
 	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
@@ -53,7 +83,6 @@ AEnemy1Character::AEnemy1Character()
 void AEnemy1Character::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -77,6 +106,30 @@ void AEnemy1Character::Tick(float DeltaTime)
 	{
 		MoveProcess();
 	}
+	
+	
+
+	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
+	//FVector VertexA = CubeVertices[0];
+	//FVector VertexB = CubeVertices[11];
+	//FVector VertexC = CubeVertices[5];
+
+	//a += 0.001;
+
+	//// y軸回りの回転角度を計算
+	//float AngleY = 0 + a;//-FMath::Atan2(VertexA.Z, VertexA.X);
+
+	//// x軸回りの回転角度を計算（面のz軸成分がy軸に水平になるように）
+	//float AngleX = 0;//FMath::Atan2(VertexA.Z, VertexA.Y);
+
+	//// z軸回りの回転は不要または特定の調整で設定
+	//float AngleZ = 0.0f;
+
+	//TArray<FVector> RotatedVertices;
+	//for (const auto& Vertex : CubeVertices) {
+	//	RotatedVertices.Add(RotateVertex(Vertex, AngleX, AngleY, AngleZ));
+	//}
+	//RotVertices = RotatedVertices;
 }
 
 void AEnemy1Character::OnSeePlayer(APawn* Pawn)
@@ -115,22 +168,26 @@ void AEnemy1Character::MoveProcess()
 	RootComponent->SetRelativeRotation(-1 * rot1);
 	SetActorLocation(RotationManager->GetNewLocation());
 
-	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, Scale, Position);
 
-	for (int i = 0; i < CubeFaces.Num(); i++)
-	{
-		for (int j = 0; j < CubeFaces[i].Num(); j++)
-		{
-			int k = j + 1;
-			if (k >= 3)
-			{
-				k = 0;
-			}
-			FVector Start = CubeVertices[CubeFaces[i][j]] * Scale + Position;
-			FVector End = CubeVertices[CubeFaces[i][k]] * Scale + Position;
-			DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 0.1f);
-		}
-	}
+	//デバッグ表示
+	//RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, Scale, Position);
+
+	//for (int i = 0; i < CubeFaces.Num(); i++)
+	//{
+	//	for (int j = 0; j < CubeFaces[i].Num(); j++)
+	//	{
+	//		int k = j + 1;
+	//		if (k >= 3)
+	//		{
+	//			k = 0;
+	//		}
+	//		/*FVector Start = RotVertices[CubeFaces[i][j]] * Scale + Position;
+	//		FVector End = RotVertices[CubeFaces[i][k]] * Scale + Position;*/
+	//		FVector Start = CubeVertices[CubeFaces[i][j]] * Scale + Position;
+	//		FVector End = CubeVertices[CubeFaces[i][k]] * Scale + Position;
+	//		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 0.1f);
+	//	}
+	//}
 }
 
 
