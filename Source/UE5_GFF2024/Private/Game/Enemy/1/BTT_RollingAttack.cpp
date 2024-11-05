@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/Enemy/1/BTT_MoveCube.h"
+#include "Game/Enemy/1/BTT_RollingAttack.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
 
-UBTT_MoveCube::UBTT_MoveCube()
+UBTT_RollingAttack::UBTT_RollingAttack()
 {
 	NodeName = "Custom Task";
 }
 
-EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     // AIコントローラとブラックボードコンポーネントを取得
     AAIController* AIController = OwnerComp.GetAIOwner();
@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
         // `Target` の値を使った処理を行う
         // 例: ターゲットが見つかった場合の処理など
         UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
-        
+
         if (AAIC_Enemy1* AIC = Cast<AAIC_Enemy1>(OwnerComp.GetAIOwner()))
         {
             if (AEnemy1Character* Enemy = Cast<AEnemy1Character>(AIC->GetPawn()))
@@ -40,11 +40,31 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                 {
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
 
-                    FVector Normalize = EnemyVector / EnemyVector.Length();
-                    Normalize = { Normalize.X, Normalize.Y, 0. };
-                    Enemy->SetVector(Normalize);
 
-                    Enemy->SetIsMoving(true);
+                    if (Count++ < 30)
+                    {
+                        Enemy->SetIsMoving(false);
+                        FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
+                        Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
+                        Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
+                    }
+                    else
+                    {
+                        FVector Normalize = Vector / Vector.Length();
+                        Normalize = { Normalize.X, Normalize.Y, 0. };
+                        Enemy->SetIsMoving(false);
+                        Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
+                        //Enemy->AddMovementInput(Normalize, 100.f);
+                        //AIC->MoveToSpecifiedLocation(Enemy->GetActorLocation() + Normalize * 3, 10.f);
+                        if (Count < 150)
+                        {
+                            EBTNodeResult::InProgress;
+                        }
+                        else
+                        {
+                            Count = 0;
+                        }
+                    }
                 }
             }
         }

@@ -51,7 +51,10 @@ protected:
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
 
+	
+
 public:
+	void MoveToSpecifiedLocation(const FVector Location, float Speed);
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName DistanceFromPlayerKeyName;
@@ -61,4 +64,5 @@ public:
 	/// プレヤーまでの距離をブラックボードに設定する
 	/// <param name="player"></param>
 	void SetBBDistanceFromPlayer(APlayer_Cube* player);
+
 };

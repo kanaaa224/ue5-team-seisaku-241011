@@ -23,6 +23,8 @@ public:
 
     bool IsRotating = false;
 
+    float Speed = 1.f;
+
 public:
     PolygonRotationManager();
     ~PolygonRotationManager();
@@ -66,9 +68,20 @@ public:
         NowRotation = Rot;
     }
 
+    void SetSpeed(float speed)
+    {
+        Speed = speed;
+    }
+
+    void SetVertices(TArray<FVector>& vertices)
+    {
+        Vertices = vertices;
+    }
+
     FVector GetNewLocation() { return NewLocation; }
     FRotator GetNowRotation() { return NowRotation; }
     bool GetIsRotating() { return IsRotating; }
+    
 private:
     TArray<FVector> Vertices;  // 頂点の配列
     TArray<TArray<int32>> Faces;  // 各面の頂点インデックスを保持する配列

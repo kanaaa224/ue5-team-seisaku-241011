@@ -78,4 +78,58 @@ public:
 		{0, 3, 7, 4},  // 左面
 		{1, 2, 6, 5}   // 右面
 	};
+
+	//ここから正二十面体関連
+	const float phi = (1.0 + FMath::Sqrt(5.0)) / 2.0;
+	const double A = 1.0;
+	const double B = 1.0 / phi;
+
+	//TArray<FVector> CubeVertices = {
+	//	FVector(-1,  phi, 0), FVector(1,  phi, 0),
+	//	FVector(-1, -phi, 0), FVector(1, -phi, 0),
+
+	//	FVector(0, -1,  phi), FVector(0,  1,  phi),
+	//	FVector(0, -1, -phi), FVector(0,  1, -phi),
+
+	//	FVector(phi, 0, -1), FVector(phi, 0,  1),
+	//	FVector(-phi, 0, -1), FVector(-phi, 0,  1)
+	//};
+
+	//// 立方体の6つの面を定義（各面は頂点インデックスのリスト）
+	//TArray<TArray<int32>> CubeFaces = {
+	//	{0, 11, 5}, {0, 5, 1}, {0, 1, 7}, {0, 7, 10}, {0, 10, 11},
+	//	{1, 5, 9}, {5, 11, 4}, {11, 10, 2}, {10, 7, 6}, {7, 1, 8},
+	//	{3, 9, 4}, {3, 4, 2}, {3, 2, 6}, {3, 6, 8}, {3, 8, 9},
+	//	{4, 9, 5}, {2, 4, 11}, {6, 2, 10}, {8, 6, 7}, {9, 8, 1}
+	//};
+
+	TArray<FVector> RotVertices;
+
+	float a = 0;
+
+	// 頂点を回転させる関数
+	FVector RotateVertex(const FVector& Vertex, float AngleX, float AngleY, float AngleZ) {
+		// X軸回転
+		FVector Rotated = FVector(
+			Vertex.X,
+			Vertex.Y * FMath::Cos(AngleX) - Vertex.Z * FMath::Sin(AngleX),
+			Vertex.Y * FMath::Sin(AngleX) + Vertex.Z * FMath::Cos(AngleX)
+		);
+
+		// Y軸回転
+		Rotated = FVector(
+			Rotated.X * FMath::Cos(AngleY) + Rotated.Z * FMath::Sin(AngleY),
+			Rotated.Y,
+			-Rotated.X * FMath::Sin(AngleY) + Rotated.Z * FMath::Cos(AngleY)
+		);
+
+		// Z軸回転
+		Rotated = FVector(
+			Rotated.X * FMath::Cos(AngleZ) - Rotated.Y * FMath::Sin(AngleZ),
+			Rotated.X * FMath::Sin(AngleZ) + Rotated.Y * FMath::Cos(AngleZ),
+			Rotated.Z
+		);
+
+		return Rotated;
+	}
 };
