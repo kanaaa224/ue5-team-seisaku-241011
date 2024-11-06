@@ -56,9 +56,9 @@ public:
 
 public:
 	//ロックオン
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* LockOnMarkerWidget;
 
 	//ロックオンの有効フラグを設定する
-	virtual void SetLockOnEnable(bool Flg)override;
+	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
 };

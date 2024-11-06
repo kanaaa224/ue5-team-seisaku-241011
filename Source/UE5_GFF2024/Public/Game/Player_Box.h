@@ -55,7 +55,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* LockOnMarkerWidget;
 
 private:
@@ -88,7 +88,7 @@ public:
 	void InflictDamage(class AActor* Other);
 
 	//ロックオンの有効フラグを設定する
-	virtual void SetLockOnEnable(bool Flg)override;
+	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
 
 protected:
 	/** Called for movement input */
