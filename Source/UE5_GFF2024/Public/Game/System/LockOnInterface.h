@@ -21,12 +21,10 @@ class UE5_GFF2024_API ILockOnInterface
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-protected:
-	//ロックオンの有効フラグ
-	bool LockOnEnable = false;
 
 public:
 	//ロックオンの有効フラグを設定する
-	virtual void SetLockOnEnable(bool Flg);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interface")
+	void SetLockOnEnable(bool LockOnFlg);
 
 };

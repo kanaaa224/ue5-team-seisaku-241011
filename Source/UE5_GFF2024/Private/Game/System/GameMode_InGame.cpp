@@ -6,10 +6,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Game/System/GameInstance_GFF2024.h"
+#include "Game/UI/HUD_PlayerHUD.h"
 
 AGameMode_InGame::AGameMode_InGame()
 {
 	DefaultPawnClass = APlayer_Cube::StaticClass();
+	HUDClass = AHUD_PlayerHUD::StaticClass();
 }
 
 void AGameMode_InGame::BeginPlay()

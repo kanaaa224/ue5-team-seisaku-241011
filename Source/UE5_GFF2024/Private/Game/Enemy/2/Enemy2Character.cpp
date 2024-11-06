@@ -123,11 +123,9 @@ void AEnemy2Character::Die()
 	SetLifeSpan(1.0f); // 1秒後に削除
 }
 
-void AEnemy2Character::SetLockOnEnable(bool Flg)
+void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 {
-	LockOnEnable = Flg;
-
-	if (LockOnEnable)
+	if (LockOnFlg)
 	{
 		LockOnMarkerWidget->SetVisibility(true);
 	}
