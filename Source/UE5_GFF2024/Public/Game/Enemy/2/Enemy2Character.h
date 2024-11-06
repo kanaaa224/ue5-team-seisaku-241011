@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+//ロックオン
+#include "../../System/LockOnInterface.h"
+
 #include "Enemy2Character.generated.h"
 
 //ダメージタイプと攻撃力
@@ -14,7 +18,7 @@
 #define _DAMAGE_ULT_ATTACK_        50//特殊攻撃のダメージ量
 
 UCLASS()
-class UE5_GFF2024_API AEnemy2Character : public ACharacter
+class UE5_GFF2024_API AEnemy2Character : public ACharacter , public ILockOnInterface
 {
 	GENERATED_BODY()
 
@@ -40,14 +44,7 @@ public:
 	void OnSeePlayer(APawn* Pawn);
 
 public:
-	/// <summary>
-	/// ダメージを与える
-	/// </summary>
-	/// <param name="DamagedActor">ダメージを与えるActor</param>
-	/// <param name="Damage">与えるダメージ</param>
-	/// <param name="DamageType">与えるダメージの種類（ヘッダーで宣言したマクロを使う）</param>
-	/// <returns>ダメージを与えられたか</returns>
-	bool ApplyDamage(AActor* DamagedActor, float Damage, int DamageType);
+	void ApplyDamage(AActor* Other);
 
 	//ダメージを受ける処理
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
@@ -56,4 +53,12 @@ public:
 	/// 死亡処理
 	/// </summary>
 	void Die();
+
+public:
+	//ロックオン
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* LockOnMarkerWidget;
+
+	//ロックオンの有効フラグを設定する
+	virtual void SetLockOnEnable(bool Flg)override;
 };
