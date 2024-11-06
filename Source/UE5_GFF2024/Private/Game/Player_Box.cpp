@@ -208,11 +208,9 @@ void APlayer_Box::InflictDamage(AActor* Other)
 	}
 }
 
-void APlayer_Box::SetLockOnEnable(bool Flg)
+void APlayer_Box::SetLockOnEnable_Implementation(bool LockOnFlg)
 {
-	LockOnEnable = Flg;
-
-	if (LockOnEnable)
+	if (LockOnFlg)
 	{
 		LockOnMarkerWidget->SetVisibility(true);
 	}
