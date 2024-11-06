@@ -16,6 +16,8 @@ UBTT_Move_Enemy2::UBTT_Move_Enemy2(FObjectInitializer const& ObjectInitializer)
 
 EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//UKismetSystemLibrary::PrintString(GetWorld(), "execute : move");
+
 	//AIコントローラーを取得
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr) {
@@ -48,6 +50,7 @@ EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 		if (NowRotation.Pitch >= 0.0f) {
 			NowRotation.Pitch = 0.0f;
+			StopMove = false;
 		}
 
 		ControlledPawn->SetActorRotation(NowRotation);
@@ -58,6 +61,7 @@ EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	//プレイヤーまでの移動処理
 	if (StopMove == false) {
+		UE_LOG(LogTemp, Log, TEXT("MoveEnemy2"));
 		//プレイヤーの方向を見る//
 		Direction = PlayerPawn->GetActorLocation() - ControlledPawn->GetActorLocation();
 		Direction.Z = 0.0f;
@@ -68,9 +72,10 @@ EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 		//プレイヤーまで移動//
 		Direction = PlayerPawn->GetActorLocation() - ControlledPawn->GetActorLocation();
+		Direction.Z = 0.0f;
 		Direction.Normalize();
 
-		NewLocation = ControlledPawn->GetActorLocation() + Direction * 3;
+		NewLocation = ControlledPawn->GetActorLocation() + Direction * WALK_SPEED;
 		ControlledPawn->SetActorLocation(NewLocation);
 	}
 

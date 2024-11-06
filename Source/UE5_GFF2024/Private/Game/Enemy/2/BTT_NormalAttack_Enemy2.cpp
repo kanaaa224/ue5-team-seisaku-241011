@@ -17,6 +17,8 @@ UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& Obj
 
 EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//UKismetSystemLibrary::PrintString(GetWorld(), "execute : attack");
+
 	//BlackboardのComponentを変数に代入
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	if (!BlackboardComp) {
