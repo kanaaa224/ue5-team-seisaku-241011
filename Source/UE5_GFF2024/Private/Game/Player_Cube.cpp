@@ -21,6 +21,11 @@
 #include "Components/TimelineComponent.h"
 #include "Engine/DamageEvents.h"
 #include "Game/System/LockOnInterface.h"
+#include "Engine/Classes/Particles/ParticleSystem.h"
+#include "Engine/Classes/Particles/ParticleSystemComponent.h"
+#include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
+#include "Game/System/GameMode_InGame.h"
+#include "Engine/World.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	700.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
@@ -29,7 +34,7 @@
 // Sets default values
 APlayer_Cube::APlayer_Cube()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
@@ -54,7 +59,7 @@ APlayer_Cube::APlayer_Cube()
 	Cube->SetStaticMesh(StaticMesh);
 
 	//マテリアルを追加する
-	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Game/Game/Player/Material/M_Player"));	
+	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Game/Game/Player/Material/M_Player"));
 	//UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
 
 	Cube->SetMaterial(0, Material);
@@ -88,7 +93,7 @@ APlayer_Cube::APlayer_Cube()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false; 	//PawnのControllerRotationを使用する
+	FollowCamera->bUsePawnControlRotation = false;		//PawnのControllerRotationを使用する
 
 
 	//MotoinBlurをオフにする
@@ -108,22 +113,37 @@ APlayer_Cube::APlayer_Cube()
 	//IA_LockOnを読み込む
 	LockOnAction = LoadObject<UInputAction>(nullptr, TEXT("/Game/ThirdPerson/Input/Actions/IA_LockOn"));
 
-	//SphereComponentを追加する
-	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("SphereComponent"));
+	//BoxComponentを追加する
+	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
 	LockOnCollision->SetBoxExtent(FVector(300.f, 300.f, 100.f));
-	//コリジョンプリセットをカスタムに設定
-	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
-	//コリジョンを無効にする
-	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	//コリジョンのオブジェクトタイプをLockOnにする
-	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
-	//コリジョンに対する反応をすべてIgnoreにする
-	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	//コリジョンに対する反応をPawnだけOverlapにする
-	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	
-	LockOnCollision->bHiddenInGame = false;
+	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
+	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);													//コリジョンをクエリーオンリーにする
+	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
+	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
+	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
+
+	//LockOnCollision->bHiddenInGame = false;
+
+	//SphereComponentを追加する
+	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	AttackCollision->SetupAttachment(RootComponent);
+	AttackCollision->InitSphereRadius(200.f);
+	AttackCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
+	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_EngineTraceChannel2);										//コリジョンのオブジェクトタイプをAttackにする
+	AttackCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
+	AttackCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
+
+	//AttackCollision->bHiddenInGame = false;
+
+	AttackParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent0"));
+	if (AttackParticle)
+	{
+		AttackParticleComponent->SetupAttachment(AttackCollision);
+		AttackParticleComponent->SecondsBeforeInactive = 1.f;
+		AttackParticleComponent->bAutoActivate = false;
+	}
 
 	//カーブの作成
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
@@ -194,6 +214,12 @@ APlayer_Cube::APlayer_Cube()
 
 	LockOnTargetActor = nullptr;
 
+	ConstructorHelpers::FObjectFinder<UParticleSystem> FindEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Mobile/ICE/combat/P_AOE_Ice_CircleAttack"));
+	if (FindEff.Succeeded())
+	{
+		AttackParticle = FindEff.Object;
+	}
+
 	BlinkCoolTime = 0;
 	AttackCoolTime = 0;
 
@@ -216,6 +242,9 @@ void APlayer_Cube::BeginPlay()
 	LockOnCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionBeginOverlap);
 	LockOnCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionEndOverlap);
 
+	AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionBeginOverlap);
+	AttackCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionEndOverlap);
+
 	//InputMappingContextの追加
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -229,11 +258,6 @@ void APlayer_Cube::BeginPlay()
 void APlayer_Cube::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	
-	if (AttackFlg && !InflictDamageFlg)
-	{
-		InflictDamage(Other);
-	}
 }
 
 // Called every frame
@@ -302,10 +326,15 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			InvincibleFlg = true;
 		}
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
-	}
-	else
-	{
 
+		if (Health <= 0)
+		{
+			//GameModeを取得して、AGameMode_InGameにCastする
+			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
+			{
+				GameMode->KillPlayer(this);
+			}
+		}
 	}
 
 	return Health;
@@ -322,22 +351,23 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 
 		//ダメージ量
 		const float DamageAmount = 25.0f;
-		ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
-		//if ( <= 0.f)
-		//{
-		//	if (LockOnCandidates.IsValidIndex(0))
-		//	{
-		//		GetCharacterMovement()->bOrientRotationToMovement = true;
-		//		LockOnFlg = false;
-		//		LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-		//		if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-		//		{
-		//			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
-		//			LockOnInterface->SetLockOnEnable(false);
-		//		}
-		//		LockOnCandidates.Remove(LockOnTargetActor);
-		//	}
-		//}
+		if (ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this) <= 0.f)
+		{
+			if (LockOnCandidates.IsValidIndex(0))
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				LockOnFlg = false;
+				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+				{
+					ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
+					LockOnInterface->SetLockOnEnable(false);
+				}
+				LockOnCandidates.Remove(LockOnTargetActor);
+				//消す
+				ImpactActor->Destroy();
+			}
+		}
 
 		//攻撃のダメージフラグを設定
 		InflictDamageFlg = true;
@@ -394,6 +424,8 @@ void APlayer_Cube::AttackTimelineFinished()
 	AttackFlg = false;
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//AttackParticleComponent->DestroyComponent();
 }
 
 void APlayer_Cube::KnockBackTimelineFinished()
@@ -405,7 +437,7 @@ void APlayer_Cube::KnockBackTimelineFinished()
 
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
+	//UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
 
 	LockOnCandidates.AddUnique(OtherActor);
 
@@ -438,6 +470,20 @@ void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedCo
 	//}
 
 	//LockOnCandidates.Remove(OtherActor);
+}
+
+void APlayer_Cube::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UKismetSystemLibrary::PrintString(this, TEXT("AttackCollision:ON"));
+	if (AttackFlg && !InflictDamageFlg)
+	{
+		InflictDamage(OtherActor);
+	}
+}
+
+void APlayer_Cube::OnAttackCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
 }
 
 void APlayer_Cube::Move(const FInputActionValue& Value)
@@ -513,10 +559,12 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		!KnockBackFlg &&						//ノックバック判定ではないなら
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
+		AttackParticleComponent = UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
 		InvincibleFlg = true;
+		AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 }
 
@@ -526,7 +574,7 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 	{
 		//ロックオンの候補がいるか調べる
 		if (LockOnCandidates.IsValidIndex(0))
-		{		
+		{
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			LockOnFlg = true;
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
@@ -536,7 +584,7 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 				LockOnInterface->SetLockOnEnable(true);
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
-		}			
+		}
 	}
 	else
 	{
@@ -579,7 +627,7 @@ void APlayer_Cube::SmoothCameraCollision()
 		if (OutHit.bBlockingHit)
 		{
 			CameraImpactPoint = OutHit.ImpactPoint;
-		
+
 			double TargetPoint = UKismetMathLibrary::Vector_Distance(StartLocation, CameraImpactPoint) - SphereRadius;
 
 			CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, TargetPoint, GetWorld()->GetDeltaSeconds(), 3);
