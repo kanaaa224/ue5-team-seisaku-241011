@@ -47,15 +47,19 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
                         Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
                         Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
+                        EBTNodeResult::InProgress;
                     }
                     else
                     {
                         FVector Normalize = Vector / Vector.Length();
                         Normalize = { Normalize.X, Normalize.Y, 0. };
                         Enemy->SetIsMoving(false);
-                        Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
+                        //Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
                         //Enemy->AddMovementInput(Normalize, 100.f);
                         //AIC->MoveToSpecifiedLocation(Enemy->GetActorLocation() + Normalize * 3, 10.f);
+                        AIC->MoveToActor(Player);
+                        //AIC->MoveToSpecifiedLocation({0,0,0}, 1000.f);
+                       
                         if (Count < 150)
                         {
                             EBTNodeResult::InProgress;

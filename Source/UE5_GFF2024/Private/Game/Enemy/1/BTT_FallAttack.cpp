@@ -98,6 +98,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         EnemyLocation.Z = Velocity.Z + StartLocationZ;
 
                         Enemy->SetActorLocation(EnemyLocation);
+                       
                     }
 
                     if (Count < 3)

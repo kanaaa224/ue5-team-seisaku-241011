@@ -77,7 +77,25 @@ void AAIC_Enemy1::BeginPlay()
 
 void AAIC_Enemy1::MoveToSpecifiedLocation(const FVector Location, float Speed)
 {
-	MoveToLocation(Location, Speed, true, true, true, false, 0, true);
+	int32 a = MoveToLocation(Location, Speed, true, true, true, false, 0, true);
+	switch (a)
+	{
+	case EPathFollowingResult::Success:
+		UE_LOG(LogTemp, Log, TEXT("移動成功"));
+		break;
+	case EPathFollowingResult::Blocked:
+		UE_LOG(LogTemp, Warning, TEXT("移動が障害物によってブロックされています"));
+		break;
+	case EPathFollowingResult::OffPath:
+		UE_LOG(LogTemp, Warning, TEXT("目標がパスから外れました"));
+		break;
+	case EPathFollowingResult::Aborted:
+		UE_LOG(LogTemp, Warning, TEXT("移動が中断されました"));
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("不明なエラー"));
+		break;
+	}
 }
 
 void AAIC_Enemy1::SetBBDistanceFromPlayer(APlayer_Cube* player)

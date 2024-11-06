@@ -77,12 +77,21 @@ AEnemy1Character::AEnemy1Character()
 
 	RootComponent = box;
 
+	
+
+	
+
 }
 
 // Called when the game starts or when spawned
 void AEnemy1Character::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//SpawnDefaultController();
+
+	
+
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -107,7 +116,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 		MoveProcess();
 	}
 	
-	
+	//AddMovementInput({ 1,0,0 }, 100);
 
 	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
 	//FVector VertexA = CubeVertices[0];
