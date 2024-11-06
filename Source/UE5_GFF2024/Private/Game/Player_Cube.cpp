@@ -439,22 +439,23 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 {
 	//UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
 
-	LockOnCandidates.AddUnique(OtherActor);
-
-	//ロックオンの候補がいるか調べる
-	if (LockOnCandidates.IsValidIndex(0))
+	if (!LockOnFlg)
 	{
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		LockOnFlg = true;
-		LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-		if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-		{
-			ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
-			LockOnInterface->SetLockOnEnable(true);
-		}
-		UKismetSystemLibrary::PrintString(this, TEXT("ON"));
-	}
+		LockOnCandidates.AddUnique(OtherActor);
 
+		//ロックオンの候補がいるか調べる
+		if (LockOnCandidates.IsValidIndex(0))
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			LockOnFlg = true;
+			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			{
+				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, true);
+			}
+			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
+		}
+	}
 }
 
 void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -580,8 +581,7 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
 			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 			{
-				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
-				LockOnInterface->SetLockOnEnable(true);
+				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, true);
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
 		}
@@ -596,10 +596,12 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
 			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 			{
-				ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
-				LockOnInterface->SetLockOnEnable(false);
+				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
+
+			LockOnCandidates.Remove(LockOnTargetActor);
+
 		}
 	}
 }
