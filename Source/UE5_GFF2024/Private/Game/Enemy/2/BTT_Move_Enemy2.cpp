@@ -54,7 +54,6 @@ EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	}
 	else if (NowRotation.Pitch == 0.0f) {
 		StopMove = false; 
-		UKismetSystemLibrary::PrintString(GetWorld(), "StopMove : false");
 	}
 
 	//プレイヤーまでの移動処理
