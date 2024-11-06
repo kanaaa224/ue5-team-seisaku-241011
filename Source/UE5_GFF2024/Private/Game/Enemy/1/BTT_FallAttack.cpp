@@ -8,6 +8,7 @@
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
 #include "Components/TimelineComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UBTT_FallAttack::UBTT_FallAttack()
 {
@@ -83,8 +84,8 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                    
-                    Velocity.X = Normalize.X * 10.;
-                    Velocity.Y = Normalize.Y * 10.;
+                    Velocity.X = Normalize.X * 100.;
+                    Velocity.Y = Normalize.Y * 100.;
 
                     if (!IsTimelineStart)
                     {
@@ -97,13 +98,24 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         EnemyLocation = Enemy->GetActorLocation() + Velocity;
                         EnemyLocation.Z = Velocity.Z + StartLocationZ;
 
-                        Enemy->SetActorLocation(EnemyLocation);
+                        
+
+                        Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+                        AIC->MoveToLocation(EnemyLocation);
+
+                        FVector tmp = Enemy->GetActorLocation();
+                        tmp.Z = EnemyLocation.Z;
+                        Enemy->SetActorLocation(tmp);
                        
                     }
 
                     if (Count < 3)
                     {
                         EBTNodeResult::InProgress;
+                    }
+                    else
+                    {
+                        Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
                     }
                 }
             }

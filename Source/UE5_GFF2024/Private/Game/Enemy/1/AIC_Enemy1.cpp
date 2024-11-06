@@ -51,28 +51,29 @@ void AAIC_Enemy1::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	if (PlayerPawn)
-	{
-		// プレイヤーの位置をログに出力
-		UE_LOG(LogTemp, Log, TEXT("Player Location: %s"), *PlayerPawn->GetActorLocation().ToString());
+	//デバッグ
+	//APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	//if (PlayerPawn)
+	//{
+	//	// プレイヤーの位置をログに出力
+	//	UE_LOG(LogTemp, Log, TEXT("Player Location: %s"), *PlayerPawn->GetActorLocation().ToString());
 
-		// MoveToLocation の実行と結果確認
-		EPathFollowingRequestResult::Type MoveResult = MoveToLocation(PlayerPawn->GetActorLocation(), 5.0f, true, true, true, false, 0, true);
+	//	// MoveToLocation の実行と結果確認
+	//	EPathFollowingRequestResult::Type MoveResult = MoveToLocation(PlayerPawn->GetActorLocation(), 5.0f, true, true, true, false, 0, true);
 
-		if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
-		{
-			UE_LOG(LogTemp, Log, TEXT("MoveToLocation request successful"));
-		}
-		else if (MoveResult == EPathFollowingRequestResult::AlreadyAtGoal)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Already at goal location"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MoveToLocation request failed"));
-		}
-	}
+	//	if (MoveResult == EPathFollowingRequestResult::RequestSuccessful)
+	//	{
+	//		UE_LOG(LogTemp, Log, TEXT("MoveToLocation request successful"));
+	//	}
+	//	else if (MoveResult == EPathFollowingRequestResult::AlreadyAtGoal)
+	//	{
+	//		UE_LOG(LogTemp, Log, TEXT("Already at goal location"));
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Warning, TEXT("MoveToLocation request failed"));
+	//	}
+	//}
 }
 
 void AAIC_Enemy1::MoveToSpecifiedLocation(const FVector Location, float Speed)
