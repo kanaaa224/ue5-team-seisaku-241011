@@ -8,6 +8,12 @@
 
 #include "Math/UnrealMathUtility.h"
 
+#include "Engine/DamageEvents.h"
+
+//ロックオン
+#include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -25,6 +31,25 @@ AEnemy2Character::AEnemy2Character()
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy2Character::OnSeePlayer);
+
+	//ロックオン//
+	//WidgetComponentを追加する
+	LockOnMarkerWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
+	LockOnMarkerWidget->SetupAttachment(RootComponent);
+	LockOnMarkerWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	//設定したいウィジェットのクラスを作成
+	FString LockOnMarkerWidgetPath = TEXT("/Game/Game/UI/WBP_LockOn.WBP_LockOn_C");
+	TSubclassOf<UUserWidget>LockOnMarkerWidgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*LockOnMarkerWidgetPath)).LoadSynchronous();
+	//SetWidgetでnullptrを入れないとクラッシュする
+	LockOnMarkerWidget->SetWidget(nullptr);
+	//WidgetClassを設定
+	LockOnMarkerWidget->SetWidgetClass(LockOnMarkerWidgetClass);
+	//非表示にする
+	LockOnMarkerWidget->SetVisibility(false);
+
+	GetCapsuleComponent()->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 }
 
@@ -55,23 +80,24 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 	}
 
 	// 視野に入ったら画面に"See"と表示
-	UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
+	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
-bool AEnemy2Character::ApplyDamage(AActor* DamagedActor, float Damage, int DamageType)
+void AEnemy2Character::ApplyDamage(AActor* Other)
 {
+	AActor* ImpactActor = Other;
+	if ((ImpactActor != nullptr) && (ImpactActor != this))
+	{
+		//ダメージイベントの作成
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
 
-	
-	switch(DamageType){//敵がやった攻撃のダメージの種類別でダメージを与える
-		case _DAMAGETYPE_NORMAL_ATTACK_://通常攻撃
-			//DamagedActor->TakeDamage(_DAMAGE_NORMAL_ATTACK,,GetController(),this)
-			break;
+		//ダメージ量
+		const float DamageAmount = 25.0f;
+		ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
 
-		case _DAMAGETYPE_ULT_ATTACK_://特殊攻撃
-
-			break;
+		UKismetSystemLibrary::PrintString(this, TEXT("Enemy2 : Attack"));
 	}
-	return false;
 }
 
 float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -94,6 +120,20 @@ void AEnemy2Character::Die()
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	// 一定時間後にオブジェクトを削除
-	SetLifeSpan(5.0f); // 5秒後に削除
+	SetLifeSpan(1.0f); // 1秒後に削除
+}
+
+void AEnemy2Character::SetLockOnEnable(bool Flg)
+{
+	LockOnEnable = Flg;
+
+	if (LockOnEnable)
+	{
+		LockOnMarkerWidget->SetVisibility(true);
+	}
+	else
+	{
+		LockOnMarkerWidget->SetVisibility(false);
+	}
 }
 
