@@ -16,7 +16,7 @@ private:
 	//スタティックメッシュ
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Cube;
-	
+
 	//マテリアルインスタンス
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class UMaterialInstanceDynamic* Material_Instance;
@@ -52,9 +52,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LockOnAction;
 
-	//スフィアコンポーネント
+	//ロックオンのボックスコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* LockOnCollision;
+
+	//ロックオンのボックスコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AttackCollision;
+
+	//パーティクルシステムコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystemComponent* AttackParticleComponent;
 
 public:
 	//ブリンク用のカーブ
@@ -76,6 +84,9 @@ public:
 
 	//ロックオンの対象
 	class AActor* LockOnTargetActor;
+
+	//パーティクル
+	class UParticleSystem* AttackParticle;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
@@ -122,7 +133,7 @@ protected:
 	//接触時に呼ばれる関数
 	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)override;
 
-public:	
+public:
 	//毎フレーム呼ばれる関数
 	virtual void Tick(float DeltaTime) override;
 
@@ -159,6 +170,11 @@ private:
 	void OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnAttackCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
 	//移動処理
