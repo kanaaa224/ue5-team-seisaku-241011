@@ -114,3 +114,5 @@ void AAIC_Enemy1::SetBBDistanceFromPlayer(APlayer_Cube* player)
 	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
 	BlackboardComp->SetValueAsFloat(DistanceFromPlayerKeyName, distance);
 }
+
+
