@@ -132,4 +132,12 @@ public:
 
 		return Rotated;
 	}
+
+	//tukawanai
+	float Delta;
+	void MoveTick(FVector TargetLocation)
+	{
+		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, 100);
+		SetActorLocation(NewLocation);
+	}
 };

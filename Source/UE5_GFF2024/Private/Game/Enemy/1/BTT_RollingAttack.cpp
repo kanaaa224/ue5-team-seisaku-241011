@@ -7,6 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UBTT_RollingAttack::UBTT_RollingAttack()
 {
@@ -41,21 +42,32 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
 
 
-                    if (Count++ < 30)
+                    if (++Count < 30)
                     {
                         Enemy->SetIsMoving(false);
                         FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
                         Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
                         Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
+                        EBTNodeResult::InProgress;
                     }
                     else
                     {
                         FVector Normalize = Vector / Vector.Length();
                         Normalize = { Normalize.X, Normalize.Y, 0. };
                         Enemy->SetIsMoving(false);
-                        Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
+                        //Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
                         //Enemy->AddMovementInput(Normalize, 100.f);
                         //AIC->MoveToSpecifiedLocation(Enemy->GetActorLocation() + Normalize * 3, 10.f);
+                        //AIC->MoveToActor(Player);
+                      
+
+                        AIC->MoveToLocation(Enemy->GetActorLocation() + Normalize * 3200, 10.f);
+                        //Enemy->MoveTick(Enemy->GetActorLocation() + Normalize * 100);
+                        if (Count == 30)
+                        {
+                            Enemy->GetCharacterMovement()->MaxWalkSpeed = 3000.0f;
+                        }
+                       
                         if (Count < 150)
                         {
                             EBTNodeResult::InProgress;
@@ -63,6 +75,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         else
                         {
                             Count = 0;
+                            Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
                         }
                     }
                 }
@@ -73,7 +86,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
     else
     {
         // `Target` が設定されていない場合の処理
-
+        return EBTNodeResult::Failed;
     }
 
     // タスク実行後、`Target` に新しい値を設定する例
