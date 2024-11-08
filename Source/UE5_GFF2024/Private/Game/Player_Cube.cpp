@@ -26,6 +26,7 @@
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Game/System/GameMode_InGame.h"
 #include "Engine/World.h"
+#include "Components/ArrowComponent.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	700.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
@@ -51,6 +52,8 @@ APlayer_Cube::APlayer_Cube()
 	GetCharacterMovement()->MaxWalkSpeed = 900.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+
+	//GetArrowComponent()->bHiddenInGame = false;
 
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -116,7 +119,7 @@ APlayer_Cube::APlayer_Cube()
 	//BoxComponentを追加する
 	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetBoxExtent(FVector(300.f, 300.f, 100.f));
+	LockOnCollision->SetBoxExtent(FVector(900.f, 900.f, 100.f));
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);													//コリジョンをクエリーオンリーにする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
@@ -128,7 +131,7 @@ APlayer_Cube::APlayer_Cube()
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	AttackCollision->SetupAttachment(RootComponent);
-	AttackCollision->InitSphereRadius(200.f);
+	AttackCollision->InitSphereRadius(260.f);
 	AttackCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_EngineTraceChannel2);										//コリジョンのオブジェクトタイプをAttackにする
@@ -136,14 +139,6 @@ APlayer_Cube::APlayer_Cube()
 	AttackCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
 
 	//AttackCollision->bHiddenInGame = false;
-
-	AttackParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent0"));
-	if (AttackParticle)
-	{
-		AttackParticleComponent->SetupAttachment(AttackCollision);
-		AttackParticleComponent->SecondsBeforeInactive = 1.f;
-		AttackParticleComponent->bAutoActivate = false;
-	}
 
 	//カーブの作成
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
@@ -214,7 +209,7 @@ APlayer_Cube::APlayer_Cube()
 
 	LockOnTargetActor = nullptr;
 
-	ConstructorHelpers::FObjectFinder<UParticleSystem> FindEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Mobile/ICE/combat/P_AOE_Ice_CircleAttack"));
+	ConstructorHelpers::FObjectFinder<UParticleSystem> FindEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
 	if (FindEff.Succeeded())
 	{
 		AttackParticle = FindEff.Object;
@@ -231,7 +226,9 @@ APlayer_Cube::APlayer_Cube()
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
 	KnockBackFlg = false;
+	KnockBackFinishFlg = false;
 	LockOnFlg = false;
+	LockOnRemoveFlg = false;
 }
 
 // Called when the game starts or when spawned
@@ -270,14 +267,28 @@ void APlayer_Cube::Tick(float DeltaTime)
 	if (BlinkCoolTime > 0)
 	{
 		BlinkCoolTime--;
-		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), BlinkCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
+		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), BlinkCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
 
 	if (AttackCoolTime > 0)
 	{
 		AttackCoolTime--;
-		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), AttackCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
+		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), AttackCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
+
+	//if (KnockBackFinishFlg)
+	//{
+	//	//向きたい方向へのプレイヤーの回転値の補間
+	//	FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FRotator(0.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 10.f);
+	//	
+	//	SetActorRotation(InterpActorRotarion);
+
+	//	if (InterpActorRotarion.Pitch <= 0.f || InterpActorRotarion.Yaw <= 0.f || InterpActorRotarion.Roll <= 0.f)
+	//	{
+	//		KnockBackFinishFlg = false;
+	//	}
+
+	//}
 
 	LockOnTarget();
 
@@ -329,6 +340,18 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 		if (Health <= 0)
 		{
+			if (LockOnCandidates.IsValidIndex(0))
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				LockOnFlg = false;
+				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+				{
+					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
+				}
+				LockOnCandidates.Remove(LockOnTargetActor);
+			}
+
 			//GameModeを取得して、AGameMode_InGameにCastする
 			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
 			{
@@ -360,18 +383,16 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
 				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 				{
-					ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(LockOnTargetActor);
-					LockOnInterface->SetLockOnEnable(false);
+					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
-				//消す
-				ImpactActor->Destroy();
 			}
+			//消す
+			ImpactActor->Destroy();
 		}
 
 		//攻撃のダメージフラグを設定
 		InflictDamageFlg = true;
-		UKismetSystemLibrary::PrintString(this, TEXT("Attack"));
 	}
 }
 
@@ -392,7 +413,7 @@ void APlayer_Cube::AttackTimelineUpdate(float Value)
 	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 90.f, 0.f));
+	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 116.2f, 0.f));
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
@@ -402,15 +423,17 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
 	//ノックバックの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
-	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 5.f) + KnockBackInitLocation;
+	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
 
-	SetActorLocation(NewLocation, true);
+	SetActorLocation(NewLocation);
 
 	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
-	float Pitch = Value / 2;
 
-	SetActorRotation(ActorRotarion + FRotator(6.f, 0.f, 0.f));
+	if (GetCharacterMovement()->IsFalling())
+	{
+		SetActorRelativeRotation(ActorRotarion + FRotator(6.f, 0.f, 0.f));
+	}
 }
 
 void APlayer_Cube::BlinkTimelineFinished()
@@ -432,12 +455,19 @@ void APlayer_Cube::KnockBackTimelineFinished()
 {
 	KnockBackFlg = false;
 	InvincibleFlg = false;
+	KnockBackFinishFlg = true;
+	////向きたい方向へのプレイヤーの回転値の補間
+	//FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FRotator(0.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 10.f);
+
+	//SetActorRotation(FRotator(InterpActorRotarion.Pitch, this->GetActorRotation().Yaw, this->GetActorRotation().Roll));
 	SetActorRotation(FRotator(0.f, 0.f, 0.f));
 }
 
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
+
+	LockOnRemoveFlg = false;
 
 	if (!LockOnFlg)
 	{
@@ -460,22 +490,11 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 
 void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	//対象のアクターのLockOnInterfaceを無効にする
-	//if (OtherActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-	//{
-	//	GetCharacterMovement()->bOrientRotationToMovement = true;
-	//	LockOnFlg = false;
-	//	ILockOnInterface* LockOnInterface = Cast<ILockOnInterface>(OtherActor);
-	//	LockOnInterface->SetLockOnEnable(false);
-	//	UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
-	//}
-
-	//LockOnCandidates.Remove(OtherActor);
+	LockOnRemoveFlg = true;
 }
 
 void APlayer_Cube::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UKismetSystemLibrary::PrintString(this, TEXT("AttackCollision:ON"));
 	if (AttackFlg && !InflictDamageFlg)
 	{
 		InflictDamage(OtherActor);
@@ -526,7 +545,7 @@ void APlayer_Cube::Look(const FInputActionValue& Value)
 		//double LimitPitchAngle = FMath::ClampAngle(ControlRotate.Pitch, -40.f, -10.f);
 
 		////PlayerControllerの角度を設定する
-		//UGameplayStatics::GetPlayerController(this, 0)->SetControlRotation(FRotator(LimitPitchAngle, ControlRotate.Yaw, ControlRotate.Roll));
+		//Controller->SetControlRotation(FRotator(LimitPitchAngle, ControlRotate.Yaw, ControlRotate.Roll));
 
 	}
 }
@@ -560,7 +579,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		!KnockBackFlg &&						//ノックバック判定ではないなら
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
-		AttackParticleComponent = UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
+		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
@@ -600,8 +619,11 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 			}
 			UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
 
-			LockOnCandidates.Remove(LockOnTargetActor);
-
+			if (LockOnRemoveFlg)
+			{
+				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
+			}
 		}
 	}
 }

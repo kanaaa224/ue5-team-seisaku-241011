@@ -13,6 +13,7 @@ class UE5_GFF2024_API PolygonRotationManager
 public:
     FRotator NowRotation = { 0,0,0 };
     FRotator NextRotation = { 0,0,0 };
+    FRotator TestRotation = { 0,0,0 };
     FVector NewLocation = { 0,0,0 };
     FVector CenterPosition = { 0,0,0 };
 
@@ -86,4 +87,8 @@ private:
     TArray<FVector> Vertices;  // 頂点の配列
     TArray<TArray<int32>> Faces;  // 各面の頂点インデックスを保持する配列
 
+
+
+    //回転のFPSをデルタタイムから制御してどんなＦＰＳでも違和感をなくす
+    //SetActorLocationではなくCharacterMovementを使ってうまいことできないか
 };

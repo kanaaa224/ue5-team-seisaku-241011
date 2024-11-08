@@ -12,6 +12,7 @@
 #include "Math/UnrealMathUtility.h"
 
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy1Character::AEnemy1Character()
@@ -68,14 +69,16 @@ AEnemy1Character::AEnemy1Character()
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy1Character::OnSeePlayer);
 
-	// StaticMeshComponentを追加し、RootComponentに設定する
+	// StaticMeshComponentを追加
 	box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 
 	// StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する
 	UStaticMesh* TmpMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/LevelPrototyping/Meshes/SM_ChamferCube"));
 	box->SetStaticMesh(TmpMesh);
 
-	RootComponent = box;
+	box->SetupAttachment(RootComponent);
+
+	
 
 }
 
@@ -83,6 +86,15 @@ AEnemy1Character::AEnemy1Character()
 void AEnemy1Character::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//SpawnDefaultController();
+
+	//GetCharacterMovement()->MaxWalkSpeed = 1200.0f;
+
+	GetCharacterMovement()->MaxAcceleration = 4096.0f; // 高速移動向けに加速を強化
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f; // 減速時の制御
+
+	//TargetLocation = new FVector(-1, -1, -1);
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -90,6 +102,7 @@ void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	delete RotationManager;
+	//delete TargetLocation;
 }
 
 //void AEnemy1Character::BeginDestroy()
@@ -102,12 +115,26 @@ void AEnemy1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	Delta = DeltaTime;
+
+	if (TargetLocation.Z > -10000)
+	//if (TargetLocation != OldTargetLocation)
+	{
+		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, 10);
+		SetActorLocation(NewLocation);
+		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
+
+	}
+
+	OldTargetLocation = TargetLocation;
+
 	if (IsMoving)
 	{
 		MoveProcess();
 	}
 	
-	
+
+	//AddMovementInput({ 1,0,0 }, 100);
 
 	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
 	//FVector VertexA = CubeVertices[0];
@@ -165,7 +192,25 @@ void AEnemy1Character::MoveProcess()
 
 	RotationManager->SetNewRotationAndLocation(Position);
 	FRotator rot1 = RotationManager->GetNowRotation();
-	RootComponent->SetRelativeRotation(-1 * rot1);
+	//box->SetRelativeRotation(-1 * rot1);
+
+	//SetActorRotation(-1 * rot1);
+
+	AddActorWorldRotation(-1 * rot1);
+	if (GetActorRotation().Pitch)
+	{
+		SetActorRotation({ GetActorRotation().Pitch - 360, GetActorRotation().Yaw,GetActorRotation().Roll });
+	}
+	if (GetActorRotation().Yaw)
+	{
+		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw - 360,GetActorRotation().Roll });
+	}
+	if (GetActorRotation().Roll)
+	{
+		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw,GetActorRotation().Roll - 360 });
+	}
+
+
 	SetActorLocation(RotationManager->GetNewLocation());
 
 
