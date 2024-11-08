@@ -138,7 +138,7 @@ APlayer_Cube::APlayer_Cube()
 	//AttackCollision->bHiddenInGame = false;
 
 	AttackParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent0"));
-	if (AttackParticle)
+	if (AttackParticleComponent)
 	{
 		AttackParticleComponent->SetupAttachment(AttackCollision);
 		AttackParticleComponent->SecondsBeforeInactive = 1.f;
