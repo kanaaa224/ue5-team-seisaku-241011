@@ -16,6 +16,7 @@ UBTS_SetParameter::UBTS_SetParameter()
 {
 	//ブラックボードにある変数を設定
 	DistanceKeyName = "Distance";
+	AttackKeyName = "Attack";
 }
 
 void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -44,5 +45,10 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	ensure(BlackboardComp);
 	BlackboardComp->SetValueAsFloat(DistanceKeyName, distance);
 
-	//UKismetSystemLibrary::PrintString(GetWorld(), FString::SanitizeFloat(distance));
+	//プレイヤーまでの距離に応じて攻撃FlgをONにする
+	if (distance <= 300 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(AttackKeyName, true);
+		UE_LOG(LogTemp, Log, TEXT("SetAttack : true"));
+	}
 }

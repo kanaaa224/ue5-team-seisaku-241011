@@ -61,7 +61,6 @@ EBTNodeResult::Type UBTT_Move_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	//プレイヤーまでの移動処理
 	if (StopMove == false) {
-		UE_LOG(LogTemp, Log, TEXT("MoveEnemy2"));
 		//プレイヤーの方向を見る//
 		Direction = PlayerPawn->GetActorLocation() - ControlledPawn->GetActorLocation();
 		Direction.Z = 0.0f;

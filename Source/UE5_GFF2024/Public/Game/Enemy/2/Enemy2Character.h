@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Actor.h"
 
 //ロックオン
 #include "../../System/LockOnInterface.h"
@@ -61,4 +62,9 @@ public:
 
 	//ロックオンの有効フラグを設定する
 	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
+
+private:
+	//CubeMeshComponent
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* CubeMesh;
 };

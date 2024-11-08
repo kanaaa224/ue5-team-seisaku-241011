@@ -26,4 +26,8 @@ private:
 	//Distance(プレイヤーまでの距離を入れる変数)
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName DistanceKeyName;
+
+	//Attack
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName AttackKeyName;
 };
