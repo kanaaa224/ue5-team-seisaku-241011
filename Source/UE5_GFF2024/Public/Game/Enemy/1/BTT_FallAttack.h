@@ -51,4 +51,5 @@ public:
     int32 Count;
 
     double StartLocationZ;
+    bool IsStart;
 };

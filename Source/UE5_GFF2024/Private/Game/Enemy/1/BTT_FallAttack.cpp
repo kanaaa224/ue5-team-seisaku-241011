@@ -27,7 +27,8 @@ UBTT_FallAttack::UBTT_FallAttack()
     IsTimelineStart = false;
     Velocity = { 0.,0.,0. };
     Count = 0;
-    StartLocationZ = -100.f;
+    StartLocationZ = -10000.f;
+    IsStart = false;
 }
 
 EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -48,6 +49,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
             _MyTimelineFinishedFunc.BindUFunction(this, TEXT("TimelineFinished"));
             MyTimelineComponent->SetTimelineFinishedFunc(_MyTimelineFinishedFunc);
        // }
+            IsStart = true;
     }
     
 
@@ -75,17 +77,23 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
             {
                 if (AActor* Player = Cast<AActor>(PlayerObject))
                 {
-                    if (StartLocationZ < 0.)
+                   /* if (StartLocationZ < -9999.)
                     {
                         StartLocationZ = Enemy->GetActorLocation().Z;
+                    }*/
+                    if (IsStart)
+                    {
+                        StartLocationZ = Enemy->GetActorLocation().Z;
+                        IsStart = false;
                     }
 
 
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                    
-                    Velocity.X = Normalize.X * 100.;
-                    Velocity.Y = Normalize.Y * 100.;
+                    Velocity.X = Normalize.X * 10.;
+                    Velocity.Y = Normalize.Y * 10.;
+                   
 
                     if (!IsTimelineStart)
                     {
@@ -96,16 +104,20 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     if (Velocity.Z >= 0.000001) {
                         FVector EnemyLocation;
                         EnemyLocation = Enemy->GetActorLocation() + Velocity;
-                        EnemyLocation.Z = Velocity.Z + StartLocationZ;
+                        EnemyLocation.Z = (Velocity.Z * 1000) + StartLocationZ;
 
                         
 
-                        Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+                        /*Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
                         AIC->MoveToLocation(EnemyLocation);
 
                         FVector tmp = Enemy->GetActorLocation();
                         tmp.Z = EnemyLocation.Z;
-                        Enemy->SetActorLocation(tmp);
+                        Enemy->SetActorLocation(tmp);*/
+
+                        //Enemy->MoveTick(EnemyLocation);
+                        Enemy->TargetLocation = EnemyLocation;
+                        //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
                        
                     }
 
@@ -131,6 +143,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
     // タスク実行後、`Target` に新しい値を設定する例
    // BlackboardComp->SetValueAsObject(GetSelectedBlackboardKey(), nullptr); // 例として `null` に設定
 
+    Velocity = { 0,0,0 };
     Count = 0;
     return EBTNodeResult::Succeeded;
 }
@@ -139,7 +152,7 @@ void UBTT_FallAttack::TimelineStep(float _Value)
 {
     const double speed = 300.;
 
-    Velocity.Z = _Value * speed;
+    Velocity.Z = _Value;
 }
 
 void UBTT_FallAttack::TimelineFinished()

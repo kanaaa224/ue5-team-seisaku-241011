@@ -13,6 +13,7 @@ class UE5_GFF2024_API PolygonRotationManager
 public:
     FRotator NowRotation = { 0,0,0 };
     FRotator NextRotation = { 0,0,0 };
+    FRotator TestRotation = { 0,0,0 };
     FVector NewLocation = { 0,0,0 };
     FVector CenterPosition = { 0,0,0 };
 
