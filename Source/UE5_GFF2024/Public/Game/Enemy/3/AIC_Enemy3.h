@@ -8,18 +8,18 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Game/Player_Cube.h"
-#include "AIC_Enemy1.generated.h"
+#include "AIC_Enemy3.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UE5_GFF2024_API AAIC_Enemy1 : public AAIController
+class UE5_GFF2024_API AAIC_Enemy3 : public AAIController
 {
 	GENERATED_BODY()
-
+	
 public:
-	AAIC_Enemy1(const class FObjectInitializer& ObjectInitializer);
+	AAIC_Enemy3(const class FObjectInitializer& ObjectInitializer);
 
 public:
 	void SetPlayerKey(APawn* player);
@@ -50,22 +50,4 @@ protected:
 
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
-
-	
-
-public:
-	void MoveToSpecifiedLocation(const FVector Location, float Speed);
-
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	FName DistanceFromPlayerKeyName;
-	/// <summary>
-	/// SetBBDistanceFromPlayer
-	/// </summary>
-	/// プレヤーまでの距離をブラックボードに設定する
-	/// <param name="player"></param>
-	void SetBBDistanceFromPlayer(APlayer_Cube* player);
-
-
-	
-
 };
