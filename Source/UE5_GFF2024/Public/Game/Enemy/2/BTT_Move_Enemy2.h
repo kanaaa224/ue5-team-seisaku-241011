@@ -6,6 +6,8 @@
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include "BTT_Move_Enemy2.generated.h"
 
+#define WALK_SPEED 10
+
 /**
  * 
  */

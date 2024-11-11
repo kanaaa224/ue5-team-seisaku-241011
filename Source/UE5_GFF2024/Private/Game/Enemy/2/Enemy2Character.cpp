@@ -14,9 +14,19 @@
 #include "Components/WidgetComponent.h"
 #include "Components/CapsuleComponent.h"
 
+//StaticMeshComponent
+#include "Components/StaticMeshComponent.h"
+//CapsuleComponent
+#include "Components/CapsuleComponent.h"
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
+	//AIControllerクラスを設定
+	AIControllerClass = AAIC_Enemy2::StaticClass();
+	//キャラクターがAIControllerを使うように設定
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
 	/*:::::変数:::::*/
 	//体力
 	health = 100.0f;
@@ -50,6 +60,26 @@ AEnemy2Character::AEnemy2Character()
 
 	GetCapsuleComponent()->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+
+	//CapsuleSizeを設定
+	float CapsuleRadius = 160.0f;  // 半径
+	float CapsuleHalfHeight = 315.0f;  // 高さの半分
+	GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
+
+	//Cubeを作成
+	CubeMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CubeMesh"));
+	CubeMesh->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (CubeMeshAsset.Succeeded())
+	{
+		//メッシュを設定
+		CubeMesh->SetStaticMesh(CubeMeshAsset.Object);
+		//大きさを設定
+		CubeMesh->SetRelativeScale3D(FVector(2.0f, 2.0f, 6.0f));
+		//RootComponentに対しての位置を設定
+		/*float CubeHeight = 500.0f;
+		CubeMesh->SetRelativeLocation(FVector(0.0f, 0.0f, CubeHeight / 2.0f));*/
+	}
 
 }
 

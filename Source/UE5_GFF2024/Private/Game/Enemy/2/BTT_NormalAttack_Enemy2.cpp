@@ -11,12 +11,31 @@ UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& Obj
 	//ブラックボードにある変数を設定
 	AttackKeyName = "Attack";
 
-	lifting = false;
-	startAttack = false;
+	initFlg = false;
+	endAttack = false;
+	startAttack = true;
+	endJump = false;
+	frameCnt_Jump = 0;
+	startStandUp = false;
+}
+
+void UBTT_NormalAttack_Enemy2::Init()
+{
+	endAttack = false;
+	startAttack = true;
+	endJump = false;
+	frameCnt_Jump = 0;
+	startStandUp = false;
 }
 
 EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//初期化
+	if (initFlg == false) {
+		Init();
+		initFlg = true;
+	}
+
 	//BlackboardのComponentを変数に代入
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	if (!BlackboardComp) {
@@ -35,40 +54,36 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 		return EBTNodeResult::Failed;
 	}
 
-	//:::::Rotation処理::::://
-	//ActorのRotationを変数に代入
+	//:::::攻撃アニメーション処理::::://
+	//現在のRotateを取得
+	nowRotaton = ControlledPawn->GetActorRotation();
+	//現在のLocationを取得
+	nowLocation = ControlledPawn->GetActorLocation();
 
-	if (startAttack == false) {
-		CurrentRotaton = ControlledPawn->GetActorRotation();
-	}
-
-	if (lifting == false) {
-		CurrentRotaton.Pitch -= ATTACK_SPEED;
-	}
-	else if (lifting == true) {
-		CurrentRotaton.Pitch += ATTACK_SPEED;
-	}
-
-	if (CurrentRotaton.Pitch <= -90.0f) {
-		lifting = true;
-		startAttack = true;
-		//ブラックボードにあるAttackをtrue
-		ensure(BlackboardComp);
-		BlackboardComp->SetValueAsBool(AttackKeyName, lifting);
-		UKismetSystemLibrary::PrintString(GetWorld(), "Attack : TRUE");
-	}
-	else if (CurrentRotaton.Pitch >= 0.0f) {
-		lifting = false;
-		startAttack = false;
-		//ブラックボードにあるAttackをfalse
-		ensure(BlackboardComp);
-		BlackboardComp->SetValueAsBool(AttackKeyName, lifting);
-		UKismetSystemLibrary::PrintString(GetWorld(), "Attack : FALSE");
+	if (endJump == false) {
+		nowLocation.operator+=(FVector(0.0f, 0.0f, 50.0f));
 	}
 
 	//新しいRotationを設定
-	UKismetSystemLibrary::PrintString(GetWorld(), FString::SanitizeFloat(CurrentRotaton.Roll));
-	ControlledPawn->SetActorRotation(CurrentRotaton);
+	//UE_LOG(LogTemp, Log, TEXT("Pitch : %f"), nowRotaton.Pitch);
+	
+	//新しいLocationを設定
+	ControlledPawn->SetActorLocation(nowLocation);
 
+	if (endAttack == true) {
+		//攻撃Flgをfalseに戻す
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(AttackKeyName, false);
+		UE_LOG(LogTemp, Log, TEXT("SetAttack : false"));
+
+		initFlg = false;
+	}
 	return EBTNodeResult::Succeeded;
+}
+
+FRotator UBTT_NormalAttack_Enemy2::CombineRotators(FRotator R1, FRotator R2)
+{
+	FRotator result = R1 + R2;
+
+	return FRotator(result);
 }

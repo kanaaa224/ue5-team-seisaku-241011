@@ -60,10 +60,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AttackCollision;
 
-	//パーティクルシステムコンポーネント
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystemComponent* AttackParticleComponent;
-
 public:
 	//ブリンク用のカーブ
 	class UCurveFloat* BlinkCurve;
@@ -119,8 +115,12 @@ public:
 	bool InvincibleFlg;
 	//ノックバックのフラグ
 	bool KnockBackFlg;
+	//ノックバックの終了フラグ
+	bool KnockBackFinishFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
+	//ロックオンの対処削除フラグ
+	bool LockOnRemoveFlg;
 
 public:
 	//コンストラクタ
