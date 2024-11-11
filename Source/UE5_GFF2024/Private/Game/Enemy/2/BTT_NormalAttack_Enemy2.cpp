@@ -22,7 +22,9 @@ UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& Obj
 void UBTT_NormalAttack_Enemy2::Init()
 {
 	endAttack = false;
-	startAttack = true;
+	startAttack = false;
+	frameCnt_Attack_Down = 0;
+
 	endJump = false;
 	frameCnt_Jump = 0;
 	startStandUp = false;
@@ -60,15 +62,34 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 	//現在のLocationを取得
 	nowLocation = ControlledPawn->GetActorLocation();
 
+	//攻撃前にジャンプ処理
 	if (endJump == false) {
+		frameCnt_Jump++;
 		nowLocation.operator+=(FVector(0.0f, 0.0f, 50.0f));
+		nowRotaton.operator+=(FRotator(1.5f,0.0,0.0));
+
+		if (frameCnt_Jump == 10) {
+			endJump = true;
+		}
+	}
+
+	//攻撃振り下ろす
+	if (endJump == true && endAttack == false) {
+		startAttack = true;
+		frameCnt_Attack_Down++;
+
+		nowLocation.operator-=(FVector(0.0f, 0.0f, 50.0f));
+
+		if (frameCnt_Attack_Down == 10) {
+			endAttack = true;
+		}
 	}
 
 	//新しいRotationを設定
 	//UE_LOG(LogTemp, Log, TEXT("Pitch : %f"), nowRotaton.Pitch);
-	
+	ControlledPawn->SetActorRelativeRotation(nowRotaton);
 	//新しいLocationを設定
-	ControlledPawn->SetActorLocation(nowLocation);
+	ControlledPawn->SetActorRelativeLocation(nowLocation);
 
 	if (endAttack == true) {
 		//攻撃Flgをfalseに戻す

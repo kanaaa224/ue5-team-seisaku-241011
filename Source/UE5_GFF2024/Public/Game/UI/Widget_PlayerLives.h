@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
+#include "Components/TextBlock.h"
+//#include "Components/Image.h"
 #include "Widget_PlayerLives.generated.h"
 
-class UImage;
+class UTextBlock;
+//class UImage;
 
 UCLASS()
 class UE5_GFF2024_API UWidget_PlayerLives : public UUserWidget
@@ -21,11 +23,14 @@ protected:
 
 private:
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> text_lives;
+
+	/*UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> image_life_1;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> image_life_2;
 
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UImage> image_life_3;
+	TObjectPtr<UImage> image_life_3;*/
 };
