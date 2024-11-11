@@ -189,3 +189,8 @@ void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 	}
 }
 
+float AEnemy2Character::GetHP()
+{
+	return health;
+}
+

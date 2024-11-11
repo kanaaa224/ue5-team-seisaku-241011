@@ -30,4 +30,8 @@ private:
 	//Attack
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName AttackKeyName;
+
+	//HP
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName HPKeyName;
 };

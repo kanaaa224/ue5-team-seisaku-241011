@@ -63,6 +63,9 @@ public:
 	//ロックオンの有効フラグを設定する
 	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
 
+	//Get HP
+	float GetHP();
+
 private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)

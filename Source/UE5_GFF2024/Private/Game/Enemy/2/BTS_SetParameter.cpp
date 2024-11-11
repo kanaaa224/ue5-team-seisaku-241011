@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 //AIController
 #include "Game/Enemy/2/AIC_Enemy2.h"
+//Character
+#include "Game/Enemy/2/Enemy2Character.h"
 //Blackborad
 #include "BehaviorTree/BlackboardComponent.h"
 //Debug用にPrintStringを使用するためにインクルード
@@ -17,6 +19,7 @@ UBTS_SetParameter::UBTS_SetParameter()
 	//ブラックボードにある変数を設定
 	DistanceKeyName = "Distance";
 	AttackKeyName = "Attack";
+	HPKeyName = "MyHealth";
 }
 
 void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -51,4 +54,15 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		BlackboardComp->SetValueAsBool(AttackKeyName, true);
 		UE_LOG(LogTemp, Log, TEXT("SetAttack : true"));
 	}
+
+	float HP;
+	// プレイヤーキャラクターのインスタンスを取得
+	AEnemy2Character* EnemyCharacter = Cast<AEnemy2Character>(ControlledPawn);
+	if (EnemyCharacter){
+		HP = EnemyCharacter->GetHP();
+	}
+	//ブラックボードにあるfloat型のMyHealth変数に代入
+	ensure(BlackboardComp);
+	BlackboardComp->SetValueAsFloat(HPKeyName, HP);
+	
 }
