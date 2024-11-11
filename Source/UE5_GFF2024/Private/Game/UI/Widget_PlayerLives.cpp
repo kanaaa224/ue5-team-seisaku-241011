@@ -19,7 +19,10 @@ void UWidget_PlayerLives::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 	if (GameInstance && GameInstance->Life)
 	{
 		int32 lives = GameInstance->Life; // 残機数
-		int32 maxLives = 2;               // 残機最大数
+
+		if(text_lives) text_lives->SetText(FText::FromString(FString::Printf(TEXT("%d"), lives))); // if(text_lives) text_lives->SetText(FText::Format(NSLOCTEXT("UI", "LivesRemaining", "{0}"), FText::AsNumber(lives)));
+		
+		/*int32 maxLives = 2; // 残機最大数
 
 		// 残機の最大数に応じて残機の表示数を変える
 		if (maxLives < 3)
@@ -51,6 +54,6 @@ void UWidget_PlayerLives::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 		if (maxLives <= 1 && lives < 1)
 		{
 			if (image_life_1) image_life_1->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.1f));
-		}
+		}*/
 	}
 }

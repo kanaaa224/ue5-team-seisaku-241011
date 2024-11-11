@@ -18,6 +18,8 @@
 #include "Components/StaticMeshComponent.h"
 //CapsuleComponent
 #include "Components/CapsuleComponent.h"
+//Movement
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy2Character::AEnemy2Character()
@@ -62,7 +64,7 @@ AEnemy2Character::AEnemy2Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 	//CapsuleSizeを設定
-	float CapsuleRadius = 160.0f;  // 半径
+	float CapsuleRadius = 100.0f;  // 半径
 	float CapsuleHalfHeight = 315.0f;  // 高さの半分
 	GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 
@@ -81,7 +83,29 @@ AEnemy2Character::AEnemy2Character()
 		CubeMesh->SetRelativeLocation(FVector(0.0f, 0.0f, CubeHeight / 2.0f));*/
 	}
 
+	// キャラクターの移動コンポーネントを取得
+	UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+	if (MovementComponent)
+	{
+		// 重力の影響を無効化
+		MovementComponent->GravityScale = 0.0f;
+	}
+
+	//当たり判定の設定
+	//Cube
+	CubeMesh->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	CubeMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Overlap);
+	CubeMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	CubeMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	CubeMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
+	//Capsule
+	GetCapsuleComponent()->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
 }
+	
 
 // Called when the game starts or when spawned
 void AEnemy2Character::BeginPlay()

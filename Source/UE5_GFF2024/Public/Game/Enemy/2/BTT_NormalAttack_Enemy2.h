@@ -24,6 +24,9 @@ private:
 	bool endAttack;
 	//攻撃が始まったか
 	bool startAttack;
+	//攻撃処理が何回行われたか
+	int frameCnt_Attack_Down;
+
 	//ジャンプが終わったか
 	bool endJump;
 	//ジャンプ処理が何回行われたか
