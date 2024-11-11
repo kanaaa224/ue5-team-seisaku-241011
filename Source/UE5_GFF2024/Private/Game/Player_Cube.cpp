@@ -403,7 +403,7 @@ void APlayer_Cube::BlinkTimelineUpdate(float Value)
 	FVector UpVector = GetActorUpVector();
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
-	//ブリンクの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
+	//ブリンクの初期座標から前方のベクトルに10かけた値と右方のベクトルに10かけた値と上方向のベクトルの値を取得
 	FVector NewLocation = (BlinkForwardVector * (Value * 10.f)) + (BlinkRightVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
 
 	SetActorLocation(NewLocation, true);
@@ -423,7 +423,7 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	FVector UpVector = GetActorUpVector();
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
-	//ノックバックの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
+	//ノックバックの初期座標から前方のベクトルに-5かけた値と上方向のベクトルの値を取得
 	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
 
 	SetActorLocation(NewLocation);
