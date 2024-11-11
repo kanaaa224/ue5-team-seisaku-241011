@@ -24,8 +24,11 @@ private:
 	bool endAttack;
 	//攻撃が始まったか
 	bool startAttack;
-	//攻撃処理が何回行われたか
+	//攻撃処理が何回行われたか(振り下ろす)
 	int frameCnt_Attack_Down;
+
+	//攻撃処理が何回行われたか(起き上がる)
+	int frameCnt_Attack_Up;
 
 	//ジャンプが終わったか
 	bool endJump;
@@ -33,6 +36,9 @@ private:
 	int frameCnt_Jump;
 	//攻撃を終えて立ち始める
 	bool startStandUp;
+
+	//タスクを終えるか？
+	bool endTask;
 
 
 	//現在のRotation

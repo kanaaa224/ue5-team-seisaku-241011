@@ -25,9 +25,13 @@ void UBTT_NormalAttack_Enemy2::Init()
 	startAttack = false;
 	frameCnt_Attack_Down = 0;
 
+	frameCnt_Attack_Up = 0;
+
 	endJump = false;
 	frameCnt_Jump = 0;
 	startStandUp = false;
+
+	endTask = false;
 }
 
 EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -78,10 +82,22 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 		startAttack = true;
 		frameCnt_Attack_Down++;
 
-		nowLocation.operator-=(FVector(0.0f, 0.0f, 50.0f));
+		nowLocation.operator-=(FVector(0.0f, 0.0f, 70.0f));
+		nowRotaton.operator-=(FRotator(17.0f,0.0f,0.0f));
 
 		if (frameCnt_Attack_Down == 10) {
 			endAttack = true;
+		}
+	}
+
+	//攻撃から起き上がる
+	if (endJump == true && endAttack == true && endTask == false) {
+		frameCnt_Attack_Up++;
+
+		nowLocation.operator+=(FVector(0.0f, 0.0f, 20.0f));
+
+		if (frameCnt_Attack_Up == 10) {
+			endTask = true;
 		}
 	}
 
@@ -91,7 +107,7 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 	//新しいLocationを設定
 	ControlledPawn->SetActorRelativeLocation(nowLocation);
 
-	if (endAttack == true) {
+	if (endTask == true) {
 		//攻撃Flgをfalseに戻す
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(AttackKeyName, false);
