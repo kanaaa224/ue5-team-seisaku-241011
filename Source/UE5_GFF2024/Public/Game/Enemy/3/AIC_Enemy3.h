@@ -33,7 +33,7 @@ public:
 	UPROPERTY()
 	UBlackboardComponent* BlackboardComp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName PlayerKeyName;
 
 protected:
@@ -45,7 +45,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UPROPERTY(EditDefaultsOnly, Category = AI)
 	class UBehaviorTree* BehaviorTree;
 
 	FORCEINLINE UBehaviorTreeComponent* GetBehaviorComp() const { return BehaviorComp; }

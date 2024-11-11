@@ -6,7 +6,7 @@
 
 AEnemy3Character_sub::AEnemy3Character_sub()
 {
-	/* AI*/
+	/* AIControllerの設定*/
 	AIControllerClass = AAIC_Enemy3::StaticClass();
 
 	/* DefaultSceneRootを作成する */
