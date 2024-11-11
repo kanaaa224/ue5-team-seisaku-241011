@@ -90,6 +90,8 @@ public:
 	FVector KnockBackInitLocation;
 	//ブリンクの前方方向
 	FVector BlinkForwardVector;
+	//ブリンクの右方向
+	FVector BlinkRightVector;
 	//ノックバックの前方方向
 	FVector KnockBackForwardVector;
 	//カメラの衝突の絶対座標
