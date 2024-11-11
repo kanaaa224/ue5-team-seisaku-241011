@@ -135,13 +135,19 @@ public:
 
 	
 	float Delta;
-	void MoveTick(FVector TargetLocation1)
+	void MoveTick(FVector TargetLocation1, float speed)
 	{
-		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation1, Delta, 3);
+		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation1, Delta, speed);
 		SetActorLocation(NewLocation);
 	}
 
 	FVector TargetLocation = { -1, -1, -10000 };
 	FVector OldTargetLocation = { -1, -1, -10000 };
+	float Speed;
+
+	void SetSpeed(float s)
+	{
+		Speed = s;
+	}
 
 };

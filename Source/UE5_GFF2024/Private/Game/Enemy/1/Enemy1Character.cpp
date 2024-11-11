@@ -79,7 +79,7 @@ AEnemy1Character::AEnemy1Character()
 	box->SetupAttachment(RootComponent);
 
 	
-
+	Speed = 0;
 }
 
 // Called when the game starts or when spawned
@@ -120,7 +120,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 	if (TargetLocation.Z > -10000)
 	//if (TargetLocation != OldTargetLocation)
 	{
-		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, 10);
+		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 		SetActorLocation(NewLocation);
 		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
 
@@ -191,21 +191,23 @@ void AEnemy1Character::MoveProcess()
 	RotationManager->SetNextBottom(Vector, Scale, Position);
 
 	RotationManager->SetNewRotationAndLocation(Position);
+
 	FRotator rot1 = RotationManager->GetNowRotation();
+
 	//box->SetRelativeRotation(-1 * rot1);
 
 	//SetActorRotation(-1 * rot1);
 
 	AddActorWorldRotation(-1 * rot1);
-	if (GetActorRotation().Pitch)
+	if (GetActorRotation().Pitch > 360.)
 	{
 		SetActorRotation({ GetActorRotation().Pitch - 360, GetActorRotation().Yaw,GetActorRotation().Roll });
 	}
-	if (GetActorRotation().Yaw)
+	if (GetActorRotation().Yaw > 360.)
 	{
 		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw - 360,GetActorRotation().Roll });
 	}
-	if (GetActorRotation().Roll)
+	if (GetActorRotation().Roll > 360.)
 	{
 		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw,GetActorRotation().Roll - 360 });
 	}

@@ -91,8 +91,9 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                    
-                    Velocity.X = Normalize.X * 10.;
-                    Velocity.Y = Normalize.Y * 10.;
+                    
+
+                    //Velocity = EnemyVector;
                    
 
                     if (!IsTimelineStart)
@@ -101,12 +102,22 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         MyTimelineComponent->PlayFromStart();
                     }
 
+                    if (Velocity.Z >= 0.9)
+                    {
+                        Velocity.X = Normalize.X * 50.;
+                        Velocity.Y = Normalize.Y * 50.;
+                    }
+                    else
+                    {
+                        Velocity.X = 0.;
+                        Velocity.Y = 0.;
+                    }
+
+
                     if (Velocity.Z >= 0.000001) {
                         FVector EnemyLocation;
                         EnemyLocation = Enemy->GetActorLocation() + Velocity;
                         EnemyLocation.Z = (Velocity.Z * 1000) + StartLocationZ;
-
-                        
 
                         /*Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
                         AIC->MoveToLocation(EnemyLocation);
@@ -117,8 +128,16 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
                         //Enemy->MoveTick(EnemyLocation);
                         Enemy->TargetLocation = EnemyLocation;
+                        Enemy->SetSpeed(10.f);
                         //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
                        
+                    }
+
+                    if ((float)Velocity.Z <= 0.f)
+                    {
+                        Enemy->TargetLocation = Enemy->GetActorLocation();
+                        Enemy->TargetLocation.Z = StartLocationZ;
+                        Enemy->SetSpeed(10.f);
                     }
 
                     if (Count < 3)
