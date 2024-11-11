@@ -48,7 +48,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
                         Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
                         Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
-                        EBTNodeResult::InProgress;
+                        return EBTNodeResult::Succeeded;
                     }
                     else
                     {
@@ -62,15 +62,17 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                       
 
                         AIC->MoveToLocation(Enemy->GetActorLocation() + Normalize * 3200, 10.f);
-                        //Enemy->MoveTick(Enemy->GetActorLocation() + Normalize * 100);
+                        
                         if (Count == 30)
                         {
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 3000.0f;
                         }
                        
-                        if (Count < 150)
+                        if (Count < 130)
                         {
-                            EBTNodeResult::InProgress;
+                            //return EBTNodeResult::InProgress;
+                            return EBTNodeResult::Succeeded;
+
                         }
                         else
                         {
@@ -91,6 +93,6 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
 
     // タスク実行後、`Target` に新しい値を設定する例
    // BlackboardComp->SetValueAsObject(GetSelectedBlackboardKey(), nullptr); // 例として `null` に設定
-
+    Count = 0;
     return EBTNodeResult::Succeeded;
 }

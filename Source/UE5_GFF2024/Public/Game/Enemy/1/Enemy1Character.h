@@ -25,7 +25,7 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-private:
+public:
 	/*:::::変数:::::*/
 	//体力
 	float health;
