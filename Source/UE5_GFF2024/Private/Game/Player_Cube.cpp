@@ -53,7 +53,7 @@ APlayer_Cube::APlayer_Cube()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
-	//GetArrowComponent()->bHiddenInGame = false;
+	GetArrowComponent()->bHiddenInGame = false;
 
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -159,6 +159,12 @@ APlayer_Cube::APlayer_Cube()
 		KnockBackCurve->FloatCurve.AddKey(0.f, 0.f);
 		KnockBackCurve->FloatCurve.AddKey(0.5f, 100.f);
 	}
+	GetUpCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("GetUpCurve"));
+	if (GetUpCurve)
+	{
+		GetUpCurve->FloatCurve.AddKey(0.f, 0.f);
+		GetUpCurve->FloatCurve.AddKey(0.3f, 1.f);
+	}
 
 	//タイムラインの追加
 	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("BlinkTimelineComponent"));
@@ -200,6 +206,19 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("KnockBackTimelineFinished"));
 		KnockBackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	GetUpTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("GetUpTimelineComponent"));
+	if (GetUpTimeline)
+	{
+		//タイムライン更新時に呼び出されるメソッドの定義
+		FOnTimelineFloat TimelineUpdateFunc;
+		TimelineUpdateFunc.BindUFunction(this, TEXT("GetUpTimelineUpdate"));
+		GetUpTimeline->AddInterpFloat(GetUpCurve, TimelineUpdateFunc);
+
+		//タイムライン終了時に呼び出されるメソッドの定義
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, TEXT("GetUpTimelineFinished"));
+		GetUpTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
+	}
 
 	BlinkInitLocation = FVector(0.f);
 	KnockBackInitLocation = FVector(0.f);
@@ -207,6 +226,8 @@ APlayer_Cube::APlayer_Cube()
 	BlinkRightVector = FVector(0.f);
 	KnockBackForwardVector = FVector(0.f);
 	CameraImpactPoint = FVector(0.f);
+
+	KnockBackInitRotation = FRotator(0.f);
 
 	LockOnTargetActor = nullptr;
 
@@ -227,7 +248,6 @@ APlayer_Cube::APlayer_Cube()
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
 	KnockBackFlg = false;
-	KnockBackFinishFlg = false;
 	LockOnFlg = false;
 	LockOnRemoveFlg = false;
 }
@@ -277,20 +297,6 @@ void APlayer_Cube::Tick(float DeltaTime)
 		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("CT:%d"), AttackCoolTime), true, true, FColor::Cyan, 0.5f, TEXT("None"));
 	}
 
-	//if (KnockBackFinishFlg)
-	//{
-	//	//向きたい方向へのプレイヤーの回転値の補間
-	//	FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FRotator(0.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 10.f);
-	//	
-	//	SetActorRotation(InterpActorRotarion);
-
-	//	if (InterpActorRotarion.Pitch <= 0.f || InterpActorRotarion.Yaw <= 0.f || InterpActorRotarion.Roll <= 0.f)
-	//	{
-	//		KnockBackFinishFlg = false;
-	//	}
-
-	//}
-
 	LockOnTarget();
 
 	SmoothCameraCollision();
@@ -333,6 +339,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		{
 			KnockBackInitLocation = GetActorLocation();
 			KnockBackForwardVector = GetActorForwardVector();
+			KnockBackInitRotation = GetActorRotation();
 			KnockBackTimeline->PlayFromStart();
 			KnockBackFlg = true;
 			InvincibleFlg = true;
@@ -428,13 +435,25 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 
 	SetActorLocation(NewLocation);
 
-	//回転情報を取得
-	FRotator ActorRotarion = GetActorRotation();
-
 	if (GetCharacterMovement()->IsFalling())
 	{
-		SetActorRelativeRotation(ActorRotarion + FRotator(6.f, 0.f, 0.f));
+		//回転情報を取得
+		FRotator ActorRotarion = GetActorRotation();
+		//向きたい方向へのプレイヤーの回転値の補間
+		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), KnockBackInitRotation + FRotator(90.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 15.f);
+
+		SetActorRelativeRotation(InterpActorRotarion);
 	}
+}
+
+void APlayer_Cube::GetUpTimelineUpdate(float Value)
+{
+	//回転情報を取得
+	FRotator ActorRotarion = GetActorRotation();
+	//向きたい方向へのプレイヤーの回転値の補間
+	FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(ActorRotarion, KnockBackInitRotation, GetWorld()->GetDeltaSeconds(), 15.f);
+
+	SetActorRelativeRotation(InterpActorRotarion);
 }
 
 void APlayer_Cube::BlinkTimelineFinished()
@@ -454,14 +473,16 @@ void APlayer_Cube::AttackTimelineFinished()
 
 void APlayer_Cube::KnockBackTimelineFinished()
 {
+	if (GetUpTimeline && KnockBackFlg && InvincibleFlg)
+	{
+		GetUpTimeline->PlayFromStart();
+	}
+}
+
+void APlayer_Cube::GetUpTimelineFinished()
+{
 	KnockBackFlg = false;
 	InvincibleFlg = false;
-	KnockBackFinishFlg = true;
-	////向きたい方向へのプレイヤーの回転値の補間
-	//FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FRotator(0.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 10.f);
-
-	//SetActorRotation(FRotator(InterpActorRotarion.Pitch, this->GetActorRotation().Yaw, this->GetActorRotation().Roll));
-	SetActorRotation(FRotator(0.f, 0.f, 0.f));
 }
 
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
