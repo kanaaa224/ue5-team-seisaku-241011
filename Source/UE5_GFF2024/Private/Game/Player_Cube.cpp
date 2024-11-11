@@ -28,7 +28,7 @@
 #include "Engine/World.h"
 #include "Components/ArrowComponent.h"
 
-#define DEFAULT_TARGET_ARM_LENGTH	700.f			//プレイヤーまでのカメラの距離
+#define DEFAULT_TARGET_ARM_LENGTH	900.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
 
@@ -204,6 +204,7 @@ APlayer_Cube::APlayer_Cube()
 	BlinkInitLocation = FVector(0.f);
 	KnockBackInitLocation = FVector(0.f);
 	BlinkForwardVector = FVector(0.f);
+	BlinkRightVector = FVector(0.f);
 	KnockBackForwardVector = FVector(0.f);
 	CameraImpactPoint = FVector(0.f);
 
@@ -402,8 +403,8 @@ void APlayer_Cube::BlinkTimelineUpdate(float Value)
 	FVector UpVector = GetActorUpVector();
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
-	//ブリンクの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
-	FVector NewLocation = (BlinkForwardVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
+	//ブリンクの初期座標から前方のベクトルに10かけた値と右方のベクトルに10かけた値と上方向のベクトルの値を取得
+	FVector NewLocation = (BlinkForwardVector * (Value * 10.f)) + (BlinkRightVector * (Value * 10.f)) + (UpVector * ZVec) + BlinkInitLocation;
 
 	SetActorLocation(NewLocation, true);
 }
@@ -422,7 +423,7 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	FVector UpVector = GetActorUpVector();
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
-	//ノックバックの初期座標から前方のベクトルに10かけた値と上方向のベクトルの値を取得
+	//ノックバックの初期座標から前方のベクトルに-5かけた値と上方向のベクトルの値を取得
 	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
 
 	SetActorLocation(NewLocation);
@@ -477,6 +478,7 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 		if (LockOnCandidates.IsValidIndex(0))
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = false;
+			CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;
 			LockOnFlg = true;
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
 			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
@@ -518,9 +520,11 @@ void APlayer_Cube::Move(const FInputActionValue& Value)
 
 		//前方向を取得
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		BlinkForwardVector = ForwardDirection * MovementVector.Y;
 
 		//右方向を取得
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		BlinkRightVector = RightDirection * MovementVector.X;
 
 		//動きを加える
 		AddMovementInput(ForwardDirection, MovementVector.Y);
@@ -561,7 +565,6 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		BlinkInitLocation = GetActorLocation();
-		BlinkForwardVector = GetActorForwardVector();
 		BlinkTimeline->PlayFromStart();
 		BlinkCoolTime = BLINK_COOLTIME;
 		BlinkFlg = true;
@@ -596,6 +599,7 @@ void APlayer_Cube::LockOn(const FInputActionValue& Value)
 		if (LockOnCandidates.IsValidIndex(0))
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = false;
+			CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;
 			LockOnFlg = true;
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
 			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
