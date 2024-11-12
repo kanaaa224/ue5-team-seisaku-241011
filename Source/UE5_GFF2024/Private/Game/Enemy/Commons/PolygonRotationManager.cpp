@@ -219,7 +219,7 @@ void PolygonRotationManager::SetBottom(const FVector& Scale, const FVector& Posi
         tmp = GetFaceCenterLocation(Scale, Position, i);
 
         //面の座標の中で最も高度が低い奴が底面
-        if (tmp.Z <= GetFaceCenterLocation(Scale, Position, bottom).Z)
+        if (tmp.Z <= GetFaceCenterLocation(Scale, Position, bottom).Z && bottom != i)
         {
             bottom = i;
         }

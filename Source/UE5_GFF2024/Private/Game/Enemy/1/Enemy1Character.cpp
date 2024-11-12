@@ -14,6 +14,10 @@
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Engine/DamageEvents.h"
+
+#include "Components/BoxComponent.h"
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -80,6 +84,13 @@ AEnemy1Character::AEnemy1Character()
 
 	
 	Speed = 0;
+
+
+	// 攻撃コリジョンを作成
+	AttackCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollision"));
+	AttackCollision->SetupAttachment(RootComponent);
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 初期状態では無効
+	AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy1Character::OnAttackHit);
 }
 
 // Called when the game starts or when spawned
@@ -133,6 +144,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 		MoveProcess();
 	}
 	
+	Attack();
 
 	//AddMovementInput({ 1,0,0 }, 100);
 
@@ -173,6 +185,26 @@ void AEnemy1Character::OnSeePlayer(APawn* Pawn)
 
 	// 視野に入ったら画面に"See"と表示
 	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
+}
+
+void AEnemy1Character::ApplyDamage(AActor* Other)
+{
+	AActor* ImpactActor = Other;
+	if ((ImpactActor != nullptr) && (ImpactActor != this))
+	{
+		if (AActor* Player = Cast<AActor>(ImpactActor)) 
+		{
+			//ダメージイベントの作成
+			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+			FDamageEvent DamageEvent(ValidDamageTypeClass);
+
+			//ダメージ量
+			const float DamageAmount = 25.0f;
+			ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
+
+			UKismetSystemLibrary::PrintString(this, TEXT("Enemy1 : Attack"));
+		}
+	}
 }
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -217,7 +249,7 @@ void AEnemy1Character::MoveProcess()
 
 
 	//デバッグ表示
-	//RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, Scale, Position);
+	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {150,150,150}, Position);
 
 	//for (int i = 0; i < CubeFaces.Num(); i++)
 	//{
@@ -235,6 +267,29 @@ void AEnemy1Character::MoveProcess()
 	//		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 0.1f);
 	//	}
 	//}
+}
+
+void AEnemy1Character::Attack()
+{
+	// コリジョンを有効化して攻撃の範囲を設定
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);  // キャラクターに対してのみ
+	AttackCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	AttackCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	AttackCollision->SetRelativeScale3D({ 4,4,1 });
+	AttackCollision->SetRelativeLocation({ RotationManager->GetFaceCenterLocation({150,150,150},{0,0,0},RotationManager->bottom) });
+
+	// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	//	{
+	//		AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//	}, 0.1f, false);  // 0.1秒後に無効化
+}
+
+void AEnemy1Character::OnAttackHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != nullptr)ApplyDamage(OtherActor);
 }
 
 

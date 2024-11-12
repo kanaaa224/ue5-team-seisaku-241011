@@ -51,6 +51,9 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                     {
                         AIC->SetState(1);
                     }*/
+
+
+
                     return EBTNodeResult::Succeeded;
 
                     if (EnemyVector.Length() < 100)

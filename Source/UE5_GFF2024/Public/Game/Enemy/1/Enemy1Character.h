@@ -8,6 +8,7 @@
 
 class PolygonRotationManager;
 class UStaticMeshComponent;
+class UBoxComponent;
 
 UCLASS()
 class UE5_GFF2024_API AEnemy1Character : public ACharacter
@@ -47,6 +48,8 @@ public:
 	void OnSeePlayer(APawn* Pawn);
 
 public:
+	void ApplyDamage(AActor* Other);
+
 	//ダメージを受ける処理
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
 
@@ -150,4 +153,21 @@ public:
 		Speed = s;
 	}
 
+	// 攻撃コリジョン用のコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UBoxComponent* AttackCollision;
+
+	// 攻撃メソッド
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void Attack();
+
+	// ダメージを与える関数
+	UFUNCTION()
+	void OnAttackHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	// ダメージ量
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float Damage = 20.0f;
 };

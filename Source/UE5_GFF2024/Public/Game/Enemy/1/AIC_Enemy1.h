@@ -37,6 +37,8 @@ public:
 	FName PlayerKeyName;
 	FName StateKeyName;
 
+	int32 State;
+
 protected:
 	// AIControllerのPawn所持
 	virtual void OnPossess(class APawn* InPawn) override;
@@ -66,7 +68,7 @@ public:
 	/// <param name="player"></param>
 	void SetBBDistanceFromPlayer(APlayer_Cube* player);
 
-
+	//BTのほうのState
 	void SetState(int32 state);
 
 
