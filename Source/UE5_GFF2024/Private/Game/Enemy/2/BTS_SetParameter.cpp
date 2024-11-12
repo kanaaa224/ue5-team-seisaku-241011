@@ -46,7 +46,7 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	BlackboardComp->SetValueAsFloat(DistanceKeyName, distance);
 
 	//プレイヤーまでの距離に応じて攻撃FlgをONにする
-	if (distance <= 300 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
+	if (distance <= 500 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(AttackKeyName, true);
 		UE_LOG(LogTemp, Log, TEXT("SetAttack : true"));
