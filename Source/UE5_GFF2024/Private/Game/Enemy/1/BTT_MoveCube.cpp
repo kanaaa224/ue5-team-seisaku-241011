@@ -7,6 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
+#include "Game/Enemy/Commons/PolygonRotationManager.h"
 
 UBTT_MoveCube::UBTT_MoveCube()
 {
@@ -45,6 +46,29 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                     Enemy->SetVector(Normalize);
 
                     Enemy->SetIsMoving(true);
+
+                    /*if (!Enemy->IsMoving)
+                    {
+                        AIC->SetState(1);
+                    }*/
+
+
+
+                    return EBTNodeResult::Succeeded;
+
+                    if (EnemyVector.Length() < 100)
+                    {
+                        Enemy->SetIsMoving(false);
+                        if (!Enemy->IsMoving)
+                        {
+                            AIC->SetState(1);
+                        }
+                        return EBTNodeResult::Succeeded;
+                    }
+                    else
+                    {
+                        return EBTNodeResult::Succeeded;
+                    }
                 }
             }
         }
@@ -59,5 +83,5 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     // タスク実行後、`Target` に新しい値を設定する例
    // BlackboardComp->SetValueAsObject(GetSelectedBlackboardKey(), nullptr); // 例として `null` に設定
 
-    return EBTNodeResult::Succeeded;
+    return EBTNodeResult::Failed;
 }

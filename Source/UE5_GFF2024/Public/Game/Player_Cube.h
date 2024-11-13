@@ -67,6 +67,8 @@ public:
 	class UCurveFloat* AttackCurve;
 	//ノックバック用のカーブ
 	class UCurveFloat* KnockBackCurve;
+	//起き上がり用のカーブ
+	class UCurveFloat* GetUpCurve;
 
 	//ブリンクのタイムラインコンポーネント
 	class UTimelineComponent* BlinkTimeline;
@@ -74,6 +76,8 @@ public:
 	class UTimelineComponent* AttackTimeline;
 	//ノックバックのタイムラインコンポーネント
 	class UTimelineComponent* KnockBackTimeline;
+	//起き上がりのタイムラインコンポーネント
+	class UTimelineComponent* GetUpTimeline;
 
 	//ロックオンの候補
 	TArray<class AActor*> LockOnCandidates;
@@ -97,6 +101,9 @@ public:
 	//カメラの衝突の絶対座標
 	FVector CameraImpactPoint;
 
+	//ノックバックの初期回転値
+	FRotator KnockBackInitRotation;
+
 	//ブリンクのクールタイム
 	int BlinkCoolTime;
 	//攻撃のクールタイム
@@ -117,8 +124,6 @@ public:
 	bool InvincibleFlg;
 	//ノックバックのフラグ
 	bool KnockBackFlg;
-	//ノックバックの終了フラグ
-	bool KnockBackFinishFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
 	//ロックオンの対処削除フラグ
@@ -157,6 +162,10 @@ private:
 	//ノックバックのタイムライン更新時に呼ばれる処理
 	UFUNCTION()
 	void KnockBackTimelineUpdate(float Value);
+	//起き上がりのタイムライン更新時に呼ばれる処理
+	UFUNCTION()
+	void GetUpTimelineUpdate(float Value);
+
 
 	//ブリンクのタイムライン終了時に呼ばれる処理
 	UFUNCTION()
@@ -167,6 +176,9 @@ private:
 	//ノックバックのタイムライン終了時に呼ばれる処理
 	UFUNCTION()
 	void KnockBackTimelineFinished();
+	//起き上がりのタイムライン終了時に呼ばれる処理
+	UFUNCTION()
+	void GetUpTimelineFinished();
 
 	UFUNCTION()
 	void OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

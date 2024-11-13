@@ -15,6 +15,7 @@ AAIC_Enemy1::AAIC_Enemy1(const FObjectInitializer& ObjectInitializer)
 	BehaviorTree = BTFinder.Object;
 
 	PlayerKeyName = "Player";
+	StateKeyName = "State";
 }
 
 void AAIC_Enemy1::SetPlayerKey(APawn* player)
@@ -50,6 +51,8 @@ void AAIC_Enemy1::OnUnPossess()
 void AAIC_Enemy1::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetState(0);
 
 	//デバッグ
 	//APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -113,6 +116,14 @@ void AAIC_Enemy1::SetBBDistanceFromPlayer(APlayer_Cube* player)
 
 	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
 	BlackboardComp->SetValueAsFloat(DistanceFromPlayerKeyName, distance);
+}
+
+void AAIC_Enemy1::SetState(int32 state)
+{
+	ensure(BlackboardComp);
+
+	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
+	BlackboardComp->SetValueAsFloat(StateKeyName, state);
 }
 
 

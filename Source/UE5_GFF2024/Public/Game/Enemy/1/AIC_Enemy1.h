@@ -35,6 +35,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName PlayerKeyName;
+	FName StateKeyName;
+
+	int32 State;
 
 protected:
 	// AIControllerのPawn所持
@@ -64,6 +67,9 @@ public:
 	/// プレヤーまでの距離をブラックボードに設定する
 	/// <param name="player"></param>
 	void SetBBDistanceFromPlayer(APlayer_Cube* player);
+
+	//BTのほうのState
+	void SetState(int32 state);
 
 
 	
