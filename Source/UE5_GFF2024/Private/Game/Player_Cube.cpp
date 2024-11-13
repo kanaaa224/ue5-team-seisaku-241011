@@ -31,13 +31,14 @@
 #define DEFAULT_TARGET_ARM_LENGTH	900.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
+#define LOCKON_CANCELLATION_DISTANCE	1800		//ロックオンを強制的に解除する距離
 
 // Sets default values
 APlayer_Cube::APlayer_Cube()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
 
 	bUseControllerRotationPitch = false;
@@ -358,6 +359,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
 			}
 
 			//GameModeを取得して、AGameMode_InGameにCastする
@@ -394,6 +396,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
 			}
 			//消す
 			ImpactActor->Destroy();
@@ -603,7 +606,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		!KnockBackFlg &&						//ノックバック判定ではないなら
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
-		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
+		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, 0.0f, 0.0f));
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
@@ -704,7 +707,24 @@ void APlayer_Cube::LockOnTarget()
 		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
 		//微調整用
 		float Adjustment = 1.5f;
-		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, InterpControlRotation.Roll));
+		
+		double Distance = UKismetMathLibrary::Vector_Distance(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
+		if (Distance >= LOCKON_CANCELLATION_DISTANCE)
+		{
+			if (LockOnCandidates.IsValidIndex(0))
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				LockOnFlg = false;
+				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+				{
+					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
+				}
+				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
+			}
+		}
 	}
 }
 
