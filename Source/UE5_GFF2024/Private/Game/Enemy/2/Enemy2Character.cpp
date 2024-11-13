@@ -64,8 +64,8 @@ AEnemy2Character::AEnemy2Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 	//CapsuleSizeを設定
-	float CapsuleRadius = 100.0f;  // 半径
-	float CapsuleHalfHeight = 315.0f;  // 高さの半分
+	float CapsuleRadius = 150.0f;  // 半径
+	float CapsuleHalfHeight = 320.0f;  // 高さの半分
 	GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 
 	//Cubeを作成
@@ -104,6 +104,11 @@ AEnemy2Character::AEnemy2Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
+
+	// オーバーラップ開始のイベントをバインド
+	CubeMesh->OnComponentBeginOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapBegin);
+	//オーバーラップ終了のイベントをバインと
+	CubeMesh->OnComponentEndOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapEnd);
 }
 	
 
@@ -192,5 +197,20 @@ void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 float AEnemy2Character::GetHP()
 {
 	return health;
+}
+
+void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this) {
+		//UE_LOG(LogTemp, Warning, TEXT("%s has overlapped with %s"), *GetName(), *OtherActor->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Overlap : Begin"));
+	}
+}
+
+void AEnemy2Character::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor != this) {
+		UE_LOG(LogTemp, Warning, TEXT("Overlap : end"));
+	}
 }
 

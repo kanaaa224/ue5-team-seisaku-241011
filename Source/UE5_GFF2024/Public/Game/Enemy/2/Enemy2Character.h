@@ -66,6 +66,14 @@ public:
 	//Get HP
 	float GetHP();
 
+	//BeginOverlap
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,bool bFromSweep, const FHitResult& SweepResult);
+
+	//EndOverlap
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)
