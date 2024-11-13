@@ -20,6 +20,11 @@
 #include "Components/CapsuleComponent.h"
 //Movement
 #include "GameFramework/CharacterMovementComponent.h"
+//Blackboard
+#include "BehaviorTree/BlackboardComponent.h"
+//PlayerPawnを取得
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemy2Character::AEnemy2Character()
@@ -204,6 +209,22 @@ void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 	if (OtherActor != this) {
 		//UE_LOG(LogTemp, Warning, TEXT("%s has overlapped with %s"), *GetName(), *OtherActor->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Overlap : Begin"));
+
+		//キャラクターのAIコントローラを取得
+		AAIController* AIController = Cast<AAIC_Enemy2>(GetController());
+		if (AIController) {
+			//ブラックボードコンポーネントを取得
+			UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+			if (BlackboardComp) {
+				//ブラックボードにあるAttack変数の値を取得
+				bool AttackFlg = BlackboardComp->GetValueAsBool(TEXT("Attack"));
+
+				//ブラックボードから取得したAttack変数がTrueならプレイヤーに攻撃を与える
+				if (AttackFlg == true) {
+					AttackPlayer();
+				}
+			}
+		}
 	}
 }
 
@@ -211,6 +232,21 @@ void AEnemy2Character::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AA
 {
 	if (OtherActor != this) {
 		UE_LOG(LogTemp, Warning, TEXT("Overlap : end"));
+	}
+}
+
+void AEnemy2Character::AttackPlayer()
+{
+	//プレイヤーのポーンを取得
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (PlayerPawn) {
+		//ダメージ量を設定または取得
+		float DmageAmount = 25.0f;
+
+		//ダメージを与える（最後のパラメータには攻撃元の情報を渡す）
+		UGameplayStatics::ApplyDamage(PlayerPawn, DmageAmount, GetController(), this, nullptr);
+
+		//攻撃のサウンドをここに入れる
 	}
 }
 
