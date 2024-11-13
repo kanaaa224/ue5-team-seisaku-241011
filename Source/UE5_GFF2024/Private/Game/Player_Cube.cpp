@@ -54,7 +54,7 @@ APlayer_Cube::APlayer_Cube()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
-	GetArrowComponent()->bHiddenInGame = false;
+	//GetArrowComponent()->bHiddenInGame = false;
 
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -424,7 +424,7 @@ void APlayer_Cube::AttackTimelineUpdate(float Value)
 	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 116.2f, 0.f));
+	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
@@ -494,7 +494,7 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 
 	LockOnRemoveFlg = false;
 
-	if (!LockOnFlg)
+	if (!LockOnFlg && !AttackFlg)
 	{
 		LockOnCandidates.AddUnique(OtherActor);
 
