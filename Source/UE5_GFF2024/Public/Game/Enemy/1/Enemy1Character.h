@@ -155,7 +155,9 @@ public:
 
 	// 攻撃コリジョン用のコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UBoxComponent* AttackCollision;
+	TArray<UBoxComponent*> AttackCollisions;
+
+	int32 BottomCollisionNumber;
 
 	// 攻撃メソッド
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -170,4 +172,12 @@ public:
 	// ダメージ量
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float Damage = 20.0f;
+
+	//0移動1落下2タックル
+	int32 AttackState;
+
+
+	void GetBottomNumber();
+
+	bool IsAttacking;
 };

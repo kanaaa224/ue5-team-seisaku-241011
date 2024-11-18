@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     {
         // `Target` の値を使った処理を行う
         // 例: ターゲットが見つかった場合の処理など
-        UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
+        //UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
         
         if (AAIC_Enemy1* AIC = Cast<AAIC_Enemy1>(OwnerComp.GetAIOwner()))
         {

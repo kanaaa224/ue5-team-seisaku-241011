@@ -269,7 +269,8 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
     //30はFPSの数字 -> 変数Fpsに切り替える
     //NowRotation += TestRotation;
     //NowRotation += {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};     //SetActorLocationを使う場合はこっち
-    NowRotation = {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};    //AddActorRotationを使う場合はこっち
+    //NowRotation = {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};    //AddActorRotationを使う場合はこっち
+    NowRotation = {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed };    //AddActorRotationを使う場合はこっち
    
     //NowRotation += {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed};
     //とりあえず一秒で回転
@@ -286,7 +287,8 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
     FVector Direction = ActorLocation - CenterPosition;
 
     // 指定された角度でベクトルを回転
-    FQuat QuatRotation = FQuat({ -NextRotation.Pitch / Fps, -NextRotation.Yaw / Fps, -NextRotation.Roll / Fps });	//y z x
+    //FQuat QuatRotation = FQuat({ -NextRotation.Pitch / Fps, -NextRotation.Yaw / Fps, -NextRotation.Roll / Fps });	//y z x
+    FQuat QuatRotation = FQuat({ -NextRotation.Pitch / speed, -NextRotation.Yaw / speed, -NextRotation.Roll / speed });	//y z x
 
     //FQuat QuatRotation = FQuat({ -NextRotation.Pitch / speed, -NextRotation.Yaw / speed, -NextRotation.Roll / speed });	//y z x
     //{1,0,0} pitch {0,1,0} yaw {0,0,1} roll

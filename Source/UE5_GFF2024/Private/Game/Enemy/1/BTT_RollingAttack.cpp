@@ -48,6 +48,15 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
                         Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
                         Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
+
+
+                        FVector TmpVector = { Player->GetActorLocation().X - Enemy->GetActorLocation().X
+                              ,Player->GetActorLocation().Y - Enemy->GetActorLocation().Y,Enemy->GetActorLocation().Z };
+
+                        Target = TmpVector / TmpVector.Length();
+                        Target.Z = Enemy->GetActorLocation().Z;
+
+
                         return EBTNodeResult::Succeeded;
                     }
                     else
@@ -60,8 +69,22 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         //AIC->MoveToSpecifiedLocation(Enemy->GetActorLocation() + Normalize * 3, 10.f);
                         //AIC->MoveToActor(Player);
                       
+                        Enemy->IsAttacking = true;
 
-                        AIC->MoveToLocation(Enemy->GetActorLocation() + Normalize * 3200, 10.f);
+                       /* if ((int)Target.X == 0)
+                        {
+                          
+                            Enemy->TargetLocation.X = Target.X * 40 + Player->GetActorLocation().X;
+                            Enemy->TargetLocation.Y = Target.Y * 40 + Player->GetActorLocation().Y;
+                            Enemy->TargetLocation.Z = Target.Z;
+                            Enemy->SetSpeed(5.f);
+                        }*/
+
+                        Enemy->TargetLocation.X = Target.X * 150 + Enemy->GetActorLocation().X;
+                        Enemy->TargetLocation.Y = Target.Y * 150 + Enemy->GetActorLocation().Y;
+                        Enemy->TargetLocation.Z = Target.Z;
+                        Enemy->SetSpeed(15.f);
+                       
                         
                         if (Count == 30)
                         {
@@ -78,6 +101,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         {
                             Count = 0;
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+                            Enemy->SetIsMoving(true);
                         }
                     }
                 }
