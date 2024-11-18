@@ -19,9 +19,11 @@ class UE5_GFF2024_API AAIC_Enemy3 : public AAIController
 	GENERATED_BODY()
 	
 public:
+
 	AAIC_Enemy3(const class FObjectInitializer& ObjectInitializer);
 
 public:
+
 	void SetPlayerKey(APawn* player);
 
 	UFUNCTION()
@@ -37,6 +39,7 @@ public:
 	FName PlayerKeyName;
 
 protected:
+
 	// AIControllerのPawn所持
 	virtual void OnPossess(class APawn* InPawn) override;
 

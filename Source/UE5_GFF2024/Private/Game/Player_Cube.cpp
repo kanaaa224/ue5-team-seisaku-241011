@@ -27,17 +27,20 @@
 #include "Game/System/GameMode_InGame.h"
 #include "Engine/World.h"
 #include "Components/ArrowComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	900.f			//プレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
+#define LOCKON_CANCELLATION_DISTANCE	1800		//ロックオンを強制的に解除する距離
 
 // Sets default values
 APlayer_Cube::APlayer_Cube()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
 
 	bUseControllerRotationPitch = false;
@@ -53,7 +56,7 @@ APlayer_Cube::APlayer_Cube()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
-	GetArrowComponent()->bHiddenInGame = false;
+	//GetArrowComponent()->bHiddenInGame = false;
 
 	//スタティックメッシュを追加する
 	Cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
@@ -231,11 +234,18 @@ APlayer_Cube::APlayer_Cube()
 
 	LockOnTargetActor = nullptr;
 
-	ConstructorHelpers::FObjectFinder<UParticleSystem> FindEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
-	if (FindEff.Succeeded())
+	ConstructorHelpers::FObjectFinder<UParticleSystem> FindAttackEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
+	if (FindAttackEff.Succeeded())
 	{
-		AttackParticle = FindEff.Object;
+		AttackParticle = FindAttackEff.Object;
 	}
+
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> FindBlinkEff(TEXT("/Game/BlinkAndDashVFX/VFX_Niagara/NS_Blink_Psionic"));
+	if (FindBlinkEff.Succeeded())
+	{
+		BlinkParticle = FindBlinkEff.Object;
+	}
+
 
 	BlinkCoolTime = 0;
 	AttackCoolTime = 0;
@@ -358,6 +368,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
 			}
 
 			//GameModeを取得して、AGameMode_InGameにCastする
@@ -394,6 +405,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
 			}
 			//消す
 			ImpactActor->Destroy();
@@ -421,7 +433,7 @@ void APlayer_Cube::AttackTimelineUpdate(float Value)
 	//回転情報を取得
 	FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 116.2f, 0.f));
+	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
@@ -458,6 +470,7 @@ void APlayer_Cube::GetUpTimelineUpdate(float Value)
 
 void APlayer_Cube::BlinkTimelineFinished()
 {
+	Material_Instance->SetScalarParameterValue("Opacity", 1);
 	BlinkFlg = false;
 	InvincibleFlg = false;
 }
@@ -491,7 +504,7 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 
 	LockOnRemoveFlg = false;
 
-	if (!LockOnFlg)
+	if (!LockOnFlg && !AttackFlg)
 	{
 		LockOnCandidates.AddUnique(OtherActor);
 
@@ -585,6 +598,8 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		!KnockBackFlg &&						//ノックバック判定ではないなら
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, BlinkParticle, this->GetActorLocation(), this->GetActorRotation(), FVector(1.f));
+		Material_Instance->SetScalarParameterValue("Opacity", 0.25);
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
 		BlinkCoolTime = BLINK_COOLTIME;
@@ -603,7 +618,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		!KnockBackFlg &&						//ノックバック判定ではないなら
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
-		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
+		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, 0.0f, 0.0f));
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
@@ -704,21 +719,41 @@ void APlayer_Cube::LockOnTarget()
 		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
 		//微調整用
 		float Adjustment = 1.5f;
-		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, InterpControlRotation.Roll));
+		
+		double Distance = UKismetMathLibrary::Vector_Distance(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
+		if (Distance >= LOCKON_CANCELLATION_DISTANCE)
+		{
+			if (LockOnCandidates.IsValidIndex(0))
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				LockOnFlg = false;
+				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+				{
+					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
+				}
+				LockOnCandidates.Remove(LockOnTargetActor);
+				LockOnRemoveFlg = false;
+			}
+		}
 	}
 }
 
 void APlayer_Cube::PlayerTransparent()
 {
-	double Distance = UKismetMathLibrary::Vector_Distance(FollowCamera->GetComponentLocation(), GetActorLocation());
-	//Distance:カメラとプレイヤーの距離
-	//InRangeA:カメラがこの値までキャラに近づいたら完全にマテリアルを消す
-	//InRangeB:カメラがこの値までキャラに近づいたらマテリアルのフェードを開始する
-	//OutRangeA:マテリアルが完全に消えるOpacity値
-	//OutRnageB:マテリアルが通常状態のOpacity値
-	double Opacity = UKismetMathLibrary::MapRangeClamped(Distance, 200, 300, 0, 1);
+	if (!BlinkFlg)
+	{
+		double Distance = UKismetMathLibrary::Vector_Distance(FollowCamera->GetComponentLocation(), GetActorLocation());
+		//Distance:カメラとプレイヤーの距離
+		//InRangeA:カメラがこの値までキャラに近づいたら完全にマテリアルを消す
+		//InRangeB:カメラがこの値までキャラに近づいたらマテリアルのフェードを開始する
+		//OutRangeA:マテリアルが完全に消えるOpacity値
+		//OutRnageB:マテリアルが通常状態のOpacity値
+		double Opacity = UKismetMathLibrary::MapRangeClamped(Distance, 200, 300, 0, 1);
 
-	Material_Instance->SetScalarParameterValue("Opacity", Opacity);
+		Material_Instance->SetScalarParameterValue("Opacity", Opacity);
+	}
 }
 
 AActor* APlayer_Cube::GetArraySortingFirstElement(TArray<AActor*> Array)

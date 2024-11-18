@@ -4,7 +4,7 @@
 #include "Game/Enemy/3/AIC_Enemy3.h"
 #include "UObject/ConstructorHelpers.h"
 
-AAIC_Enemy3::AAIC_Enemy3(const FObjectInitializer& ObjectInitializer)
+AAIC_Enemy3::AAIC_Enemy3(const class FObjectInitializer& ObjectInitializer)
 {
 	BehaviorComp = ObjectInitializer.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
 	BlackboardComp = ObjectInitializer.CreateDefaultSubobject<UBlackboardComponent>(this, TEXT("BlackboardComp"));

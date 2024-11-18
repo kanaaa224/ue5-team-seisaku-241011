@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Enemy3Character.generated.h"
+#include "Enemy4Character.generated.h"
 
 UCLASS()
-class UE5_GFF2024_API AEnemy3Character : public ACharacter
+class UE5_GFF2024_API AEnemy4Character : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AEnemy3Character();
+	AEnemy4Character();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,23 +25,5 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-public:
-
-	UPROPERTY(VisibleAnywhere, Category = "AI")
-	class UPawnSensingComponent* PawnSensingComp;
-
-	UFUNCTION()
-	void OnSeePlayer(APawn* Pawn);
-
-private:
-
-	/* DefaultSceneRootの設定 */
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USceneComponent> DefaultSceneRoot;
-
-	/* DiceMehComponent */
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> DiceMesh;
 
 };

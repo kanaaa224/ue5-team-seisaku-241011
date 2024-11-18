@@ -21,6 +21,23 @@ AEnemy3Character::AEnemy3Character()
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy3Character::OnSeePlayer);
+
+	/* AIControllerの設定*/
+	AIControllerClass = AAIC_Enemy3::StaticClass();
+	//キャラクターがAIControllerを使うように設定
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	/* DefaultSceneRootを作成する */
+	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
+	/* SceneComponentをRootComponentに設定する */
+	RootComponent = DefaultSceneRoot;
+	/* StaticMeshComponentを作成する */
+	DiceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	/* StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する */
+	UStaticMesh* LoadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Game/enemy/3/Mesh/DiceStaticMesh"));
+	/* StaticMeshをStaticMeshComponentに設定する */
+	DiceMesh->SetStaticMesh(LoadMesh);
+	DiceMesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

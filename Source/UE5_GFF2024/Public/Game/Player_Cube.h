@@ -85,8 +85,11 @@ public:
 	//ロックオンの対象
 	class AActor* LockOnTargetActor;
 
-	//パーティクル
+	//攻撃のパーティクル
 	class UParticleSystem* AttackParticle;
+
+	//回避のパーティクル
+	class UNiagaraSystem* BlinkParticle;
 
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
