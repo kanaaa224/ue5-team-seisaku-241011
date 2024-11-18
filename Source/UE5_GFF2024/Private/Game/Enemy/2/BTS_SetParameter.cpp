@@ -49,7 +49,7 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	BlackboardComp->SetValueAsFloat(DistanceKeyName, distance);
 
 	//プレイヤーまでの距離に応じて攻撃FlgをONにする
-	if (distance <= 500 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
+	if (distance <= 450 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(AttackKeyName, true);
 		UE_LOG(LogTemp, Log, TEXT("SetAttack : true"));
@@ -60,9 +60,11 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	AEnemy2Character* EnemyCharacter = Cast<AEnemy2Character>(ControlledPawn);
 	if (EnemyCharacter){
 		HP = EnemyCharacter->GetHP();
+		UE_LOG(LogTemp, Log, TEXT("Enemy2 HP : %f"), HP);
 	}
 	//ブラックボードにあるfloat型のMyHealth変数に代入
 	ensure(BlackboardComp);
 	BlackboardComp->SetValueAsFloat(HPKeyName, HP);
 	
+
 }

@@ -57,9 +57,13 @@ public:
 private:
 	//:::::Blackboard::::://
 
-	//Attack(プレイヤーまでの距離を入れる変数)
+	//Attack
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName AttackKeyName;
+
+	//NormalAttack
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName ExeNormalAttackKeyName;
 
 private:
 	FRotator CombineRotators(FRotator R1, FRotator R2);

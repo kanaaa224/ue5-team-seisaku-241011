@@ -10,6 +10,7 @@ UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& Obj
 {
 	//ブラックボードにある変数を設定
 	AttackKeyName = "Attack";
+	ExeNormalAttackKeyName = "ExecutionNormalAttack";
 
 	initFlg = false;
 	endAttack = false;
@@ -59,6 +60,10 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 	if (ControlledPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
+
+	//ブラックボードのNormalAttack変数を立てる
+	ensure(BlackboardComp);
+	BlackboardComp->SetValueAsBool(ExeNormalAttackKeyName, true);
 
 	//:::::攻撃アニメーション処理::::://
 	//現在のRotateを取得
@@ -111,6 +116,8 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 		//攻撃Flgをfalseに戻す
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(AttackKeyName, false);
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(ExeNormalAttackKeyName, false);
 		UE_LOG(LogTemp, Log, TEXT("SetAttack : false"));
 
 		initFlg = false;
