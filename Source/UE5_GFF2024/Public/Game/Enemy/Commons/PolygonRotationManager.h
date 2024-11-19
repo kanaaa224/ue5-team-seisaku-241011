@@ -33,6 +33,8 @@ public:
     PolygonRotationManager(const TArray<FVector>& Vertices, const TArray<TArray<int32>>& Faces)
         : Vertices(Vertices), Faces(Faces) {}
 
+    void Init();
+
     // 各面の中心座標を計算する
     TArray<FVector> GetFaceCenters(const FVector& Scale, const FVector& Position);
 

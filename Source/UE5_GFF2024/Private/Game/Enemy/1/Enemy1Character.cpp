@@ -26,7 +26,7 @@ AEnemy1Character::AEnemy1Character()
 	health = 100.0f;
 
 	IsMoving = false;
-	IsMoving = true;
+	//IsMoving = true;
 
 	Vector = { 0.,0.,0., };
 
@@ -86,11 +86,52 @@ AEnemy1Character::AEnemy1Character()
 	Speed = 0;
 
 
-	// 攻撃コリジョンを作成
-	AttackCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollision"));
-	AttackCollision->SetupAttachment(RootComponent);
-	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 初期状態では無効
-	AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy1Character::OnAttackHit);
+	// 必要な数のコリジョンを配列に追加
+	for (int32 i = 0; i < 6; i++) // 3つのコリジョンを作成する例
+	{
+		UBoxComponent* NewCollision = CreateDefaultSubobject<UBoxComponent>(*FString::Printf(TEXT("AttackCollision_%d"), i));
+		NewCollision->SetupAttachment(RootComponent);
+		NewCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		NewCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy1Character::OnAttackHit);
+
+		switch (i)
+		{
+		case 0://下
+			NewCollision->SetRelativeLocation({ 0,0,-150 });
+			NewCollision->SetRelativeScale3D({ 4,4,1 });
+			//NewCollision->SetWorldScale3D({ 4,4,1 });
+			break;
+		case 1://上
+			NewCollision->SetRelativeLocation({ 0,0,150 });
+			NewCollision->SetRelativeScale3D({ 4,4,1 });
+			break;
+		case 2://後ろ
+			NewCollision->SetRelativeLocation({ -150,0,0 });
+			NewCollision->SetRelativeScale3D({ 1,4,4 });
+			break;
+		case 3://前
+			NewCollision->SetRelativeLocation({ 150,0,0 });
+			NewCollision->SetRelativeScale3D({ 1,4,4 });
+			break;
+		case 4://左
+			NewCollision->SetRelativeLocation({ 0,-150,0 });
+			NewCollision->SetRelativeScale3D({ 4,1,4 });
+			break;
+		case 5://右
+			NewCollision->SetRelativeLocation({ 0,150,0 });
+			NewCollision->SetRelativeScale3D({ 4,1,4 });
+			break;
+		default:
+			break;
+		}
+
+		AttackCollisions.Add(NewCollision);
+	}
+	BottomCollisionNumber = 0;
+
+	IsAttacking = false;
+
+	AttackState = 0;
 }
 
 // Called when the game starts or when spawned
@@ -106,6 +147,13 @@ void AEnemy1Character::BeginPlay()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f; // 減速時の制御
 
 	//TargetLocation = new FVector(-1, -1, -1);
+
+	AttackCollisions[0]->SetRelativeScale3D({ 4,4,1 });
+	AttackCollisions[1]->SetRelativeScale3D({ 4,4,1 });
+	AttackCollisions[2]->SetRelativeScale3D({ 1,4,4 });
+	AttackCollisions[3]->SetRelativeScale3D({ 1,4,4 });
+	AttackCollisions[4]->SetRelativeScale3D({ 4,1,4 });
+	AttackCollisions[5]->SetRelativeScale3D({ 4,1,4 });
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -128,14 +176,15 @@ void AEnemy1Character::Tick(float DeltaTime)
 
 	Delta = DeltaTime;
 
-	if (TargetLocation.Z > -10000)
-	//if (TargetLocation != OldTargetLocation)
+	if (TargetLocation.Z > -10000 && !IsMoving)
 	{
 		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 		SetActorLocation(NewLocation);
 		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
-
 	}
+
+	GetBottomNumber();
+	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
 
 	OldTargetLocation = TargetLocation;
 
@@ -144,7 +193,10 @@ void AEnemy1Character::Tick(float DeltaTime)
 		MoveProcess();
 	}
 	
-	Attack();
+	if (IsAttacking)
+	{
+		Attack();
+	}
 
 	//AddMovementInput({ 1,0,0 }, 100);
 
@@ -209,11 +261,13 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	return 0.0f;
+	return 10.0f;
 }
 
 void AEnemy1Character::MoveProcess()
 {
+	IsAttacking = true;
+
 	//スケールと位置を指定して面の中心座標を計算・デバッグ描画
 	FVector Scale = FVector(100, 100, 100);  // スケール
 	FVector Position = GetActorLocation();  // オブジェクトの位置
@@ -249,7 +303,7 @@ void AEnemy1Character::MoveProcess()
 
 
 	//デバッグ表示
-	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {150,150,150}, Position);
+	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {200,200,200}, Position);
 
 	//for (int i = 0; i < CubeFaces.Num(); i++)
 	//{
@@ -271,25 +325,61 @@ void AEnemy1Character::MoveProcess()
 
 void AEnemy1Character::Attack()
 {
-	// コリジョンを有効化して攻撃の範囲を設定
-	AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);  // キャラクターに対してのみ
-	AttackCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	AttackCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	AttackCollision->SetRelativeScale3D({ 4,4,1 });
-	AttackCollision->SetRelativeLocation({ RotationManager->GetFaceCenterLocation({150,150,150},{0,0,0},RotationManager->bottom) });
+	if (AttackState != 2) 
+	{
+		// コリジョンを有効化して攻撃の範囲を設定
+		AttackCollisions[BottomCollisionNumber]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		AttackCollisions[BottomCollisionNumber]->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);  // キャラクターに対してのみ
+		AttackCollisions[BottomCollisionNumber]->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		AttackCollisions[BottomCollisionNumber]->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-	// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
-	//FTimerHandle TimerHandle;
-	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-	//	{
-	//		AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//	}, 0.1f, false);  // 0.1秒後に無効化
+		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+			{
+				AttackCollisions[BottomCollisionNumber]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}, 0.1f, false);  // 0.1秒後に無効化
+	}
+	else
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			// コリジョンを有効化して攻撃の範囲を設定
+			AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			AttackCollisions[i]->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);  // キャラクターに対してのみ
+			AttackCollisions[i]->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			AttackCollisions[i]->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+			// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, i]()
+				{
+					AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				}, 0.1f, false);  // 0.1秒後に無効化
+		}
+	}
 }
 
 void AEnemy1Character::OnAttackHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != nullptr)ApplyDamage(OtherActor);
+	if (OtherActor != nullptr)
+	{
+		ApplyDamage(OtherActor);
+	}
+}
+
+void AEnemy1Character::GetBottomNumber()
+{
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			if (i != j && AttackCollisions[i]->GetComponentLocation().Z > AttackCollisions[j]->GetComponentLocation().Z)
+			{
+				BottomCollisionNumber = j;
+			}
+		}
+	}
 }
 
 

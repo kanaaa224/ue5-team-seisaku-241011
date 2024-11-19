@@ -64,6 +64,11 @@ public:
 	{
 		IsMoving = b;
 	}
+
+	PolygonRotationManager* GetPolygonRotationManager()
+	{
+		return RotationManager;
+	}
 public:
 	//定義
 	// 立方体の頂点を定義（中心が原点、1辺の長さが2の立方体と仮定）
@@ -155,7 +160,9 @@ public:
 
 	// 攻撃コリジョン用のコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UBoxComponent* AttackCollision;
+	TArray<UBoxComponent*> AttackCollisions;
+
+	int32 BottomCollisionNumber;
 
 	// 攻撃メソッド
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -170,4 +177,12 @@ public:
 	// ダメージ量
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float Damage = 20.0f;
+
+	//0移動1落下2タックル
+	int32 AttackState;
+
+
+	void GetBottomNumber();
+
+	bool IsAttacking;
 };
