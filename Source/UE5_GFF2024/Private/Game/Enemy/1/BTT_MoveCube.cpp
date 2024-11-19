@@ -54,21 +54,30 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
 
 
-                    return EBTNodeResult::Succeeded;
+                    //return EBTNodeResult::Succeeded;
 
-                    if (EnemyVector.Length() < 100)
+                    if (!Enemy->GetPolygonRotationManager()->GetIsRotating())
                     {
-                        Enemy->SetIsMoving(false);
-                        if (!Enemy->IsMoving)
+                        if (EnemyVector.Length() < 500)
                         {
+                            Enemy->SetIsMoving(false);
                             AIC->SetState(1);
                         }
-                        return EBTNodeResult::Succeeded;
                     }
-                    else
-                    {
-                        return EBTNodeResult::Succeeded;
-                    }
+                    return EBTNodeResult::Succeeded;
+                    //if (EnemyVector.Length() < 100 /*&& !Enemy->GetPolygonRotationManager()->GetIsRotating()*/)
+                    //{
+                    //    Enemy->SetIsMoving(false);
+                    //    if (!Enemy->IsMoving)
+                    //    {
+                    //        AIC->SetState(1);
+                    //    }
+                    //    return EBTNodeResult::Succeeded;
+                    //}
+                    //else
+                    //{
+                    //    return EBTNodeResult::Succeeded;
+                    //}
                 }
             }
         }

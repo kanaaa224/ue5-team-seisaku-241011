@@ -64,6 +64,11 @@ public:
 	{
 		IsMoving = b;
 	}
+
+	PolygonRotationManager* GetPolygonRotationManager()
+	{
+		return RotationManager;
+	}
 public:
 	//定義
 	// 立方体の頂点を定義（中心が原点、1辺の長さが2の立方体と仮定）

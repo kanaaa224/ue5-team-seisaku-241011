@@ -26,7 +26,7 @@ AEnemy1Character::AEnemy1Character()
 	health = 100.0f;
 
 	IsMoving = false;
-	IsMoving = true;
+	//IsMoving = true;
 
 	Vector = { 0.,0.,0., };
 

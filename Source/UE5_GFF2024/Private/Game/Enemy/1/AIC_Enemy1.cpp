@@ -123,7 +123,7 @@ void AAIC_Enemy1::SetState(int32 state)
 	ensure(BlackboardComp);
 
 	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
-	BlackboardComp->SetValueAsFloat(StateKeyName, state);
+	BlackboardComp->SetValueAsInt(StateKeyName, state);
 }
 
 
