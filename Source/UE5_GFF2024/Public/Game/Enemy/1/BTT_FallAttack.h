@@ -47,6 +47,7 @@ public:
 
 
     FVector Velocity;
+    FVector OldVelocity;
 
     int32 Count;
 
