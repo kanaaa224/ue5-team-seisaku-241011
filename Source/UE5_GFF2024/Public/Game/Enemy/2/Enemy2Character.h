@@ -37,6 +37,12 @@ private:
 	//体力
 	float health;
 
+	bool damageMaterialFlg;
+	float timeCnt;
+
+	//スポーン時のLocationを取得
+	FVector startLocation;
+
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UPawnSensingComponent* PawnSensingComp;
@@ -54,6 +60,11 @@ public:
 	/// 死亡処理
 	/// </summary>
 	void Die();
+
+	//
+	void DamageMaterial();
+	//
+	void NormalMaterial();
 
 public:
 	//ロックオン
@@ -81,4 +92,31 @@ private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* CubeMesh;
+
+public:
+	/*:::::通常攻撃で使う関数:::::*/
+	
+	//攻撃前のジャンプ
+	bool Normal_Jump();
+
+	//振り下ろし
+	bool Normal_Attack();
+
+	//起き上がり
+	bool Normal_StandUp();
+
+public:
+	/*:::::特殊攻撃で使う関数:::::*/
+
+	//攻撃前の空中に浮き上がる
+	bool ULT_Float();
+
+	//攻撃前の分身生成
+	bool ULT_CreateOtherSelf();
+
+	//分身がプレイヤー目掛けて攻撃
+	bool ULT_Attack();
+
+	//攻撃を終えて地面に降り立つ
+	bool ULT_GoDown();
 };

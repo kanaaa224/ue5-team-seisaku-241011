@@ -5,6 +5,8 @@
 
 //Enemy2Controller
 #include "Game/Enemy/2/AIC_Enemy2.h"
+//Enemy2のキャラクター
+#include "Game/Enemy/2/Enemy2Character.h"
 //PlayController
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -25,9 +27,18 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	if (AIController == nullptr) {
 		return EBTNodeResult::Failed;
 	}
-	//コントローラからPawnを取得
-	APawn* ControlledPawn = AIController->GetPawn();
+	//コントローた(AIC_Enemy2)を取得
+	AAIC_Enemy2* MyAIController = Cast<AAIC_Enemy2>(AIController);
+	if (MyAIController == nullptr) {
+		return EBTNodeResult::Failed;
+	}
+	//コントローラ(AIC_Enemy2)からPawnを取得
+	APawn* ControlledPawn = MyAIController->GetPawn();
 	if (ControlledPawn == nullptr) {
+		return EBTNodeResult::Failed;
+	}
+	AEnemy2Character* MyPawn = Cast<AEnemy2Character>(ControlledPawn);
+	if (MyPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
 
@@ -41,6 +52,8 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	if (PlayerPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
+
+	MyPawn->ULT_Float();
 
 	UE_LOG(LogTemp, Log, TEXT("SpecialAttack"));
 	return EBTNodeResult::Succeeded;

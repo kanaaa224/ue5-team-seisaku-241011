@@ -37,6 +37,8 @@ AEnemy2Character::AEnemy2Character()
 	/*:::::変数:::::*/
 	//体力
 	health = 100.0f;
+	damageMaterialFlg = false;
+	timeCnt = 0;
 
 	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
@@ -121,14 +123,24 @@ AEnemy2Character::AEnemy2Character()
 void AEnemy2Character::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	//マテリアルのセット
+	NormalMaterial();
+
+	//スタート時のLocationを取得
+	startLocation = GetActorLocation();
 }
 
 // Called every frame
 void AEnemy2Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (damageMaterialFlg == true) {
+		timeCnt += DeltaTime;
+		if (timeCnt >= 0.7f) {
+			damageMaterialFlg = false;
+			NormalMaterial();
+		}
+	}
 }
 
 void AEnemy2Character::OnSeePlayer(APawn* Pawn)
@@ -168,6 +180,7 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	//受けたダメージ量分HPを減産
 	health -= DamageAmount;
+	DamageMaterial();
 
 	//ヘルスがゼロ以下なら死亡処理
 	if (health <= 0) {
@@ -175,16 +188,41 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 		Die();
 	}
 
-	//受けたダメージ量を返す
-	return DamageAmount;
+	//現在のHPを返す
+	return health;
 }
 
 void AEnemy2Character::Die()
 {
+	//LockOnを解除
+	LockOnMarkerWidget->SetVisibility(false);
+
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	// 一定時間後にオブジェクトを削除
 	SetLifeSpan(1.0f); // 1秒後に削除
+}
+
+void AEnemy2Character::DamageMaterial()
+{
+	//マテリアルをロード
+	UMaterialInterface* damageMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/enemy/2/Material/M_damage.M_damage"));
+
+	if (damageMaterial) {
+		CubeMesh->SetMaterial(0, damageMaterial);
+		damageMaterialFlg = true;
+		UE_LOG(LogTemp, Warning, TEXT("damageMaterial"));
+	}
+}
+
+void AEnemy2Character::NormalMaterial()
+{
+	//マテリアルをロード
+	UMaterialInterface* normalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/enemy/2/Material/M_Normal.M_Normal"));
+
+	if (normalMaterial) {
+		CubeMesh->SetMaterial(0, normalMaterial);
+	}
 }
 
 void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
@@ -250,3 +288,46 @@ void AEnemy2Character::AttackPlayer()
 	}
 }
 
+/*****通常攻撃で使う関数*****/
+
+bool AEnemy2Character::Normal_Jump()
+{
+	return false;
+}
+
+bool AEnemy2Character::Normal_Attack()
+{
+	return false;
+}
+
+bool AEnemy2Character::Normal_StandUp()
+{
+	return false;
+}
+
+/*****特殊攻撃で使う関数*****/
+
+bool AEnemy2Character::ULT_Float()
+{
+	FVector nowLocation = GetActorLocation();
+	nowLocation = FMath::VInterpTo(nowLocation, startLocation + FVector(nowLocation.X, nowLocation.Y, 500.0f), GetWorld()->GetDeltaSeconds(), 3.0f);
+
+	//
+	SetActorRelativeLocation(nowLocation);
+	return true;
+}
+
+bool AEnemy2Character::ULT_CreateOtherSelf()
+{
+	return false;
+}
+
+bool AEnemy2Character::ULT_Attack()
+{
+	return false;
+}
+
+bool AEnemy2Character::ULT_GoDown()
+{
+	return false;
+}

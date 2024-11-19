@@ -4,7 +4,10 @@
 #include "Game/Enemy/2/BTT_NormalAttack_Enemy2.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+//Enemy2のAIコントローラ
 #include "Game/Enemy/2/AIC_Enemy2.h"
+//Enemy2のキャラクター
+#include "Game/Enemy/2/Enemy2Character.h"
 
 UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
@@ -89,6 +92,7 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 		nowLocation.operator-=(FVector(0.0f, 0.0f, 70.0f));
 		nowRotaton.operator-=(FRotator(17.0f,0.0f,0.0f));
+		//FMath::RInterpTo(nowRotaton,FRotator(90.0f,0.0f,0.0f), )
 
 		if (frameCnt_Attack_Down == 10) {
 			endAttack = true;
