@@ -30,7 +30,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
-#define DEFAULT_TARGET_ARM_LENGTH	900.f			//プレイヤーまでのカメラの距離
+#define DEFAULT_TARGET_ARM_LENGTH	800.f			//デフォルトのプレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
 #define LOCKON_CANCELLATION_DISTANCE	1800		//ロックオンを強制的に解除する距離
@@ -122,14 +122,14 @@ APlayer_Cube::APlayer_Cube()
 	//BoxComponentを追加する
 	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetBoxExtent(FVector(900.f, 900.f, 100.f));
+	LockOnCollision->SetBoxExtent(FVector(6000.f, 6000.f, 100.f));
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
-	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);													//コリジョンをクエリーオンリーにする
+	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
 	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
 	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
 
-	//LockOnCollision->bHiddenInGame = false;
+	LockOnCollision->bHiddenInGame = false;
 
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
@@ -325,17 +325,11 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		//Move
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayer_Cube::Move);
 
-		//Look
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayer_Cube::Look);
-
 		//Blink
 		EnhancedInputComponent->BindAction(BlinkAction, ETriggerEvent::Started, this, &APlayer_Cube::Blink);
 
 		//Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayer_Cube::Attack);
-
-		//LockOn
-		EnhancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &APlayer_Cube::LockOn);
 	}
 }
 
@@ -408,7 +402,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 				LockOnRemoveFlg = false;
 			}
 			//消す
-			ImpactActor->Destroy();
+			//ImpactActor->Destroy();
 		}
 
 		//攻撃のダメージフラグを設定
@@ -507,11 +501,12 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 	if (!LockOnFlg && !AttackFlg)
 	{
 		LockOnCandidates.AddUnique(OtherActor);
-
 		//ロックオンの候補がいるか調べる
 		if (LockOnCandidates.IsValidIndex(0))
 		{
+			//プレイヤーの向きを固定する
 			GetCharacterMovement()->bOrientRotationToMovement = false;
+			//強制的にカメラの長さをもとに戻す
 			CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;
 			LockOnFlg = true;
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
@@ -566,28 +561,6 @@ void APlayer_Cube::Move(const FInputActionValue& Value)
 	}
 }
 
-void APlayer_Cube::Look(const FInputActionValue& Value)
-{
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr && !LockOnFlg)
-	{
-		//ヨーとピッチの入力を加える
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-
-		////Pawnが持っているControlの角度を取得する
-		//FRotator ControlRotate = GetControlRotation();
-
-		////ControllerのPitchの角度を制限する
-		//double LimitPitchAngle = FMath::ClampAngle(ControlRotate.Pitch, -40.f, -10.f);
-
-		////PlayerControllerの角度を設定する
-		//Controller->SetControlRotation(FRotator(LimitPitchAngle, ControlRotate.Yaw, ControlRotate.Roll));
-
-	}
-}
-
 void APlayer_Cube::Blink(const FInputActionValue& Value)
 {
 	//inputのvalueはboolに変換できる
@@ -599,7 +572,7 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, BlinkParticle, this->GetActorLocation(), this->GetActorRotation(), FVector(1.f));
-		Material_Instance->SetScalarParameterValue("Opacity", 0.25);
+		Material_Instance->SetScalarParameterValue("Opacity", 0.2);
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
 		BlinkCoolTime = BLINK_COOLTIME;
@@ -627,47 +600,6 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 	}
 }
 
-void APlayer_Cube::LockOn(const FInputActionValue& Value)
-{
-	if (!LockOnFlg)
-	{
-		//ロックオンの候補がいるか調べる
-		if (LockOnCandidates.IsValidIndex(0))
-		{
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;
-			LockOnFlg = true;
-			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-			{
-				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, true);
-			}
-			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
-		}
-	}
-	else
-	{
-		//ロックオンの候補がいるか調べる
-		if (LockOnCandidates.IsValidIndex(0))
-		{
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			LockOnFlg = false;
-			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-			{
-				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
-			}
-			UKismetSystemLibrary::PrintString(this, TEXT("OFF"));
-
-			if (LockOnRemoveFlg)
-			{
-				LockOnCandidates.Remove(LockOnTargetActor);
-				LockOnRemoveFlg = false;
-			}
-		}
-	}
-}
-
 void APlayer_Cube::SmoothCameraCollision()
 {
 	if (!LockOnFlg)
@@ -688,18 +620,26 @@ void APlayer_Cube::SmoothCameraCollision()
 		FHitResult OutHit;
 		//スフィアトレース
 		UKismetSystemLibrary::SphereTraceSingle(this, StartLocation, EndLocation, SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::None, OutHit, true);
+		
+		//当たったなら
 		if (OutHit.bBlockingHit)
 		{
+			//ヒットした座標を取得
 			CameraImpactPoint = OutHit.ImpactPoint;
 
+			//ヒットしない座標を取得
 			double TargetPoint = UKismetMathLibrary::Vector_Distance(StartLocation, CameraImpactPoint) - SphereRadius;
 
+			//カメラの長さを調節
 			CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, TargetPoint, GetWorld()->GetDeltaSeconds(), 3);
 		}
+		//当たっていないなら
 		else
 		{
+			//カメラの長さがデフォルトの長さではないなら
 			if (!UKismetMathLibrary::NearlyEqual_FloatFloat(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, 1.0))
 			{
+				//カメラの長さを調節
 				CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3);
 			}
 		}
@@ -708,6 +648,7 @@ void APlayer_Cube::SmoothCameraCollision()
 
 void APlayer_Cube::LockOnTarget()
 {
+	//ロックオンしているなら
 	if (LockOnFlg)
 	{
 		//向きたい方向へのプレイヤーの回転値を取得
@@ -719,29 +660,32 @@ void APlayer_Cube::LockOnTarget()
 		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
 		//微調整用
 		float Adjustment = 1.5f;
-		Controller->SetControlRotation(FRotator(InterpControlRotation.Pitch - Adjustment, InterpControlRotation.Yaw, InterpControlRotation.Roll));
-		
-		double Distance = UKismetMathLibrary::Vector_Distance(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
-		if (Distance >= LOCKON_CANCELLATION_DISTANCE)
+		InterpControlRotation.Pitch -= Adjustment;
+		////ControllerのPitchの角度を制限する
+		double LimitPitchAngle = FMath::ClampAngle(InterpControlRotation.Pitch, -20.f, -10.f);
+		Controller->SetControlRotation(FRotator(LimitPitchAngle, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+	}
+	//ロックオンしていないなら
+	else
+	{
+		//ロックオンの候補がいるか調べる
+		if (LockOnCandidates.IsValidIndex(0))
 		{
-			if (LockOnCandidates.IsValidIndex(0))
-			{
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-				LockOnFlg = false;
-				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-				{
-					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
-				}
-				LockOnCandidates.Remove(LockOnTargetActor);
-				LockOnRemoveFlg = false;
-			}
+			LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		else
+		{
+			//ロックオンされるまで繰り返す
+			LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 		}
 	}
 }
 
 void APlayer_Cube::PlayerTransparent()
 {
+	//ブリンクしていないなら
 	if (!BlinkFlg)
 	{
 		double Distance = UKismetMathLibrary::Vector_Distance(FollowCamera->GetComponentLocation(), GetActorLocation());

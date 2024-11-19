@@ -15,7 +15,9 @@ class UE5_GFF2024_API AGameMode_InGame : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	FTransform SpawnTransform;
+	FTransform SpawnTransform;			//スポーン座標
+
+	int32 Floor = 1;					//階層
 
 public:
 	//コンストラクタ

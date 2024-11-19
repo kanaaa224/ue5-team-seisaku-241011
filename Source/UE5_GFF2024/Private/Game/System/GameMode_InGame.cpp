@@ -47,15 +47,14 @@ void AGameMode_InGame::KillPlayer(APlayer_Cube* Player)
 		else
 		{
 			//GameをRestartする
-			UE_LOG(LogTemp, Display, TEXT("GameOver"));
-			//RestartGame();
+			RestartGame();
 		}
 	}
 }
 
 void AGameMode_InGame::RestartGame()
 {
-
+	UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu");
 }
 
 void AGameMode_InGame::RespawnPlayer()
