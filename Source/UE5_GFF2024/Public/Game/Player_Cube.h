@@ -196,14 +196,10 @@ private:
 private:
 	//移動処理
 	void Move(const FInputActionValue& Value);
-	//視点操作処理
-	void Look(const FInputActionValue& Value);
 	//ブリンク処理
 	void Blink(const FInputActionValue& Value);
 	//攻撃処理
 	void Attack(const FInputActionValue& Value);
-	//ロックオン処理
-	void LockOn(const FInputActionValue& Value);
 
 	//カメラのコリジョンの処理
 	void SmoothCameraCollision();

@@ -31,7 +31,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     {
         // `Target` の値を使った処理を行う
         // 例: ターゲットが見つかった場合の処理など
-        UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
+        //UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
         
         if (AAIC_Enemy1* AIC = Cast<AAIC_Enemy1>(OwnerComp.GetAIOwner()))
         {
@@ -47,28 +47,32 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
                     Enemy->SetIsMoving(true);
 
-                    /*if (!Enemy->IsMoving)
+
+                    //return EBTNodeResult::Succeeded;
+
+                    if (!Enemy->GetPolygonRotationManager()->GetIsRotating())
                     {
-                        AIC->SetState(1);
-                    }*/
-
-
-
-                    return EBTNodeResult::Succeeded;
-
-                    if (EnemyVector.Length() < 100)
-                    {
-                        Enemy->SetIsMoving(false);
-                        if (!Enemy->IsMoving)
+                        if (EnemyVector.Length() < 500)
                         {
-                            AIC->SetState(1);
+                            Enemy->SetIsMoving(false);
+                            AIC->SetState(3);
+                            AIC->SetNextState(1);
                         }
-                        return EBTNodeResult::Succeeded;
                     }
-                    else
-                    {
-                        return EBTNodeResult::Succeeded;
-                    }
+                    return EBTNodeResult::Succeeded;
+                    //if (EnemyVector.Length() < 100 /*&& !Enemy->GetPolygonRotationManager()->GetIsRotating()*/)
+                    //{
+                    //    Enemy->SetIsMoving(false);
+                    //    if (!Enemy->IsMoving)
+                    //    {
+                    //        AIC->SetState(1);
+                    //    }
+                    //    return EBTNodeResult::Succeeded;
+                    //}
+                    //else
+                    //{
+                    //    return EBTNodeResult::Succeeded;
+                    //}
                 }
             }
         }

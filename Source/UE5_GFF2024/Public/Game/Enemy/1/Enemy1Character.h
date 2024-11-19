@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+//ロックオン
+#include "../../System/LockOnInterface.h"
+
 #include "Enemy1Character.generated.h"
 
 class PolygonRotationManager;
@@ -11,7 +14,7 @@ class UStaticMeshComponent;
 class UBoxComponent;
 
 UCLASS()
-class UE5_GFF2024_API AEnemy1Character : public ACharacter
+class UE5_GFF2024_API AEnemy1Character : public ACharacter, public ILockOnInterface
 {
 	GENERATED_BODY()
 
@@ -63,6 +66,11 @@ public:
 	void SetIsMoving(bool b)
 	{
 		IsMoving = b;
+	}
+
+	PolygonRotationManager* GetPolygonRotationManager()
+	{
+		return RotationManager;
 	}
 public:
 	//定義
@@ -155,7 +163,9 @@ public:
 
 	// 攻撃コリジョン用のコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UBoxComponent* AttackCollision;
+	TArray<UBoxComponent*> AttackCollisions;
+
+	int32 BottomCollisionNumber;
 
 	// 攻撃メソッド
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -170,4 +180,21 @@ public:
 	// ダメージ量
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float Damage = 20.0f;
+
+	//0移動1落下2タックル
+	int32 AttackState;
+
+
+	void GetBottomNumber();
+
+	bool IsAttacking;
+
+
+	//ロックオン
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* LockOnMarkerWidget;
+
+	//ロックオンの有効フラグを設定する
+	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
+
 };
