@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/BoxComponent.h"
 #include "Enemy3Character.generated.h"
 
 UCLASS()
@@ -36,12 +37,19 @@ public:
 
 private:
 
-	/* DefaultSceneRootの設定 */
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USceneComponent> DefaultSceneRoot;
-
 	/* DiceMehComponent */
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> DiceMesh;
 
+	/* 当たり判定用 BoxComponent */
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> HitBox;
+
+private:
+
+	UFUNCTION()
+	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

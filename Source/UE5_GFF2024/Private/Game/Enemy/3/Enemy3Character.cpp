@@ -7,6 +7,7 @@
 
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/3/AIC_Enemy3.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemy3Character::AEnemy3Character()
@@ -14,30 +15,49 @@ AEnemy3Character::AEnemy3Character()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
+	// 視野用のコンポーネントを作成
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 	// 視野
 	PawnSensingComp->SetPeripheralVisionAngle(60.f);
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy3Character::OnSeePlayer);
 
+	
+
 	/* AIControllerの設定*/
 	AIControllerClass = AAIC_Enemy3::StaticClass();
 	//キャラクターがAIControllerを使うように設定
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-	/* DefaultSceneRootを作成する */
-	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
-	/* SceneComponentをRootComponentに設定する */
-	RootComponent = DefaultSceneRoot;
+
+	/* 最初のRootComponent(親Component)をCapsuleComponent*/
+	RootComponent = GetCapsuleComponent();
+
+
 	/* StaticMeshComponentを作成する */
 	DiceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	/* StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する */
-	UStaticMesh* LoadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Game/enemy/3/Mesh/DiceStaticMesh"));
+	UStaticMesh* LoadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Game/enemy/3/Mesh/DiceStaticMesh.DiceStaticMesh"));
 	/* StaticMeshをStaticMeshComponentに設定する */
 	DiceMesh->SetStaticMesh(LoadMesh);
+	/* RootComponentを子クラスのStaticMeshに設定する */
 	DiceMesh->SetupAttachment(RootComponent);
+	/* DiceMeshのサイズを変更する */
+	DiceMesh->SetRelativeScale3D(FVector(3.1, 3.1, 3.1));
+
+
+	/* BoxComponentを作成する */
+	HitBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HitBox"));
+	/* RootComponentを子クラスのBoxComponentに設定する */
+	HitBox->SetupAttachment(DiceMesh);
+	/* BoxComponentのサイズを変更する */
+	HitBox->SetRelativeScale3D(FVector(3.2, 3.2, 3.2));
+	/* HitBox用のOnComponentBeginOverlapをBindする */
+	HitBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy3Character::OnBoxBeginOverlap);
+	/* HitBox用のOnComponentEndOverlapをBindする */
+	HitBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy3Character::OnBoxEndOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -75,5 +95,13 @@ void AEnemy3Character::OnSeePlayer(APawn* Pawn)
 
 	// 視野に入ったら画面に"See"と表示
 	UKismetSystemLibrary::PrintString(this, "Player::See", true, true, FColor::White, 2.f);
+}
+
+void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void AEnemy3Character::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 }
 
