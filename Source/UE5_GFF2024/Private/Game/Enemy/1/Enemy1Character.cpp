@@ -18,6 +18,10 @@
 
 #include "Components/BoxComponent.h"
 
+//ロックオン
+#include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -132,6 +136,26 @@ AEnemy1Character::AEnemy1Character()
 	IsAttacking = false;
 
 	AttackState = 0;
+
+
+	//ロックオン//
+	//WidgetComponentを追加する
+	LockOnMarkerWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
+	LockOnMarkerWidget->SetupAttachment(RootComponent);
+	LockOnMarkerWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	//設定したいウィジェットのクラスを作成
+	FString LockOnMarkerWidgetPath = TEXT("/Game/Game/UI/WBP_LockOn.WBP_LockOn_C");
+	TSubclassOf<UUserWidget>LockOnMarkerWidgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*LockOnMarkerWidgetPath)).LoadSynchronous();
+	//SetWidgetでnullptrを入れないとクラッシュする
+	LockOnMarkerWidget->SetWidget(nullptr);
+	//WidgetClassを設定
+	LockOnMarkerWidget->SetWidgetClass(LockOnMarkerWidgetClass);
+	//非表示にする
+	LockOnMarkerWidget->SetVisibility(false);
+
+	GetCapsuleComponent()->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 }
 
 // Called when the game starts or when spawned
@@ -261,7 +285,7 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	return 10.0f;
+	return 0.0f;
 }
 
 void AEnemy1Character::MoveProcess()
@@ -379,6 +403,18 @@ void AEnemy1Character::GetBottomNumber()
 				BottomCollisionNumber = j;
 			}
 		}
+	}
+}
+
+void AEnemy1Character::SetLockOnEnable_Implementation(bool LockOnFlg)
+{
+	if (LockOnFlg)
+	{
+		LockOnMarkerWidget->SetVisibility(true);
+	}
+	else
+	{
+		LockOnMarkerWidget->SetVisibility(false);
 	}
 }
 

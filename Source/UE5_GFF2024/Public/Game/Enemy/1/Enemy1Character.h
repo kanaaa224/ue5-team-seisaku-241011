@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+//ロックオン
+#include "../../System/LockOnInterface.h"
+
 #include "Enemy1Character.generated.h"
 
 class PolygonRotationManager;
@@ -11,7 +14,7 @@ class UStaticMeshComponent;
 class UBoxComponent;
 
 UCLASS()
-class UE5_GFF2024_API AEnemy1Character : public ACharacter
+class UE5_GFF2024_API AEnemy1Character : public ACharacter, public ILockOnInterface
 {
 	GENERATED_BODY()
 
@@ -185,4 +188,13 @@ public:
 	void GetBottomNumber();
 
 	bool IsAttacking;
+
+
+	//ロックオン
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* LockOnMarkerWidget;
+
+	//ロックオンの有効フラグを設定する
+	virtual void SetLockOnEnable_Implementation(bool LockOnFlg)override;
+
 };
