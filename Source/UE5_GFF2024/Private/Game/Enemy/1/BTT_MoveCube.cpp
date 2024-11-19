@@ -47,12 +47,6 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
                     Enemy->SetIsMoving(true);
 
-                    /*if (!Enemy->IsMoving)
-                    {
-                        AIC->SetState(1);
-                    }*/
-
-
 
                     //return EBTNodeResult::Succeeded;
 
@@ -61,7 +55,8 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                         if (EnemyVector.Length() < 500)
                         {
                             Enemy->SetIsMoving(false);
-                            AIC->SetState(1);
+                            AIC->SetState(3);
+                            AIC->SetNextState(1);
                         }
                     }
                     return EBTNodeResult::Succeeded;

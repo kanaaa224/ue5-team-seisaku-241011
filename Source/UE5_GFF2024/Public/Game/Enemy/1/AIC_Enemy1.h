@@ -38,6 +38,7 @@ public:
 	FName StateKeyName;
 
 	int32 State;
+	int32 NextState;
 
 protected:
 	// AIControllerのPawn所持
@@ -70,6 +71,7 @@ public:
 
 	//BTのほうのState
 	void SetState(int32 state);
+	void SetNextState(int32 state);
 
 
 	

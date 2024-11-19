@@ -84,14 +84,8 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         StartLocationZ = Enemy->GetActorLocation().Z;
                         IsStart = false;
                         Enemy->SetIsMoving(false);
+                        //Enemy->TargetLocation = Enemy->GetActorLocation();
                     }
-
-
-                    FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
-                    FVector Normalize = EnemyVector / EnemyVector.Length();
-                   
-                 
-                   
 
                     if (!IsTimelineStart)
                     {
@@ -99,6 +93,9 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         MyTimelineComponent->PlayFromStart();
                     }
 
+                    FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
+                    FVector Normalize = EnemyVector / EnemyVector.Length();
+           
                    
                     if (Velocity.Z >= 0.9)
                     {
@@ -142,14 +139,19 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     }
 
 
-                    if (Count < 3)
+                    if (Count < 1)
                     {
                         EBTNodeResult::InProgress;
                     }
                     else
                     {
                         Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-                        Enemy->SetIsMoving(true);
+                        //Enemy->SetIsMoving(true);
+                        AIC->SetState(3);
+                        AIC->SetNextState(0);
+                        Enemy->TargetLocation = { -1, -1, -10000 };
+                        IsStart = true;
+                        Velocity = { 0,0,0 };
                     }
                 }
             }

@@ -176,12 +176,11 @@ void AEnemy1Character::Tick(float DeltaTime)
 
 	Delta = DeltaTime;
 
-	if (TargetLocation.Z > -10000)
+	if (TargetLocation.Z > -10000 && !IsMoving)
 	{
 		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 		SetActorLocation(NewLocation);
 		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
-
 	}
 
 	GetBottomNumber();
@@ -262,7 +261,7 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	return 0.0f;
+	return 10.0f;
 }
 
 void AEnemy1Character::MoveProcess()
@@ -304,7 +303,7 @@ void AEnemy1Character::MoveProcess()
 
 
 	//デバッグ表示
-	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {150,150,150}, Position);
+	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {200,200,200}, Position);
 
 	//for (int i = 0; i < CubeFaces.Num(); i++)
 	//{

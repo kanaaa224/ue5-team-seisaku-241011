@@ -12,6 +12,23 @@ PolygonRotationManager::~PolygonRotationManager()
 {
 }
 
+void PolygonRotationManager::Init()
+{
+    NowRotation = { 0,0,0 };
+    NextRotation = { 0,0,0 };
+    TestRotation = { 0,0,0 };
+    NewLocation = { 0,0,0 };
+    CenterPosition = { 0,0,0 };
+
+    bottom = 0;
+    next = 0;
+    FpsCounter = 0;
+
+    IsRotating = false;
+
+    Speed = 1.f;
+}
+
 TArray<FVector> PolygonRotationManager::GetFaceCenters(const FVector& Scale, const FVector& Position)
 {
     TArray<FVector> FaceCenters;
@@ -269,8 +286,8 @@ void PolygonRotationManager::SetNewRotationAndLocation(const FVector& ActorPosit
     //30はFPSの数字 -> 変数Fpsに切り替える
     //NowRotation += TestRotation;
     //NowRotation += {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};     //SetActorLocationを使う場合はこっち
-    //NowRotation = {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};    //AddActorRotationを使う場合はこっち
-    NowRotation = {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed };    //AddActorRotationを使う場合はこっち
+    NowRotation = {NextRotation.Pitch / Fps, NextRotation.Yaw / Fps, NextRotation.Roll / Fps};    //AddActorRotationを使う場合はこっち
+    //NowRotation = {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed };    //AddActorRotationを使う場合はこっち
    
     //NowRotation += {NextRotation.Pitch / speed, NextRotation.Yaw / speed, NextRotation.Roll / speed};
     //とりあえず一秒で回転

@@ -16,6 +16,8 @@ AAIC_Enemy1::AAIC_Enemy1(const FObjectInitializer& ObjectInitializer)
 
 	PlayerKeyName = "Player";
 	StateKeyName = "State";
+
+	NextState = -1;
 }
 
 void AAIC_Enemy1::SetPlayerKey(APawn* player)
@@ -124,6 +126,11 @@ void AAIC_Enemy1::SetState(int32 state)
 
 	//ブラックボードにプレイヤまでの距離をDistanceFromPlayerに設定
 	BlackboardComp->SetValueAsInt(StateKeyName, state);
+}
+
+void AAIC_Enemy1::SetNextState(int32 state)
+{
+	NextState = state;
 }
 
 
