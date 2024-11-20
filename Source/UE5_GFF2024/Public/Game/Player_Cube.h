@@ -87,6 +87,8 @@ public:
 
 	//攻撃のパーティクル
 	class UParticleSystem* AttackParticle;
+	//敵のダメージパーティクル
+	class UParticleSystem* InflictDamageParticle;
 
 	//回避のパーティクル
 	class UNiagaraSystem* BlinkParticle;
@@ -129,8 +131,6 @@ public:
 	bool KnockBackFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
-	//ロックオンの対処削除フラグ
-	bool LockOnRemoveFlg;
 
 public:
 	//コンストラクタ
