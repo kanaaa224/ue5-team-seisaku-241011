@@ -394,7 +394,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 		FDamageEvent DamageEvent(ValidDamageTypeClass);
 
 		//ダメージ量
-		const float DamageAmount = 100.0f;
+		const float DamageAmount = 10.0f;
 		UKismetSystemLibrary::PrintString(this,TEXT("damage"));
 
 		//ダメージを与えたアクターのHPが0以下なら
@@ -427,10 +427,14 @@ void APlayer_Cube::BlinkTimelineUpdate(float Value)
 
 void APlayer_Cube::AttackTimelineUpdate(float Value)
 {
-	//回転情報を取得
-	FRotator ActorRotarion = GetActorRotation();
+	//ノックバックしていないなら回転する
+	if (!KnockBackFlg)
+	{
+		//回転情報を取得
+		FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
+		SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
+	}
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
