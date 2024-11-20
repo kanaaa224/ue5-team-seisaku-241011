@@ -13,4 +13,8 @@ class UE5_GFF2024_API AHUD_PlayerHUD : public AHUD
 	
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_playerHUD;
+	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_pauseMenu;
 };
