@@ -17,26 +17,11 @@ void AHUD_TitleMenu::BeginPlay()
 	if (widgetClass && playerController)
 	{
 		// Widgetを作成し、Viewportに追加
-		UUserWidget* userWidget = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+		userWidget = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
 		userWidget->AddToViewport(0);
 
-		// MouseCursorを表示
+		// InputModeをゲーム&UIにし、MouseCursorを表示
 		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(playerController, userWidget, EMouseLockMode::DoNotLock, true, false);
 		playerController->SetShowMouseCursor(true);
 	}
 }
-
-/* void AHUD_TitleMenu::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	// プレイヤーコントローラーを取得
-	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-
-	if (playerController)
-	{
-		// マウスカーソルを非表示に設定
-		UWidgetBlueprintLibrary::SetInputMode_GameOnly(playerController);
-		playerController->SetShowMouseCursor(false);
-	}
-} */

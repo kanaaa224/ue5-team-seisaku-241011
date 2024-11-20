@@ -17,10 +17,24 @@ void AHUD_PlayerHUD::BeginPlay()
 	if (widgetClass && playerController)
 	{
 		// Widgetを作成し、Viewportに追加
-		UUserWidget* userWidget = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
-		userWidget->AddToViewport(0);
+		userWidget_playerHUD = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+		userWidget_playerHUD->AddToViewport(0);
+	}
 
-		// MouseCursorを表示
+	// WidgetBlueprintのClassを取得
+	path = TEXT("/Game/Game/UI/Blueprints/WBP_PauseMenu.WBP_PauseMenu_C");
+	widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
+
+	if (widgetClass && playerController)
+	{
+		// Widgetを作成し、Viewportに追加
+		userWidget_pauseMenu = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+		userWidget_pauseMenu->AddToViewport(0);
+	}
+
+	if (playerController)
+	{
+		// InputModeをゲームのみにし、MouseCursorを非表示
 		UWidgetBlueprintLibrary::SetInputMode_GameOnly(playerController);
 		playerController->SetShowMouseCursor(false);
 	}

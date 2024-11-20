@@ -25,8 +25,8 @@ private:
 	TObjectPtr<UButton> button_quit;
 
 	UFUNCTION()
-	void OnButtonPlayClicked();
+	void onButtonPlayClicked();
 
 	UFUNCTION()
-	void OnButtonQuitClicked();
+	void onButtonQuitClicked();
 };
