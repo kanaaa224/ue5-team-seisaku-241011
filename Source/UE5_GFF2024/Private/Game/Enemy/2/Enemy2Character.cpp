@@ -36,7 +36,7 @@ AEnemy2Character::AEnemy2Character()
 
 	/*:::::変数:::::*/
 	//体力
-	health = 100.0f;
+	health = 150.0f;
 	damageMaterialFlg = false;
 	timeCnt = 0;
 
@@ -286,48 +286,4 @@ void AEnemy2Character::AttackPlayer()
 
 		//攻撃のサウンドをここに入れる
 	}
-}
-
-/*****通常攻撃で使う関数*****/
-
-bool AEnemy2Character::Normal_Jump()
-{
-	return false;
-}
-
-bool AEnemy2Character::Normal_Attack()
-{
-	return false;
-}
-
-bool AEnemy2Character::Normal_StandUp()
-{
-	return false;
-}
-
-/*****特殊攻撃で使う関数*****/
-
-bool AEnemy2Character::ULT_Float()
-{
-	FVector nowLocation = GetActorLocation();
-	nowLocation = FMath::VInterpTo(nowLocation, startLocation + FVector(nowLocation.X, nowLocation.Y, 500.0f), GetWorld()->GetDeltaSeconds(), 3.0f);
-
-	//
-	SetActorRelativeLocation(nowLocation);
-	return true;
-}
-
-bool AEnemy2Character::ULT_CreateOtherSelf()
-{
-	return false;
-}
-
-bool AEnemy2Character::ULT_Attack()
-{
-	return false;
-}
-
-bool AEnemy2Character::ULT_GoDown()
-{
-	return false;
 }

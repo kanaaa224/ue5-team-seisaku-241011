@@ -16,6 +16,13 @@ UBTT_MoveCube::UBTT_MoveCube()
 
 EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+    //初期化
+    if (!IsInit)
+    {
+        Init();
+    }
+
+
     // AIコントローラとブラックボードコンポーネントを取得
     AAIController* AIController = OwnerComp.GetAIOwner();
     UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
@@ -54,11 +61,23 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                     {
                         if (EnemyVector.Length() < 500)
                         {
-                            Enemy->SetIsMoving(false);
-                            AIC->SetState(3);
-                            AIC->SetNextState(1);
+                            FTimerHandle TimerHandle;
+                            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, Enemy, AIC]()
+                                {
+                                    IsNextState = true;
+                                }, 3.f, false);  // 3秒後に無効化
                         }
                     }
+
+                    if (IsNextState && !Enemy->GetPolygonRotationManager()->GetIsRotating())
+                    {
+                        Enemy->SetIsMoving(false);
+                        AIC->SetState(3);
+                        AIC->SetNextState(1);
+                        IsNextState = false;
+                        IsInit = false;
+                    }
+
                     return EBTNodeResult::Succeeded;
                     //if (EnemyVector.Length() < 100 /*&& !Enemy->GetPolygonRotationManager()->GetIsRotating()*/)
                     //{
@@ -88,4 +107,11 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
    // BlackboardComp->SetValueAsObject(GetSelectedBlackboardKey(), nullptr); // 例として `null` に設定
 
     return EBTNodeResult::Failed;
+}
+
+void UBTT_MoveCube::Init()
+{
+    IsNextState = false;
+
+    IsInit = true;
 }
