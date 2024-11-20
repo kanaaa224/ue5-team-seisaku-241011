@@ -16,5 +16,5 @@ protected:
 	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	UUserWidget* userWidget;
+	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget;
 };
