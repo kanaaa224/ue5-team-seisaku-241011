@@ -36,7 +36,7 @@ AEnemy2Character::AEnemy2Character()
 
 	/*:::::変数:::::*/
 	//体力
-	health = 100.0f;
+	health = 150.0f;
 	damageMaterialFlg = false;
 	timeCnt = 0;
 
