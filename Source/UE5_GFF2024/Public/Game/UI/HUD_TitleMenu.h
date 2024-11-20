@@ -14,4 +14,7 @@ class UE5_GFF2024_API AHUD_TitleMenu : public AHUD
 protected:
 	virtual void BeginPlay() override;
 	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:
+	UUserWidget* userWidget;
 };
