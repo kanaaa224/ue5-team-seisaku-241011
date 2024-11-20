@@ -203,7 +203,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 	if (TargetLocation.Z > -10000 && !IsMoving)
 	{
 		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
-		SetActorLocation(NewLocation);
+		SetActorLocation(NewLocation,true);
 		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
 	}
 

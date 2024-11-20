@@ -25,5 +25,12 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Blackboard")
     FBlackboardKeySelector AdditionalKey;  // 追加のキーが必要であればこちらに宣言
 
+    bool IsNextState = false;
+
+    bool IsInit = false;
+
+    void Init();
+
+
 
 };

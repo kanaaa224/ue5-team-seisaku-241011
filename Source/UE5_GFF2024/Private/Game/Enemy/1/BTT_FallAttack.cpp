@@ -51,6 +51,8 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
             MyTimelineComponent->SetTimelineFinishedFunc(_MyTimelineFinishedFunc);
        // }
             IsStart = true;
+
+            IsTimelineStart = false;
     }
     
 
@@ -70,7 +72,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
     {
         // `Target` の値を使った処理を行う
         // 例: ターゲットが見つかった場合の処理など
-        UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
+        //UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
 
         if (AAIC_Enemy1* AIC = Cast<AAIC_Enemy1>(OwnerComp.GetAIOwner()))
         {
@@ -116,7 +118,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
                        
                         Enemy->TargetLocation = EnemyLocation;
-                        Enemy->SetSpeed(10.f);
+                        Enemy->SetSpeed(30.f);
                         //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
                        
                     //}
@@ -148,10 +150,11 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
                         //Enemy->SetIsMoving(true);
                         AIC->SetState(3);
-                        AIC->SetNextState(0);
+                        AIC->SetNextState(2);
                         Enemy->TargetLocation = { -1, -1, -10000 };
                         IsStart = true;
                         Velocity = { 0,0,0 };
+                        MyTimelineComponent = nullptr;
                     }
                 }
             }
@@ -182,7 +185,8 @@ void UBTT_FallAttack::TimelineStep(float _Value)
 
 void UBTT_FallAttack::TimelineFinished()
 {
-    IsTimelineStart = false;
+    //IsTimelineStart = false;
 
     Count++;
+
 }
