@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
     {
         // `Target` の値を使った処理を行う
         // 例: ターゲットが見つかった場合の処理など
-        UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
+        //UKismetSystemLibrary::PrintString(this, "tes", true, true, FColor::Blue, 2.f);
 
         if (AAIC_Enemy1* AIC = Cast<AAIC_Enemy1>(OwnerComp.GetAIOwner()))
         {
@@ -85,7 +85,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             Enemy->TargetLocation.X = Target.X * 100 + Enemy->GetActorLocation().X;
                             Enemy->TargetLocation.Y = Target.Y * 100 + Enemy->GetActorLocation().Y;
                             Enemy->TargetLocation.Z = Target.Z;
-                            Enemy->SetSpeed(15.f);
+                            Enemy->SetSpeed(30.f);
 
                             IsAttacked = true;
 
@@ -101,7 +101,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 3000.0f;
                         }
 
-                       // FVector tmp0 = { Enemy->TargetLocation.X ,Enemy->TargetLocation.Y ,Target.Z };
+                       //FVector tmp0 = { Enemy->TargetLocation.X ,Enemy->TargetLocation.Y ,Target.Z };
                         FVector tmp1 = Enemy->GetActorLocation() - TargetLocation;
 
                        
@@ -115,7 +115,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         {
                             Count = 0;
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-                            Enemy->SetIsMoving(true);
+                            //Enemy->SetIsMoving(true);
 
                             AIC->SetState(3);
                             AIC->SetNextState(0);

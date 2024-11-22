@@ -189,6 +189,7 @@ public:
 
 	bool IsAttacking;
 
+	bool IsAttackCoolTime;
 
 	//ロックオン
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Widget, meta = (AllowPrivateAccess = "true"))

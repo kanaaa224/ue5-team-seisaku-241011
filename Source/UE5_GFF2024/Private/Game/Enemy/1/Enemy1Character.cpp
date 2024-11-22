@@ -134,6 +134,7 @@ AEnemy1Character::AEnemy1Character()
 	BottomCollisionNumber = 0;
 
 	IsAttacking = false;
+	IsAttackCoolTime = false;
 
 	AttackState = 0;
 
@@ -156,6 +157,9 @@ AEnemy1Character::AEnemy1Character()
 
 	GetCapsuleComponent()->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+
+
+	health = 100.f;
 }
 
 // Called when the game starts or when spawned
@@ -208,7 +212,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 	}
 
 	GetBottomNumber();
-	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
+	//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
 
 	OldTargetLocation = TargetLocation;
 
@@ -279,13 +283,23 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 			ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
 
 			UKismetSystemLibrary::PrintString(this, TEXT("Enemy1 : Attack"));
+
+			IsAttackCoolTime = true;
+
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+				{
+					IsAttackCoolTime = false;
+				}, 2.f, false);  // 0.1秒後に無効化
 		}
 	}
 }
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	return 0.0f;
+	health -= DamageAmount;
+	UKismetSystemLibrary::PrintString(this, "TakeDamage", true, true, FColor::Blue, 2.f);
+	return health;
 }
 
 void AEnemy1Character::MoveProcess()
@@ -386,9 +400,11 @@ void AEnemy1Character::Attack()
 
 void AEnemy1Character::OnAttackHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != nullptr)
+	if (OtherActor != nullptr && !IsAttackCoolTime)
 	{
 		ApplyDamage(OtherActor);
+
+		
 	}
 }
 
