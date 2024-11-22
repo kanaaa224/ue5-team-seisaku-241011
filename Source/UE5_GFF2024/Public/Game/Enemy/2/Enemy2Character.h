@@ -11,6 +11,9 @@
 
 #include "Enemy2Character.generated.h"
 
+//敵のHP
+#define _ENEMY2_MAX_HP_ 150
+
 //ダメージタイプと攻撃力
 #define _DAMAGETYPE_NORMAL_ATTACK_ 0 //通常攻撃
 #define _DAMAGE_NORMAL_ATTACK      10//通常攻撃のダメージ量

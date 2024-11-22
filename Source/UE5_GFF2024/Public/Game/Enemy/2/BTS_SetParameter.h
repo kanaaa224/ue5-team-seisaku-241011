@@ -34,4 +34,8 @@ private:
 	//HP
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName HPKeyName;
+
+	//HPRatio
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName HPRatioKeyName;
 };

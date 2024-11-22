@@ -20,6 +20,7 @@ UBTS_SetParameter::UBTS_SetParameter()
 	DistanceKeyName = "Distance";
 	AttackKeyName = "Attack";
 	HPKeyName = "MyHealth";
+	HPRatioKeyName = "HPRatio";
 }
 
 void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -66,5 +67,8 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	ensure(BlackboardComp);
 	BlackboardComp->SetValueAsFloat(HPKeyName, HP);
 	
-
+	float HPRatio = HP / _ENEMY2_MAX_HP_;
+	//ブラックボードにあるfloat型のHPRatio変数に代入
+	ensure(BlackboardComp);
+	BlackboardComp->SetValueAsFloat(HPRatioKeyName, HPRatio);
 }
