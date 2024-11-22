@@ -49,7 +49,7 @@ EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& Owne
 		return EBTNodeResult::Failed;
 	}
 
-	MyPawn->BTT_TestLog();
+	//MyPawn->BTT_TestLog();
 	
 
 	//サクセスじゃないとError

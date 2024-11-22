@@ -111,19 +111,19 @@ void AEnemy3Character::BTT_TestLog()
 	UE_LOG(LogTemp, Error, TEXT("Normal log message"));
 }
 
-FName AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
+void AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
 {
-	FVector nowLocation = _mypawn->GetActorLocation();
+	//FVector nowLocation = _mypawn->GetActorLocation();
 
-	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+	////VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
 
-	_mypawn->SetActorLocation(nowLocation);
+	//_mypawn->SetActorLocation(nowLocation);
 
-	if (nowLocation.Z <= targetLocation.Z)
-	{
-		//return FName = "";
-	}
+	//if (nowLocation.Z <= targetLocation.Z)
+	//{
+	//	//return FName = "";
+	//}
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

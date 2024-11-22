@@ -39,7 +39,7 @@ public:
 	void BTT_TestLog();
 
 	UFUNCTION()
-	FName BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
+	void BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
 
 private:
 
