@@ -22,13 +22,13 @@ void UWidget_PlayerCooltime::NativeTick(const FGeometry& MyGeometry, float InDel
 		int maxCooltime_attack = 90;
 		int maxCooltime_avoid  = 90;
 
-		if (player->AttackCoolTime != 0) cooltime_attack = (maxCooltime_attack / player->AttackCoolTime) / 10.0f;
+		if (player->AttackCoolTime != 0) cooltime_attack = (float)player->AttackCoolTime / (float)maxCooltime_attack;
 		else cooltime_attack = 0.0f;
 
-		if (player->BlinkCoolTime != 0) cooltime_avoid = (maxCooltime_avoid / player->BlinkCoolTime) / 10.0f;
+		if (player->BlinkCoolTime != 0) cooltime_avoid = (float)player->BlinkCoolTime / (float)maxCooltime_avoid;
 		else cooltime_avoid = 0.0f;
 	}
 
-	if (progressBar_cooltime_attack) progressBar_cooltime_attack->SetPercent(cooltime_attack);
-	if (progressBar_cooltime_avoid)  progressBar_cooltime_avoid ->SetPercent(cooltime_avoid);
+	if (progressBar_cooltime_attack) progressBar_cooltime_attack->SetPercent(FMath::Clamp(cooltime_attack, 0.0f, 1.0f));
+	if (progressBar_cooltime_avoid)  progressBar_cooltime_avoid ->SetPercent(FMath::Clamp(cooltime_avoid,  0.0f, 1.0f));
 }
