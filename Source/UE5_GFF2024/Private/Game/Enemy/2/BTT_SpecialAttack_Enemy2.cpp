@@ -5,8 +5,6 @@
 
 //Enemy2Controller
 #include "Game/Enemy/2/AIC_Enemy2.h"
-//Enemy2のキャラクター
-#include "Game/Enemy/2/Enemy2Character.h"
 //PlayController
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,6 +16,8 @@ UBTT_SpecialAttack_Enemy2::UBTT_SpecialAttack_Enemy2(FObjectInitializer const& O
 
 void UBTT_SpecialAttack_Enemy2::Init()
 {
+	onecCalcFTL_Flg = false;
+	floatEnd = true;
 }
 
 EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -53,8 +53,59 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 		return EBTNodeResult::Failed;
 	}
 
-	MyPawn->ULT_Float();
+	//通常攻撃中だった場合はすぐに攻撃にうつらず体制を戻す
+	FRotator checkRotator = MyPawn->GetActorRotation();
+	if (checkRotator.Pitch != 0.0f) {
+		stopMove = true;
+		checkRotator.Pitch += 3.0f;
 
-	UE_LOG(LogTemp, Log, TEXT("SpecialAttack"));
+		if (checkRotator.Pitch >= 0.0f) {
+			checkRotator.Pitch = 0.0f;
+			stopMove = false;
+		}
+
+		MyPawn->SetActorRotation(checkRotator);
+	}
+	else if (checkRotator.Pitch == 0.0f) {
+		stopMove = false;
+	}
+
+
+	//浮き上がり処理
+	if (stopMove == false) {
+		Float(MyPawn, OnecCalcFloatTargetLocation(MyPawn));
+	}
+	//棒の生成処理
+	if (floatEnd == true) {
+		UE_LOG(LogTemp, Log, TEXT("Float End -----> next CreateActor"));
+		
+	}
+
 	return EBTNodeResult::Succeeded;
+}
+
+void UBTT_SpecialAttack_Enemy2::Float(AEnemy2Character* myPawn, FVector targetLocation)
+{
+	FVector nowLocation = myPawn->GetActorLocation();
+
+	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+
+	myPawn->SetActorLocation(nowLocation);
+}
+
+FVector UBTT_SpecialAttack_Enemy2::OnecCalcFloatTargetLocation(AEnemy2Character* pawn)
+{
+	FVector tmp = pawn->GetActorLocation();
+	
+	if (onecCalcFTL_Flg == false) {
+		calcResultFTL = FVector(tmp.X, tmp.Y, tmp.Z + 800.0f);//数字の部分で上昇する値を変える
+		onecCalcFTL_Flg = true;
+	}
+	else if (onecCalcFTL_Flg == true) {
+		if (calcResultFTL.Z - 30.0f <= tmp.Z) {
+			floatEnd = true;
+		}
+	}
+
+	return calcResultFTL;
 }

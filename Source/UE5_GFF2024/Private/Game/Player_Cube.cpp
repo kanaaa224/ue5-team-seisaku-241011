@@ -31,6 +31,7 @@
 #include "NiagaraComponent.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	800.f			//デフォルトのプレイヤーまでのカメラの距離
+#define MAX_TARGET_ARM_LENGTH		2000.f			//最大のプレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
 #define LOCKON_CANCELLATION_DISTANCE	1800		//ロックオンを強制的に解除する距離
@@ -129,7 +130,7 @@ APlayer_Cube::APlayer_Cube()
 	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
 	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
 
-	LockOnCollision->bHiddenInGame = false;
+	//LockOnCollision->bHiddenInGame = false;
 
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
@@ -239,6 +240,11 @@ APlayer_Cube::APlayer_Cube()
 	{
 		AttackParticle = FindAttackEff.Object;
 	}
+	ConstructorHelpers::FObjectFinder<UParticleSystem> FindDamageEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Enemy_Damage"));
+	if (FindDamageEff.Succeeded())
+	{
+		InflictDamageParticle = FindDamageEff.Object;
+	}
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> FindBlinkEff(TEXT("/Game/BlinkAndDashVFX/VFX_Niagara/NS_Blink_Psionic"));
 	if (FindBlinkEff.Succeeded())
@@ -259,7 +265,6 @@ APlayer_Cube::APlayer_Cube()
 	InvincibleFlg = false;
 	KnockBackFlg = false;
 	LockOnFlg = false;
-	LockOnRemoveFlg = false;
 }
 
 // Called when the game starts or when spawned
@@ -350,8 +355,10 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		}
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
 
+		//HPが0以下なら
 		if (Health <= 0)
 		{
+			//ロックオンの候補がいるか調べる
 			if (LockOnCandidates.IsValidIndex(0))
 			{
 				GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -362,10 +369,9 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
 				}
 				LockOnCandidates.Remove(LockOnTargetActor);
-				LockOnRemoveFlg = false;
 			}
 
-			//GameModeを取得して、AGameMode_InGameにCastする
+			//GameModeを取得してAGameMode_InGameにCastする
 			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
 			{
 				GameMode->KillPlayer(this);
@@ -378,7 +384,9 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void APlayer_Cube::InflictDamage(AActor* Other)
 {
+	//ダメージを与えるアクターを取得
 	AActor* ImpactActor = Other;
+
 	if ((ImpactActor != nullptr) && (ImpactActor != this))
 	{
 		//ダメージイベントの作成
@@ -386,21 +394,16 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 		FDamageEvent DamageEvent(ValidDamageTypeClass);
 
 		//ダメージ量
-		const float DamageAmount = 25.0f;
+		const float DamageAmount = 10.0f;
+		UKismetSystemLibrary::PrintString(this,TEXT("damage"));
+
+		//ダメージを与えたアクターのHPが0以下なら
 		if (ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this) <= 0.f)
 		{
-			if (LockOnCandidates.IsValidIndex(0))
-			{
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-				LockOnFlg = false;
-				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-				{
-					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
-				}
-				LockOnCandidates.Remove(LockOnTargetActor);
-				LockOnRemoveFlg = false;
-			}
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			LockOnFlg = false;
+			//LockOnCandidates.Remove(LockOnTargetActor);
+			//LockOnTargetActor = nullptr;
 			//消す
 			//ImpactActor->Destroy();
 		}
@@ -424,10 +427,14 @@ void APlayer_Cube::BlinkTimelineUpdate(float Value)
 
 void APlayer_Cube::AttackTimelineUpdate(float Value)
 {
-	//回転情報を取得
-	FRotator ActorRotarion = GetActorRotation();
+	//ノックバックしていないなら回転する
+	if (!KnockBackFlg)
+	{
+		//回転情報を取得
+		FRotator ActorRotarion = GetActorRotation();
 
-	SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
+		SetActorRelativeRotation(ActorRotarion + FRotator(0.f, Value * 109.2f, 0.f));
+	}
 }
 
 void APlayer_Cube::KnockBackTimelineUpdate(float Value)
@@ -473,9 +480,7 @@ void APlayer_Cube::AttackTimelineFinished()
 {
 	AttackFlg = false;
 	InflictDamageFlg = false;
-	InvincibleFlg = false;
 	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//AttackParticleComponent->DestroyComponent();
 }
 
 void APlayer_Cube::KnockBackTimelineFinished()
@@ -496,8 +501,6 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 {
 	//UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
 
-	LockOnRemoveFlg = false;
-
 	if (!LockOnFlg && !AttackFlg)
 	{
 		LockOnCandidates.AddUnique(OtherActor);
@@ -508,8 +511,11 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			//強制的にカメラの長さをもとに戻す
 			CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;
+			//ロックオンする
 			LockOnFlg = true;
+			//ロックオンの対象のアクターを取得
 			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+			//ロックオンの対象がロックオンのインターフェースを持っているならロックオンのマーカーを表示する
 			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
 			{
 				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, true);
@@ -521,14 +527,21 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 
 void APlayer_Cube::OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	LockOnRemoveFlg = true;
+
 }
 
 void APlayer_Cube::OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//攻撃しているかつダメージを与えていないならダメージを与える
 	if (AttackFlg && !InflictDamageFlg)
 	{
 		InflictDamage(OtherActor);
+
+		//ダメージを与えているならエフェクトを出す
+		if (InflictDamageFlg)
+		{
+			UGameplayStatics::SpawnEmitterAttached(InflictDamageParticle, RootComponent, NAME_None, SweepResult.ImpactPoint, FRotator(0.0f, 0.0f, 0.0f));
+		}
 	}
 }
 
@@ -595,7 +608,6 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
-		InvincibleFlg = true;
 		AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
 }
@@ -655,7 +667,9 @@ void APlayer_Cube::LockOnTarget()
 		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
 		//向きたい方向へのプレイヤーの回転値の補間
 		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 10.f);
-		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, InterpActorRotarion.Roll));
+		
+		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, this->GetActorRotation().Roll));
+		
 		//向きたい方向へのコントローラーの回転値の補間
 		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
 		//微調整用
@@ -663,7 +677,23 @@ void APlayer_Cube::LockOnTarget()
 		InterpControlRotation.Pitch -= Adjustment;
 		////ControllerのPitchの角度を制限する
 		double LimitPitchAngle = FMath::ClampAngle(InterpControlRotation.Pitch, -20.f, -10.f);
+		
 		Controller->SetControlRotation(FRotator(LimitPitchAngle, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+		
+		//Z軸のみの距離を取得
+		double Distance = UKismetMathLibrary::Vector_Distance(FVector(0.f, 0.f, this->GetActorLocation().Z), FVector(0.f, 0.f, LockOnTargetActor->GetActorLocation().Z));
+		//Z軸の距離が800以上なら
+		if (Distance >= 800)
+		{
+			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, MAX_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3.f);
+			CameraBoom->TargetArmLength = ArmLength;
+		}
+		//Z軸の距離が800以上ではないなら
+		else
+		{
+			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3.f);
+			CameraBoom->TargetArmLength = ArmLength;
+		}
 	}
 	//ロックオンしていないなら
 	else
@@ -678,7 +708,13 @@ void APlayer_Cube::LockOnTarget()
 			//ロックオンされるまで繰り返す
 			LockOnCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
 
+		//ロックオンしていないときにカメラの距離がデフォルトの長さより大きいなら元に戻す
+		if (CameraBoom->TargetArmLength > DEFAULT_TARGET_ARM_LENGTH)
+		{
+			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 5.f);
+			CameraBoom->TargetArmLength = ArmLength;
 		}
 	}
 }
@@ -689,7 +725,8 @@ void APlayer_Cube::PlayerTransparent()
 	if (!BlinkFlg)
 	{
 		double Distance = UKismetMathLibrary::Vector_Distance(FollowCamera->GetComponentLocation(), GetActorLocation());
-		//Distance:カメラとプレイヤーの距離
+
+		//Value:カメラとプレイヤーの距離
 		//InRangeA:カメラがこの値までキャラに近づいたら完全にマテリアルを消す
 		//InRangeB:カメラがこの値までキャラに近づいたらマテリアルのフェードを開始する
 		//OutRangeA:マテリアルが完全に消えるOpacity値

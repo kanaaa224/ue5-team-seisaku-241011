@@ -9,17 +9,17 @@ void UWidget_TitleMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	button_play->OnClicked.AddUniqueDynamic(this, &UWidget_TitleMenu::OnButtonPlayClicked);
-	button_quit->OnClicked.AddUniqueDynamic(this, &UWidget_TitleMenu::OnButtonQuitClicked);
+	button_play->OnClicked.AddUniqueDynamic(this, &UWidget_TitleMenu::onButtonPlayClicked);
+	button_quit->OnClicked.AddUniqueDynamic(this, &UWidget_TitleMenu::onButtonQuitClicked);
 }
 
-void UWidget_TitleMenu::OnButtonPlayClicked()
+void UWidget_TitleMenu::onButtonPlayClicked()
 {
 	// レベルをロード
 	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Stage1Map")));
 }
 
-void UWidget_TitleMenu::OnButtonQuitClicked()
+void UWidget_TitleMenu::onButtonQuitClicked()
 {
 	// PlayerControllerを取得
 	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))

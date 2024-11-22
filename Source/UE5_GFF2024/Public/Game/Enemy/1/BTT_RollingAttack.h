@@ -29,5 +29,8 @@ public:
     int32 Count = 0;
     FVector Vector;
     FVector Target = { 0,0,0 };
+    FVector TargetLocation = { 0,0,0 };
+
+    bool IsAttacked = false;
 	
 };

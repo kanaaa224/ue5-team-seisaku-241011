@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
+
+//Enemy2のキャラクター
+#include "Game/Enemy/2/Enemy2Character.h"
+
 #include "BTT_SpecialAttack_Enemy2.generated.h"
 
 /**
@@ -19,6 +23,10 @@ private:
 
 	bool stopMove;
 
+	bool onecCalcFTL_Flg = false;
+	FVector calcResultFTL;
+	bool floatEnd = false;
+
 public:
 	explicit UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer);
 
@@ -26,4 +34,19 @@ public:
 	void Init();
 	//タスク実行
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+private:
+
+	//浮き上がり処理
+	void Float(AEnemy2Character* myPawn, FVector targetLocation);
+	FVector OnecCalcFloatTargetLocation(AEnemy2Character* pawn);
+
+	//攻撃前の分身を生成
+	void CreateOtherSelf();
+
+	//分身がプレイヤー目掛けて攻撃
+	void Attack();
+
+	//攻撃を終えて地面に降り立つ
+	void Down();
 };
