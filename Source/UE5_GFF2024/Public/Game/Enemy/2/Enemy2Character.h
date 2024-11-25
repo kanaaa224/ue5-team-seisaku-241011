@@ -12,7 +12,7 @@
 #include "Enemy2Character.generated.h"
 
 //敵のHP
-#define _ENEMY2_MAX_HP_ 150
+#define _ENEMY2_MAX_HP_ 100
 
 //ダメージタイプと攻撃力
 #define _DAMAGETYPE_NORMAL_ATTACK_ 0 //通常攻撃
@@ -90,6 +90,9 @@ public:
 
 	//プレイヤーに攻撃を与える
 	void AttackPlayer();
+
+	//特殊攻撃のアクタを生成する
+	void SpawnAttackObject(int createNum);
 
 private:
 	//CubeMeshComponent
