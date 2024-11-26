@@ -27,6 +27,8 @@ private:
 	FVector calcResultFTL;
 	bool floatEnd = false;
 
+	bool endCreateObject = false;
+
 public:
 	explicit UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer);
 
