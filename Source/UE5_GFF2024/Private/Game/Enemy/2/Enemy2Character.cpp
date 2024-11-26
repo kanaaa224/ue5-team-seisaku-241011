@@ -25,6 +25,8 @@
 //PlayerPawnを取得
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+//AttackObject(自分の分身クラス)
+#include "Game/Enemy/2/Enemy2AttackObject.h"
 
 // Sets default values
 AEnemy2Character::AEnemy2Character()
@@ -180,7 +182,8 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 {
 	//受けたダメージ量分HPを減産
 	health -= DamageAmount;
-	DamageMaterial();
+	//ダメージを受けた時に赤くする
+	//DamageMaterial();
 
 	//ヘルスがゼロ以下なら死亡処理
 	if (health <= 0) {
@@ -240,6 +243,37 @@ void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 float AEnemy2Character::GetHP()
 {
 	return health;
+}
+
+void AEnemy2Character::SpawnAttackObject(int createNum)
+{
+
+	//スポーンする場所・回転を設定
+	FVector SpawnLocation;
+	if (createNum == 1 || createNum == 2) {
+		SpawnLocation = GetActorLocation() + FVector(0.f, 800.f * createNum, 0.f);
+	}
+	else if (createNum == 3 || createNum == 4) {
+		SpawnLocation = GetActorLocation() + FVector(0.f, -800.f * (createNum - 2), 0.f);
+	}
+	FRotator SpawnRotation = GetActorRotation();
+
+	//スポーンのパラメータ設定
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this; // このキャラクターを所有者に設定
+	SpawnParams.Instigator = GetInstigator();
+
+	// `Character` をスポーン
+	AEnemy2AttackObject* SpawnedCharacter = GetWorld()->SpawnActor<AEnemy2AttackObject>(AEnemy2AttackObject::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
+	if (SpawnedCharacter)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Pawn successfully spawned! : %d "),createNum);
+		SpawnedCharacter->SetCreateNumber(createNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Pawn."));
+	}
 }
 
 void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
