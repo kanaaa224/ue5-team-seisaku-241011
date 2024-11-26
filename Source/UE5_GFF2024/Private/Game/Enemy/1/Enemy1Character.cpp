@@ -22,6 +22,9 @@
 #include "Components/WidgetComponent.h"
 #include "Components/CapsuleComponent.h"
 
+#include "Engine/World.h"
+#include "CollisionQueryParams.h"
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -160,6 +163,8 @@ AEnemy1Character::AEnemy1Character()
 
 
 	health = 100.f;
+
+	MoveDirection = { 0,0,0 };
 }
 
 // Called when the game starts or when spawned
@@ -206,9 +211,60 @@ void AEnemy1Character::Tick(float DeltaTime)
 
 	if (TargetLocation.Z > -10000 && !IsMoving)
 	{
-		FVector NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
-		SetActorLocation(NewLocation,true);
-		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
+
+		FVector StartLocation = GetActorLocation();
+		FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
+
+		// ライントレース用のヒット結果
+		FHitResult HitResult;
+
+		// トレースの設定
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this); // 自分自身を無視
+
+		bool bDidHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			StartLocation,
+			EndLocation,
+			ECC_Visibility,
+			QueryParams
+		);
+
+		FVector NewLocation;
+
+		switch ((int)AttackState)
+		{
+		case 0:
+			break;
+
+		case 1:
+			NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
+			SetActorLocation(NewLocation, true);
+			break;
+
+		case 2:
+			if (bDidHit)
+			{
+				// 障害物にぶつかった場合
+				UE_LOG(LogTemp, Warning, TEXT("Blocked by: %s"), *HitResult.GetActor()->GetName());
+			}
+			else
+			{
+				// 移動可能なら移動
+				NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
+				SetActorLocation(NewLocation, true);
+				//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
+			}
+
+			break;
+		default:
+			break;
+		}
+		
+
+
+
+		
 	}
 
 	GetBottomNumber();

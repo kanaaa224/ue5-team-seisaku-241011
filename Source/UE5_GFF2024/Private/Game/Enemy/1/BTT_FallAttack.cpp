@@ -119,6 +119,8 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                        
                         Enemy->TargetLocation = EnemyLocation;
                         Enemy->SetSpeed(30.f);
+
+                        Enemy->AttackState = 1;
                         //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
                        
                     //}
