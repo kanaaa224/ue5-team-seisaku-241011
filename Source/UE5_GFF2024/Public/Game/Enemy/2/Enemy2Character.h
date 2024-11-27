@@ -94,6 +94,9 @@ public:
 	//特殊攻撃のアクタを生成する
 	void SpawnAttackObject(int createNum);
 
+	//スタート位置を取得
+	FVector GetStartLocation();
+
 private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)

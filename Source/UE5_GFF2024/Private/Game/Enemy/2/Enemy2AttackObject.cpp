@@ -104,7 +104,11 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 			HeadToTarget(DeltaTime);
 		}
 		else {
-			TargetToMove(DeltaTime);
+			if (stopMove == false) {
+				TargetToMove(DeltaTime);
+			}
+			
+			
 		}
 	}
 }
@@ -170,6 +174,8 @@ void AEnemy2AttackObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	if (OtherActor && OtherActor != this) // 自分自身を除外
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Actor: %s"), *OtherActor->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Comp: %s"), *OverlappedComp->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Comp: %s"), *OtherComp->GetName());
 	}
 }
 

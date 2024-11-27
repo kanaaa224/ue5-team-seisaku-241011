@@ -276,6 +276,11 @@ void AEnemy2Character::SpawnAttackObject(int createNum)
 	}
 }
 
+FVector AEnemy2Character::GetStartLocation()
+{
+	return startLocation;
+}
+
 void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor != this) {

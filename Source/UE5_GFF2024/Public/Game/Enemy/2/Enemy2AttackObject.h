@@ -66,6 +66,9 @@ public:
 	//攻撃開始から何秒たったか
 	float secAttackTime = 0.0f;
 
+	//移動をやめる
+	bool stopMove = false;
+
 	//＊＊＊＊＊メンバ関数＊＊＊＊＊//
 public:
 	//生成時の番号を設定
