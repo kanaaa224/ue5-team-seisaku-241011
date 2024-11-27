@@ -54,6 +54,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
                     Enemy->SetIsMoving(true);
 
+                    Enemy->AttackState = 0;
 
                     //return EBTNodeResult::Succeeded;
 

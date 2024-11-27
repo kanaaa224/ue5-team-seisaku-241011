@@ -77,8 +77,16 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	}
 	//棒の生成処理
 	if (floatEnd == true) {
-		UE_LOG(LogTemp, Log, TEXT("Float End -----> next CreateActor"));
-		
+		//UE_LOG(LogTemp, Log, TEXT("Float End -----> next CreateActor"));
+		if (endCreateObject == false) {
+			for (int i = 1; i <= 4; i++) {
+				//Objectを１つ生成する
+				MyPawn->SpawnAttackObject(i);
+				if (i == 4) {
+					endCreateObject = true;
+				}
+			}
+		}
 	}
 
 	return EBTNodeResult::Succeeded;
@@ -98,7 +106,7 @@ FVector UBTT_SpecialAttack_Enemy2::OnecCalcFloatTargetLocation(AEnemy2Character*
 	FVector tmp = pawn->GetActorLocation();
 	
 	if (onecCalcFTL_Flg == false) {
-		calcResultFTL = FVector(tmp.X, tmp.Y, tmp.Z + 800.0f);//数字の部分で上昇する値を変える
+		calcResultFTL = FVector(tmp.X, tmp.Y, tmp.Z + 1600.0f);//数字の部分で上昇する値を変える
 		onecCalcFTL_Flg = true;
 	}
 	else if (onecCalcFTL_Flg == true) {

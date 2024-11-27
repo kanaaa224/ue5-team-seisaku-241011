@@ -36,10 +36,13 @@ public:
 	void OnSeePlayer(APawn* Pawn);
 
 	UFUNCTION()
-	void BTT_TestLog();
+	void BTT_EnemyLog();
 
 	UFUNCTION()
-	void BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
+	bool BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
+
+	UFUNCTION()
+	void BTT_Enemy3Attack_Beam2();
 
 private:
 

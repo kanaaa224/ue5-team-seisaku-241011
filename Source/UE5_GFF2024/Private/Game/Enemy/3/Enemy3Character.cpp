@@ -16,7 +16,7 @@ AEnemy3Character::AEnemy3Character()
 	PrimaryActorTick.bCanEverTick = true;
 
 	/* BTT_Enemy3_Attack1用のZ方向の到達地点の値 */
-	targetLocation.Z = 100.0;
+	targetLocation.Z = 500.0;
 
 
 	// 視野用のコンポーネントを作成
@@ -105,25 +105,39 @@ void AEnemy3Character::OnSeePlayer(APawn* Pawn)
 	UKismetSystemLibrary::PrintString(this, "Player::See", true, true, FColor::White, 2.f);
 }
 
-void AEnemy3Character::BTT_TestLog()
+void AEnemy3Character::BTT_EnemyLog()
 {
 	// エラー（赤）
 	UE_LOG(LogTemp, Error, TEXT("Normal log message"));
 }
 
-void AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
+bool AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
 {
-	//FVector nowLocation = _mypawn->GetActorLocation();
+	FVector nowLocation = _mypawn->GetActorLocation();
+
+	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+
+	_mypawn->SetActorLocation(nowLocation);
+
+	if (nowLocation.Z <= targetLocation.Z)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void AEnemy3Character::BTT_Enemy3Attack_Beam2()
+{
+	//FVector nowLocation = GetActorLocation();
 
 	////VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 10.0f);
 
-	//_mypawn->SetActorLocation(nowLocation);
-
-	//if (nowLocation.Z <= targetLocation.Z)
-	//{
-	//	//return FName = "";
-	//}
+	//SetActorLocation(nowLocation);
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
