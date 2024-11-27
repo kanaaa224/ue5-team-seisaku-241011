@@ -44,6 +44,8 @@ public:
 	UFUNCTION()
 	void BTT_Enemy3Attack_Beam2();
 
+	bool GetBTTCheckflg();
+
 private:
 
 	/* DiceMehComponent */
@@ -58,9 +60,15 @@ private:
 
 	//FVector型は、TransformにあたるLocationを持つ
 	//targetLocation.xなど
-	FVector targetLocation;
+	
 
 	FName re_Name;
+
+public:
+
+	bool BTTCheckflg;
+
+	FVector targetLocation;
 
 private:
 
