@@ -267,7 +267,7 @@ void AEnemy2Character::SpawnAttackObject(int createNum)
 	AEnemy2AttackObject* SpawnedCharacter = GetWorld()->SpawnActor<AEnemy2AttackObject>(AEnemy2AttackObject::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
 	if (SpawnedCharacter)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Pawn successfully spawned! : %d "),createNum);
+		UE_LOG(LogTemp, Log, TEXT("Pawn successfully spawned! : %d "), createNum);
 		SpawnedCharacter->SetCreateNumber(createNum);
 	}
 	else

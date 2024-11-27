@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+//Player
+#include "Game/Player_Cube.h"
+
 #include "Enemy2AttackObject.generated.h"
 
 #define _ATTACK_DAMAGE_ 50.0f //攻撃力
@@ -25,7 +29,6 @@ class UE5_GFF2024_API AEnemy2AttackObject : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AEnemy2AttackObject();
-	AEnemy2AttackObject(float timeToAttack);
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,20 +45,43 @@ private:
 	UStaticMeshComponent* CubeMesh;
 
 public:
+	AActor* player;
+
+	//初期化したか
+	bool InitFlg = false;
+
 	//生成した時のワールド位置
 	FVector createPosition;
 
 	//攻撃までの時間
 	float timeToAttack;
+	//攻撃を始める
+	bool beginAttackFlg = false;
 
 	//自分が何番目に生成されたか
 	int createNumber;
 
 	//生成されて何秒たったか
 	float secTime = 0.0f;
+	//攻撃開始から何秒たったか
+	float secAttackTime = 0.0f;
 
 	//＊＊＊＊＊メンバ関数＊＊＊＊＊//
 public:
+	//生成時の番号を設定
 	void SetCreateNumber(int createNum);
+
+	//プレイヤーの方向を向く
+	void RotateTowardsTarget(float deltaTime);
+
+	//プレイヤーに頭を向ける
+	void HeadToTarget(float deltaTime);
+
+	//プレイヤーまで移動
+	void TargetToMove(float deltaTime);
+
+	//BeginOverlap
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
 
