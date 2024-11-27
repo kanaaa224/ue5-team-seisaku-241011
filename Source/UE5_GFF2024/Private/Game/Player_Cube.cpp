@@ -25,13 +25,13 @@
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Game/System/GameMode_InGame.h"
+#include "Game/System/GameInstance_GFF2024.h"
 #include "Engine/World.h"
 #include "Components/ArrowComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	800.f			//デフォルトのプレイヤーまでのカメラの距離
-#define MAX_TARGET_ARM_LENGTH		2000.f			//最大のプレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
 #define ATTACK_COOLTIME	90							//攻撃のクールタイム
 #define LOCKON_CANCELLATION_DISTANCE	1800		//ロックオンを強制的に解除する距離
@@ -258,6 +258,7 @@ APlayer_Cube::APlayer_Cube()
 
 	Timer = 0.f;
 	Health = 100.f;
+	MaxTargetArmLength = 2000.f;
 
 	BlinkFlg = false;
 	AttackFlg = false;
@@ -277,6 +278,24 @@ void APlayer_Cube::BeginPlay()
 
 	AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionBeginOverlap);
 	AttackCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionEndOverlap);
+
+	if (UGameInstance_GFF2024* GameInstance = Cast<UGameInstance_GFF2024>(UGameplayStatics::GetGameInstance(this)))
+	{
+		switch (GameInstance->Floor)
+		{
+		case 1:
+			MaxTargetArmLength = 3000.f;
+			break;
+		case 2:
+			MaxTargetArmLength = 2500.f;
+			break;
+		case 3:
+		default:
+			MaxTargetArmLength = 2000.f;
+			break;
+		}
+		
+	}
 
 	//InputMappingContextの追加
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -298,7 +317,7 @@ void APlayer_Cube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Timer += DeltaTime;
+	//Timer += DeltaTime;
 
 	if (BlinkCoolTime > 0)
 	{
@@ -446,7 +465,7 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	//ノックバックの初期座標から前方のベクトルに-5かけた値と上方向のベクトルの値を取得
 	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
 
-	SetActorLocation(NewLocation);
+	SetActorLocation(NewLocation, true);
 
 	if (GetCharacterMovement()->IsFalling())
 	{
@@ -455,7 +474,7 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 		//向きたい方向へのプレイヤーの回転値の補間
 		FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(this->GetActorRotation(), KnockBackInitRotation + FRotator(90.f, 0.f, 0.f), GetWorld()->GetDeltaSeconds(), 15.f);
 
-		SetActorRelativeRotation(InterpActorRotarion);
+		SetActorRelativeRotation(InterpActorRotarion, true);
 	}
 }
 
@@ -466,7 +485,7 @@ void APlayer_Cube::GetUpTimelineUpdate(float Value)
 	//向きたい方向へのプレイヤーの回転値の補間
 	FRotator InterpActorRotarion = UKismetMathLibrary::RInterpTo(ActorRotarion, KnockBackInitRotation, GetWorld()->GetDeltaSeconds(), 15.f);
 
-	SetActorRelativeRotation(InterpActorRotarion);
+	SetActorRelativeRotation(InterpActorRotarion, true);
 }
 
 void APlayer_Cube::BlinkTimelineFinished()
@@ -661,7 +680,7 @@ void APlayer_Cube::SmoothCameraCollision()
 void APlayer_Cube::LockOnTarget()
 {
 	//ロックオンしているなら
-	if (LockOnFlg)
+	if (LockOnFlg && LockOnTargetActor)
 	{
 		//向きたい方向へのプレイヤーの回転値を取得
 		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
@@ -670,22 +689,25 @@ void APlayer_Cube::LockOnTarget()
 		
 		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, this->GetActorRotation().Roll));
 		
-		//向きたい方向へのコントローラーの回転値の補間
-		FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
-		//微調整用
-		float Adjustment = 1.5f;
-		InterpControlRotation.Pitch -= Adjustment;
-		////ControllerのPitchの角度を制限する
-		double LimitPitchAngle = FMath::ClampAngle(InterpControlRotation.Pitch, -20.f, -10.f);
+		if (Controller)
+		{
+			//向きたい方向へのコントローラーの回転値の補間
+			FRotator InterpControlRotation = UKismetMathLibrary::RInterpTo(Controller->GetControlRotation(), FindActorRotation, GetWorld()->GetDeltaSeconds(), 3.f);
+			//微調整用
+			float Adjustment = 1.5f;
+			InterpControlRotation.Pitch -= Adjustment;
+			////ControllerのPitchの角度を制限する
+			double LimitPitchAngle = FMath::ClampAngle(InterpControlRotation.Pitch, -30.f, -5.f);
 		
-		Controller->SetControlRotation(FRotator(LimitPitchAngle, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+			Controller->SetControlRotation(FRotator(LimitPitchAngle, InterpControlRotation.Yaw, Controller->GetControlRotation().Roll));
+		}
 		
 		//Z軸のみの距離を取得
 		double Distance = UKismetMathLibrary::Vector_Distance(FVector(0.f, 0.f, this->GetActorLocation().Z), FVector(0.f, 0.f, LockOnTargetActor->GetActorLocation().Z));
 		//Z軸の距離が800以上なら
 		if (Distance >= 800)
 		{
-			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, MAX_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3.f);
+			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, MaxTargetArmLength, GetWorld()->GetDeltaSeconds(), 3.f);
 			CameraBoom->TargetArmLength = ArmLength;
 		}
 		//Z軸の距離が800以上ではないなら

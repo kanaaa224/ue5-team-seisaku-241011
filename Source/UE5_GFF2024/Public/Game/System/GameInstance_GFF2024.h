@@ -18,6 +18,10 @@ public:
 	//残機
 	int32 Life = 2;
 
+	//階層
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	int32 Floor = 1;
+
 public:
 	//初期化
 	void Initialize();

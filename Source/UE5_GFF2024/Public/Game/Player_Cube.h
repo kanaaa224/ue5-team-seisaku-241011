@@ -118,6 +118,8 @@ public:
 	float Timer;
 	//HP
 	float Health;
+	//プレイヤーまでのカメラの距離の最大値
+	float MaxTargetArmLength;
 
 	//ブリンクのフラグ
 	bool BlinkFlg;
@@ -183,13 +185,17 @@ private:
 	UFUNCTION()
 	void GetUpTimelineFinished();
 
+	//ロックオンのコリジョンに入ったときの処理
 	UFUNCTION()
 	void OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	//ロックオンのコリジョンから出たときの処理
 	UFUNCTION()
 	void OnLockOnCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	//攻撃のコリジョンに入ったときの処理
 	UFUNCTION()
 	void OnAttackCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	//攻撃のコリジョンから出たときの処理
 	UFUNCTION()
 	void OnAttackCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
