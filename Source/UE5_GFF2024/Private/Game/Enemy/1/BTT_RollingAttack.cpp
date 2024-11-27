@@ -80,6 +80,9 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             Enemy->SetSpeed(5.f);
                         }*/
 
+                        FVector tmp = { };
+
+
                         if (!IsAttacked)
                         {
                             Enemy->TargetLocation.X = Target.X * 100 + Enemy->GetActorLocation().X;
@@ -96,7 +99,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         Enemy->TargetLocation.Y = Target.Y * 100 + Enemy->GetActorLocation().Y;
                         Enemy->TargetLocation.Z = Target.Z;
 
-                        Enemy->MoveDirection = { Target.X * 100 ,Target.Y * 100 ,Target.X };
+                        Enemy->MoveDirection = { Target.X * 100 ,Target.Y * 100 ,Target.Z };
                         Enemy->AttackState = 2;
                         
                         if (Count == 30)

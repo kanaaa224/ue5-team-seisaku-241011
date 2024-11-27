@@ -260,11 +260,6 @@ void AEnemy1Character::Tick(float DeltaTime)
 		default:
 			break;
 		}
-		
-
-
-
-		
 	}
 
 	GetBottomNumber();
@@ -432,7 +427,7 @@ void AEnemy1Character::Attack()
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 			{
 				AttackCollisions[BottomCollisionNumber]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			}, 0.1f, false);  // 0.1秒後に無効化
+			}, 0.5f, false);  // 0.1秒後に無効化
 	}
 	else
 	{
@@ -459,8 +454,6 @@ void AEnemy1Character::OnAttackHit(UPrimitiveComponent* OverlappedComponent, AAc
 	if (OtherActor != nullptr && !IsAttackCoolTime)
 	{
 		ApplyDamage(OtherActor);
-
-		
 	}
 }
 
