@@ -4,6 +4,7 @@
 #include "Game/Enemy/3/BTT_Enemy3Attack1.h"
 #include "Game/Enemy/3/Enemy3Character.h"
 #include "Game/Enemy/3/AIC_Enemy3.h"
+#include "Game/Player_Cube.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -15,18 +16,12 @@ UBTT_Enemy3Attack1::UBTT_Enemy3Attack1()
 //タスクが動く この中に動かしたいことを書く
 EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// エラー（赤）
-	UE_LOG(LogTemp, Error, TEXT("BTT_Enemy3Attack1 ON"));
-
 	//AIコントローラーを取得
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr) {
 		return EBTNodeResult::Failed;
 	}
-	/*else
-	{
-		UE_LOG(LogTemp, Error, TEXT("BTT_Enemy3Attack1 ON"));
-	}*/
+
 	//コントローた(AIC_Enemy2)を取得
 	AAIC_Enemy3* MyAIController = Cast<AAIC_Enemy3>(AIController);
 	if (MyAIController == nullptr) {
@@ -54,19 +49,19 @@ EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& Owne
 	if (PlayerPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
-
-	//MyPawn->BTT_Enemy3Attack_Beam2();
-
-	//if (MyPawn->BTT_Enemy3Attack_Beam(MyPawn) == true)
-	//{
-	//	return EBTNodeResult::InProgress;
-	//}
-	//else
-	//{
-	//	//サクセスじゃないとError
-	//	return EBTNodeResult::Succeeded;
-	//}
 	
+	FVector target = FVector(0.0, 0.0, 1000.0);
+	FVector nowLocation = MyPawn->GetActorLocation();
+
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
+
+	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
+
+	MyPawn->SetActorLocation(nowLocation);
+
 
 	//サクセスじゃないとError
 	return EBTNodeResult::Succeeded;

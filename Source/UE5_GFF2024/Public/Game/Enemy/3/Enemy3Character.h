@@ -35,15 +35,6 @@ public:
 	UFUNCTION()
 	void OnSeePlayer(APawn* Pawn);
 
-	UFUNCTION()
-	void BTT_EnemyLog();
-
-	UFUNCTION()
-	bool BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
-
-	UFUNCTION()
-	void BTT_Enemy3Attack_Beam2();
-
 private:
 
 	/* DiceMehComponent */
@@ -53,14 +44,6 @@ private:
 	/* 当たり判定用 BoxComponent */
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> HitBox;
-
-private:
-
-	//FVector型は、TransformにあたるLocationを持つ
-	//targetLocation.xなど
-	FVector targetLocation;
-
-	FName re_Name;
 
 private:
 
