@@ -8,6 +8,7 @@
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/3/AIC_Enemy3.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy3Character::AEnemy3Character()
@@ -17,12 +18,18 @@ AEnemy3Character::AEnemy3Character()
 
 	/* BTT_Enemy3_Attack1用のZ方向の到達地点の値 */
 	targetLocation.Z = 500.0;
+	BTTCheckflg = true;
 
+	UCharacterMovementComponent* Component = GetCharacterMovement();
+	if (Component)
+	{
+		Component->GravityScale = 0.0f;
+	}
 
 	// 視野用のコンポーネントを作成
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 	// 視野
-	PawnSensingComp->SetPeripheralVisionAngle(100.f);
+	PawnSensingComp->SetPeripheralVisionAngle(60.f);
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy3Character::OnSeePlayer);
@@ -132,12 +139,17 @@ bool AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
 
 void AEnemy3Character::BTT_Enemy3Attack_Beam2()
 {
-	//FVector nowLocation = GetActorLocation();
+	FVector nowLocation = GetActorLocation();
 
-	////VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 10.0f);
+	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
 
-	//SetActorLocation(nowLocation);
+	SetActorLocation(nowLocation);
+}
+
+bool AEnemy3Character::GetBTTCheckflg()
+{
+	return BTTCheckflg;
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
