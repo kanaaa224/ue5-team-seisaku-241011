@@ -32,5 +32,7 @@ public:
     FVector TargetLocation = { 0,0,0 };
 
     bool IsAttacked = false;
+
+    float Speed = 0.f;
 	
 };
