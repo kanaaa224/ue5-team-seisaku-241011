@@ -7,6 +7,10 @@
 
 //Player
 #include "Game/Player_Cube.h"
+//Enemy2のAIコントローラ
+#include "Game/Enemy/2/AIC_Enemy2.h"
+//Enemy2のキャラクター
+#include "Game/Enemy/2/Enemy2Character.h"
 
 #include "Enemy2AttackObject.generated.h"
 
@@ -45,6 +49,7 @@ private:
 	UStaticMeshComponent* CubeMesh;
 
 public:
+	//Playerクラス
 	AActor* player;
 
 	//初期化したか
@@ -85,6 +90,11 @@ public:
 
 	//BeginOverlap
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, 
+						AActor* OtherActor, 
+						UPrimitiveComponent* OtherComp, 
+						int32 OtherBodyIndex, 
+						bool bFromSweep, 
+						const FHitResult& SweepResult);
 };
 

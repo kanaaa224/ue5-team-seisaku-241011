@@ -104,11 +104,13 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 			HeadToTarget(DeltaTime);
 		}
 		else {
+			if ((player->GetActorLocation().Z + 50.0f) >= GetActorLocation().Z) {
+				stopMove = true;
+			}
+
 			if (stopMove == false) {
 				TargetToMove(DeltaTime);
 			}
-			
-			
 		}
 	}
 }
@@ -161,8 +163,8 @@ void AEnemy2AttackObject::HeadToTarget(float deltaTime)
 
 void AEnemy2AttackObject::TargetToMove(float deltaTime)
 {
-	FVector nowLocation = GetActorLocation();
 	FVector targetLocation = player->GetActorLocation();
+	FVector nowLocation = GetActorLocation();
 
 	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, deltaTime, 7.0f);
 
