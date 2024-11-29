@@ -4,6 +4,7 @@
 #include "Game/Enemy/3/BTT_Enemy3Attack1.h"
 #include "Game/Enemy/3/Enemy3Character.h"
 #include "Game/Enemy/3/AIC_Enemy3.h"
+#include "Game/Player_Cube.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -15,18 +16,12 @@ UBTT_Enemy3Attack1::UBTT_Enemy3Attack1()
 //タスクが動く この中に動かしたいことを書く
 EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// エラー（赤）
-	UE_LOG(LogTemp, Error, TEXT("BTT_Enemy3Attack1 ON"));
-
 	//AIコントローラーを取得
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr) {
 		return EBTNodeResult::Failed;
 	}
-	/*else
-	{
-		UE_LOG(LogTemp, Error, TEXT("BTT_Enemy3Attack1 ON"));
-	}*/
+
 	//コントローた(AIC_Enemy2)を取得
 	AAIC_Enemy3* MyAIController = Cast<AAIC_Enemy3>(AIController);
 	if (MyAIController == nullptr) {
@@ -54,19 +49,15 @@ EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& Owne
 	if (PlayerPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
-
-	//MyPawn->BTT_Enemy3Attack_Beam2();
-
-	//if (MyPawn->BTT_Enemy3Attack_Beam(MyPawn) == true)
-	//{
-	//	return EBTNodeResult::InProgress;
-	//}
-	//else
-	//{
-	//	//サクセスじゃないとError
-	//	return EBTNodeResult::Succeeded;
-	//}
 	
+
+	MyPawn->Attack_Beam_Up();
+
+	if (MyPawn->GetActorLocation().Z >= 900)
+	{
+		MyPawn->Attack_Beam_Effect();
+	}
+
 
 	//サクセスじゃないとError
 	return EBTNodeResult::Succeeded;

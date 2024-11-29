@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Enemy3Character.generated.h"
 
 UCLASS()
@@ -36,13 +38,10 @@ public:
 	void OnSeePlayer(APawn* Pawn);
 
 	UFUNCTION()
-	void BTT_EnemyLog();
+	void Attack_Beam_Up();
 
 	UFUNCTION()
-	bool BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn);
-
-	UFUNCTION()
-	void BTT_Enemy3Attack_Beam2();
+	void Attack_Beam_Effect();
 
 private:
 
@@ -54,13 +53,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBoxComponent> HitBox;
 
-private:
+	/** Niagaraシステムの参照 */
+	UNiagaraSystem* NiagaraEffect;
 
-	//FVector型は、TransformにあたるLocationを持つ
-	//targetLocation.xなど
-	FVector targetLocation;
-
-	FName re_Name;
+	bool EffectSpawnFlg = false;
 
 private:
 

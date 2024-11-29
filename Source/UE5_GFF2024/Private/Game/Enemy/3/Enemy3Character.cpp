@@ -8,6 +8,7 @@
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/3/AIC_Enemy3.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy3Character::AEnemy3Character()
@@ -15,14 +16,17 @@ AEnemy3Character::AEnemy3Character()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	/* BTT_Enemy3_Attack1用のZ方向の到達地点の値 */
-	targetLocation.Z = 500.0;
-
+	// 重力無し
+	UCharacterMovementComponent* Component = GetCharacterMovement();
+	if (Component)
+	{
+		Component->GravityScale = 0.0f;
+	}
 
 	// 視野用のコンポーネントを作成
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 	// 視野
-	PawnSensingComp->SetPeripheralVisionAngle(100.f);
+	PawnSensingComp->SetPeripheralVisionAngle(60.f);
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy3Character::OnSeePlayer);
@@ -66,6 +70,8 @@ AEnemy3Character::AEnemy3Character()
 	HitBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy3Character::OnBoxBeginOverlap);
 	/* HitBox用のOnComponentEndOverlapをBindする */
 	HitBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy3Character::OnBoxEndOverlap);
+
+	NiagaraEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/RocketThrusterExhaustFX/FX/NS_RocketExhaust_Realistic"));
 }
 
 // Called when the game starts or when spawned
@@ -105,39 +111,50 @@ void AEnemy3Character::OnSeePlayer(APawn* Pawn)
 	UKismetSystemLibrary::PrintString(this, "Player::See", true, true, FColor::White, 2.f);
 }
 
-void AEnemy3Character::BTT_EnemyLog()
+void AEnemy3Character::Attack_Beam_Up()
 {
-	// エラー（赤）
-	UE_LOG(LogTemp, Error, TEXT("Normal log message"));
-}
+	FVector target = FVector(0.0, 0.0, 1000.0);
+	FVector nowLocation = GetActorLocation();
 
-bool AEnemy3Character::BTT_Enemy3Attack_Beam(AEnemy3Character* _mypawn)
-{
-	FVector nowLocation = _mypawn->GetActorLocation();
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
 
 	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
 
-	_mypawn->SetActorLocation(nowLocation);
+	SetActorLocation(nowLocation);
+}
 
-	if (nowLocation.Z <= targetLocation.Z)
+void AEnemy3Character::Attack_Beam_Effect()
+{
+	/* スポーン位置のオフセット */
+	FTransform SpawnTransform(FRotator(-90.0, -90.0, 0.0), FVector(0.0, 0.0, -100.0), FVector(5.0, 5.0, 8.0));
+	FQuat quat = SpawnTransform.GetRotation();
+
+	/* NiagaraEffectをSpawnさせる関数の回転引数がTRotatorなので、合わせるために値を変換 */
+	UE::Math::TRotator<double> SpawnRotation(quat.Rotator());
+
+	if (EffectSpawnFlg == false)
 	{
-		return true;
+		FVector SpawnLocation = GetActorLocation() + SpawnTransform.GetLocation();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation
+		(
+			GetWorld(),
+			NiagaraEffect,
+			SpawnLocation,
+			SpawnRotation,
+			SpawnTransform.GetScale3D()
+
+		);
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
+		EffectSpawnFlg = true;
 	}
 	else
 	{
-		return false;
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Not Spawn"));
 	}
-}
-
-void AEnemy3Character::BTT_Enemy3Attack_Beam2()
-{
-	//FVector nowLocation = GetActorLocation();
-
-	////VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 10.0f);
-
-	//SetActorLocation(nowLocation);
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
