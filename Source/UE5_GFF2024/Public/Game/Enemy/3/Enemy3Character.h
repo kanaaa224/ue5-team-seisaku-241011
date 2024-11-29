@@ -43,6 +43,9 @@ public:
 	UFUNCTION()
 	void Attack_Beam_Effect();
 
+	UFUNCTION()
+	int Beam_Effect_Collision();
+
 private:
 
 	/* DiceMehComponent */
@@ -56,6 +59,7 @@ private:
 	/** Niagaraシステムの参照 */
 	UNiagaraSystem* NiagaraEffect;
 
+	/* 攻撃中にEffectを表示させる用フラグ */
 	bool EffectSpawnFlg = false;
 
 private:
