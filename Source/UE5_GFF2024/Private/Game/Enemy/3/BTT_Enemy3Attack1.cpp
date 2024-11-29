@@ -50,17 +50,13 @@ EBTNodeResult::Type UBTT_Enemy3Attack1::ExecuteTask(UBehaviorTreeComponent& Owne
 		return EBTNodeResult::Failed;
 	}
 	
-	FVector target = FVector(0.0, 0.0, 1000.0);
-	FVector nowLocation = MyPawn->GetActorLocation();
 
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
+	MyPawn->Attack_Beam_Up();
 
-	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
-	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
-
-	MyPawn->SetActorLocation(nowLocation);
+	if (MyPawn->GetActorLocation().Z >= 900)
+	{
+		MyPawn->Attack_Beam_Effect();
+	}
 
 
 	//サクセスじゃないとError

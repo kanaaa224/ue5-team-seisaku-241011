@@ -70,6 +70,8 @@ AEnemy3Character::AEnemy3Character()
 	HitBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy3Character::OnBoxBeginOverlap);
 	/* HitBox用のOnComponentEndOverlapをBindする */
 	HitBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy3Character::OnBoxEndOverlap);
+
+	NiagaraEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/RocketThrusterExhaustFX/FX/NS_RocketExhaust_Realistic"));
 }
 
 // Called when the game starts or when spawned
@@ -107,6 +109,52 @@ void AEnemy3Character::OnSeePlayer(APawn* Pawn)
 
 	// 視野に入ったら画面に"See"と表示
 	UKismetSystemLibrary::PrintString(this, "Player::See", true, true, FColor::White, 2.f);
+}
+
+void AEnemy3Character::Attack_Beam_Up()
+{
+	FVector target = FVector(0.0, 0.0, 1000.0);
+	FVector nowLocation = GetActorLocation();
+
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
+
+	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
+
+	SetActorLocation(nowLocation);
+}
+
+void AEnemy3Character::Attack_Beam_Effect()
+{
+	/* スポーン位置のオフセット */
+	FTransform SpawnTransform(FRotator(-90.0, -90.0, 0.0), FVector(0.0, 0.0, -100.0), FVector(5.0, 5.0, 8.0));
+	FQuat quat = SpawnTransform.GetRotation();
+
+	/* NiagaraEffectをSpawnさせる関数の回転引数がTRotatorなので、合わせるために値を変換 */
+	UE::Math::TRotator<double> SpawnRotation(quat.Rotator());
+
+	if (EffectSpawnFlg == false)
+	{
+		FVector SpawnLocation = GetActorLocation() + SpawnTransform.GetLocation();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation
+		(
+			GetWorld(),
+			NiagaraEffect,
+			SpawnLocation,
+			SpawnRotation,
+			SpawnTransform.GetScale3D()
+
+		);
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
+		EffectSpawnFlg = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Not Spawn"));
+	}
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
