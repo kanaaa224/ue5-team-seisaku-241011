@@ -93,6 +93,15 @@ public:
 	//回避のパーティクル
 	class UNiagaraSystem* BlinkParticle;
 
+	//ダメージを受けたときのSE
+	class USoundBase* TakeDamageSe;
+	//ダメージを与えたときのSE
+	class USoundBase* InflictDamageSe;
+	//攻撃のSE
+	class USoundBase* AttackSe;
+	//回避のSE
+	class USoundBase* BlinkSe;
+
 	//ブリンクの初期座標
 	FVector BlinkInitLocation;
 	//ノックバックの初期座標
