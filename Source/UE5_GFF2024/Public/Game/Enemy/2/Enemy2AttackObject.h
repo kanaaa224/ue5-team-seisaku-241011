@@ -11,19 +11,15 @@
 #include "Game/Enemy/2/AIC_Enemy2.h"
 //Enemy2のキャラクター
 #include "Game/Enemy/2/Enemy2Character.h"
+//Particle
+#include "Particles/ParticleSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 #include "Enemy2AttackObject.generated.h"
 
 #define _ATTACK_DAMAGE_ 50.0f //攻撃力
 #define _ATTACK_SPEED_  30.0f //攻撃時にプレイヤー目掛けて飛ぶ時の速度
-
-/*
-timeToAttackが０になったら
-↓
-プレイヤーの位置情報を取得
-↓
-その位置まで飛ぶ 
-*/
 
 UCLASS()
 class UE5_GFF2024_API AEnemy2AttackObject : public ACharacter
@@ -80,6 +76,11 @@ public:
 	//攻撃を終えたか
 	bool endAttack = false;
 
+private:
+	//Niageraエフェクトのアセット
+	UPROPERTY(EditAnywhere,Category = "Effects")
+	UNiagaraComponent* Fire;
+
 	//＊＊＊＊＊メンバ関数＊＊＊＊＊//
 public:
 	//生成時の番号を設定
@@ -102,5 +103,9 @@ public:
 						int32 OtherBodyIndex, 
 						bool bFromSweep, 
 						const FHitResult& SweepResult);
+
+private:
+	//エフェクトをスポーンする関数
+	void SpawnFireEffect();
 };
 

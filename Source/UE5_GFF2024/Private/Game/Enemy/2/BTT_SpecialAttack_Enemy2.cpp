@@ -133,9 +133,10 @@ void UBTT_SpecialAttack_Enemy2::Down(AEnemy2Character* myPawn, FVector targetLoc
 
 	FVector nowLocation = myPawn->GetActorLocation();
 
-	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
-
+	//１次元の線形補間（Z軸）
 	nowLocation.Z = nowLocation.Z + (GetWorld()->GetDeltaSeconds() * 3.0f) * ((targetLocation.Z - 1500.0f) - nowLocation.Z);
+
+	//計算時にでた差異を修正
 	if (nowLocation.Z <= 341.0f) {
 		nowLocation.Z = 330.0f;
 	}

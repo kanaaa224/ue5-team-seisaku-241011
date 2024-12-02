@@ -62,12 +62,32 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
+
+	//エフェクト
+	// Niagaraコンポーネントの作成
+	Fire = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	// Niagaraコンポーネントをルートにアタッチ
+	Fire->SetupAttachment(GetRootComponent());
+	// 初期化時は無効化しておく
+	Fire->SetAutoActivate(false);
+	// 必要ならエフェクトのアセットを設定（Blueprintで設定可能にする場合はこの行を省略）
+	Fire->SetAsset(LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/RocketThrusterExhaustFX/FX/NS_RocketExhaust_Realistic.NS_RocketExhaust_Realistic")));
+	//エフェクトの大きさ
+	Fire->SetWorldScale3D(FVector(8.0f));
+	//エフェクトの角度
+	FRotator setRotaton = FRotator::ZeroRotator;
+	setRotaton.Pitch += 90.0f;
+	Fire->SetWorldRotation(setRotaton);
+	//エフェクトの場所
+	Fire->SetRelativeLocation(FVector(0.0f, 0.0f, -100.0f));
 }
 
 // Called when the game starts or when spawned
 void AEnemy2AttackObject::BeginPlay()
 {
 	Super::BeginPlay();
+	//エフェクトをスポーンする
+	SpawnFireEffect();
 }
 
 // Called every frame
@@ -204,4 +224,9 @@ void AEnemy2AttackObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 		}
 	}
+}
+
+void AEnemy2AttackObject::SpawnFireEffect()
+{
+	Fire->Activate(true);
 }
