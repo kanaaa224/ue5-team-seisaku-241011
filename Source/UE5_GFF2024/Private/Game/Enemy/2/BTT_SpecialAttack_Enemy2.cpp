@@ -141,7 +141,7 @@ void UBTT_SpecialAttack_Enemy2::Down(AEnemy2Character* myPawn, FVector targetLoc
 	}
 
 	//debugLog
-	UE_LOG(LogTemp, Warning, TEXT("nowLocation : X:%f Y:%f Z:%f"), nowLocation.X, nowLocation.Y, nowLocation.Z);
+	//UE_LOG(LogTemp, Warning, TEXT("nowLocation : X:%f Y:%f Z:%f"), nowLocation.X, nowLocation.Y, nowLocation.Z);
 	myPawn->SetActorLocation(nowLocation);
 }
 
