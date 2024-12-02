@@ -30,7 +30,6 @@ AEnemy3Character::AEnemy3Character()
 	// 見える範囲
 	PawnSensingComp->SightRadius = 2000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy3Character::OnSeePlayer);
-
 	
 
 	/* AIControllerの設定*/
@@ -46,6 +45,7 @@ AEnemy3Character::AEnemy3Character()
 	float CapsuleHalfHeight = 150.0f;  // 高さの半分 300
 	GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 	GetCapsuleComponent()->SetSimulatePhysics(false);
+
 
 	/* StaticMeshComponentを作成する */
 	DiceMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
@@ -66,10 +66,15 @@ AEnemy3Character::AEnemy3Character()
 	HitBox->SetupAttachment(DiceMesh);
 	/* BoxComponentのサイズを変更する */
 	HitBox->SetRelativeScale3D(FVector(1.7, 1.7, 1.7));
-	/* HitBox用のOnComponentBeginOverlapをBindする */
+	/* Enemy本体のCollision用のOnComponentBeginOverlapをBindする */
 	HitBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy3Character::OnBoxBeginOverlap);
-	/* HitBox用のOnComponentEndOverlapをBindする */
+	/* Enemy本体のCollision用のOnComponentEndOverlapをBindする */
 	HitBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy3Character::OnBoxEndOverlap);
+
+
+	/* ビーム攻撃の仮Effectを読み込み*/
+	NiagaraEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/RocketThrusterExhaustFX/FX/NS_RocketExhaust_Realistic"));
+
 }
 
 // Called when the game starts or when spawned
@@ -109,6 +114,60 @@ void AEnemy3Character::OnSeePlayer(APawn* Pawn)
 	UKismetSystemLibrary::PrintString(this, "Player::See", true, true, FColor::White, 2.f);
 }
 
+void AEnemy3Character::Attack_Beam_Up()
+{
+	FVector target = FVector(0.0, 0.0, 1000.0);
+	FVector nowLocation = GetActorLocation();
+
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
+
+	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
+	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
+
+	SetActorLocation(nowLocation);
+}
+
+void AEnemy3Character::Attack_Beam_Effect()
+{
+	/* スポーン位置のオフセット */
+	FTransform SpawnTransform(FRotator(-90.0, -90.0, 0.0), FVector(0.0, 0.0, -100.0), FVector(5.0, 5.0, 8.0));
+	FQuat quat = SpawnTransform.GetRotation();
+
+	/* NiagaraEffectをSpawnさせる関数の回転引数がTRotatorなので、合わせるために値を変換 */
+	UE::Math::TRotator<double> SpawnRotation(quat.Rotator());
+
+	if (EffectSpawnFlg == false)
+	{
+		FVector SpawnLocation = GetActorLocation() + SpawnTransform.GetLocation();
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation
+		(
+			GetWorld(),
+			NiagaraEffect,
+			SpawnLocation,
+			SpawnRotation,
+			SpawnTransform.GetScale3D()
+
+		);
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
+		EffectSpawnFlg = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Not Spawn"));
+	}
+}
+
+int AEnemy3Character::Beam_Effect_Collision()
+{
+
+
+
+	return 0;
+}
+
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 }
@@ -116,4 +175,3 @@ void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 void AEnemy3Character::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 }
-
