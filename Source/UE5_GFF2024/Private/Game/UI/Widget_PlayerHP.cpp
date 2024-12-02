@@ -20,7 +20,9 @@ void UWidget_PlayerHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	{
 		float maxHP = 100.0f;
 
-		if (player->Health > 0.0f && player->Health <= maxHP) hp = player->Health / maxHP;
+		hp = player->Health;
+
+		if (hp > 0.0f && hp <= maxHP) hp = hp / maxHP;
 		else hp = 0.0f;
 	}
 
@@ -28,20 +30,24 @@ void UWidget_PlayerHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	{
 		progressBar->SetPercent(hp);
 
-		if (hp <= 0.25f)
-		{
-			FLinearColor color = FLinearColor::Red;
-			progressBar->SetFillColorAndOpacity(color);
+		FLinearColor colorA, colorB;
+
+		if (hp <= 0.25f) {
+			colorA = FLinearColor(1.0f, 0.0f, 0.0f, 0.5f);
+			colorB = FLinearColor(1.0f, 0.0f, 0.0f, 0.1f);
 		}
-		else if (hp <= 0.5f)
-		{
-			FLinearColor color(1.0f, 0.65f, 0.0f, 1.0f);
-			progressBar->SetFillColorAndOpacity(color);
+		else if (hp <= 0.5f) {
+			colorA = FLinearColor(1.0f, 0.2f, 0.0f, 0.5f);
+			colorB = FLinearColor(1.0f, 0.2f, 0.0f, 0.1f);
 		}
-		else
-		{
-			FLinearColor color(0.0f, 0.5f, 1.0f, 1.0f);
-			progressBar->SetFillColorAndOpacity(color);
+		else {
+			colorA = FLinearColor(0.0f, 1.0f, 0.0f, 0.5f);
+			colorB = FLinearColor(0.0f, 1.0f, 0.0f, 0.1f);
 		}
+
+		progressBar->SetFillColorAndOpacity(colorA);
+		progressBar->WidgetStyle.BackgroundImage.TintColor = FSlateColor(colorB);
 	}
+
+	if (text) text->SetText(FText::FromString(FString::Printf(TEXT("%d"), (int)(hp * 100))));
 }

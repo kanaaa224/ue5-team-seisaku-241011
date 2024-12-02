@@ -10,6 +10,14 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+
+#include "Kismet/GameplayStatics.h"
+
 UBTT_FallAttack::UBTT_FallAttack()
 {
 	NodeName = "Custom Task";
@@ -124,7 +132,6 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
                        
                     //}
-
                     if ((float)Velocity.Z <= 0.f)
                     {
                         Enemy->TargetLocation = Enemy->GetActorLocation();
@@ -158,6 +165,74 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         Velocity = { 0,0,0 };
                         MyTimelineComponent = nullptr;
                     }
+
+                    // エフェクトをスポーン
+                    if (IsSpawnNiagara)
+                    {
+                        FVector SpawnLocation = Enemy->GetActorLocation() + LocationOffset;
+                        UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                            Enemy->GetWorld(),
+                            NiagaraEffect,
+                            SpawnLocation,
+                            FRotator::ZeroRotator,
+                            FVector(4.0f)
+                        );
+
+                        IsSpawnNiagara = false;
+
+                        FTimerHandle TimerHandle;
+                            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
+                                {
+                                    NiagaraComp->DestroyComponent();
+                                }, 0.7f, false);  // 2秒後に無効化
+                    }
+
+
+                  
+
+                    //if (IsSpawnParticle)
+                    //{
+
+
+                    //    // パーティクルシステムをスポーン
+                    //    FVector SpawnLocation = Enemy->GetActorLocation() + LocationOffset;
+                    //    //FRotator SpawnRotation = Enemy->GetActorRotation() + RotationOffset;
+                    //    FRotator SpawnRotation = RotationOffset;
+
+                    //    ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(
+                    //        Enemy->GetWorld(),
+                    //        ParticleSystem,
+                    //        SpawnLocation,
+                    //        SpawnRotation,
+                    //        true
+                    //    );
+                    //   
+
+                    //   
+
+                    //    IsSpawnParticle = false;
+
+                    //    FTimerHandle TimerHandle;
+                    //    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+                    //        {
+                    //            ParticleComp->DestroyComponent();
+                    //        }, 1.f, false);  // 2秒後に無効化
+                    //    
+                    //}
+
+                    //if (ParticleComp)
+                    //{
+                    //    //// Dynamic Parameterでの大きさ変更
+                    //    //ParticleComp->SetFloatParameter(FName("SizeX"), 5.0f);  // X軸のサイズを2に変更
+                    //    //ParticleComp->SetFloatParameter(FName("SizeY"), 5.0f);  // Y軸のサイズを2に変更
+                    //    //ParticleComp->SetFloatParameter(FName("SizeZ"), 5.0f);  // Z軸のサイズを2に変更
+
+                    //      // パーティクルシステム全体のスケールを変更
+                    //    //ParticleComp->SetWorldScale3D(FVector(2.0f, 2.0f, 2.0f));  // サイズを2倍に
+                    //}
+
+                    
+                  
                 }
             }
         }
@@ -191,4 +266,9 @@ void UBTT_FallAttack::TimelineFinished()
 
     Count++;
 
+    IsSpawnNiagara = true;
+    //IsSpawnParticle = true;
+
 }
+
+
