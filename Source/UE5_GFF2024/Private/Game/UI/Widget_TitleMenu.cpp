@@ -22,8 +22,7 @@ void UWidget_TitleMenu::onButtonPlayClicked()
 void UWidget_TitleMenu::onButtonQuitClicked()
 {
 	// PlayerControllerを取得
-	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-	{
+	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 		// ゲームを終了
 		UKismetSystemLibrary::QuitGame(GetWorld(), playerController, EQuitPreference::Quit, false);
 	}

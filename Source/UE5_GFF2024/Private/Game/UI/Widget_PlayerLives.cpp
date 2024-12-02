@@ -25,34 +25,28 @@ void UWidget_PlayerLives::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 		/*int32 maxLives = 2; // 残機最大数
 
 		// 残機の最大数に応じて残機の表示数を変える
-		if (maxLives < 3)
-		{
+		if (maxLives < 3) {
 			if (image_life_3) image_life_3->SetVisibility(ESlateVisibility::Collapsed);
 		}
 
-		if (maxLives < 2)
-		{
+		if (maxLives < 2) {
 			if (image_life_2) image_life_2->SetVisibility(ESlateVisibility::Collapsed);
 		}
 
-		if (maxLives < 1)
-		{
+		if (maxLives < 1) {
 			if (image_life_1) image_life_1->SetVisibility(ESlateVisibility::Collapsed);
 		}
 
 		// 残機数に応じて半透明にする
-		if (maxLives <= 3 && lives < 3)
-		{
+		if (maxLives <= 3 && lives < 3) {
 			if (image_life_3) image_life_3->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.1f));
 		}
 
-		if (maxLives <= 2 && lives < 2)
-		{
+		if (maxLives <= 2 && lives < 2) {
 			if (image_life_2) image_life_2->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.1f));
 		}
 
-		if (maxLives <= 1 && lives < 1)
-		{
+		if (maxLives <= 1 && lives < 1) {
 			if (image_life_1) image_life_1->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 0.1f));
 		}*/
 	}
