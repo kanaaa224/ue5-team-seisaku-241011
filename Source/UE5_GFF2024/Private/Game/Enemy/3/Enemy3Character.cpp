@@ -9,6 +9,7 @@
 #include "Game/Enemy/3/AIC_Enemy3.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Game/Enemy/3/Enemy3AttackAllCollsion.h"
 
 // Sets default values
 AEnemy3Character::AEnemy3Character()
@@ -36,7 +37,6 @@ AEnemy3Character::AEnemy3Character()
 	AIControllerClass = AAIC_Enemy3::StaticClass();
 	//キャラクターがAIControllerを使うように設定
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
 
 	/* 最初のRootComponent(親Component)をCapsuleComponent*/
 	RootComponent = GetCapsuleComponent();
@@ -119,12 +119,12 @@ void AEnemy3Character::Attack_Beam_Up()
 	FVector target = FVector(0.0, 0.0, 1000.0);
 	FVector nowLocation = GetActorLocation();
 
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
+	//UE_LOG(LogTemp, Display, TEXT("Enemy3 z target.Z %lf"), target.Z);
+	//UE_LOG(LogTemp, Display, TEXT("Enemy3 z location %lf"), nowLocation.Z);
 
 	//VInterpTo(現時点の位置, 到達地点, 呪文, そこまで何秒で付きたいか)
 	nowLocation = FMath::VInterpTo(nowLocation, target, GetWorld()->GetDeltaSeconds(), 5.0f);
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
+	//UE_LOG(LogTemp, Display, TEXT("Enemy3 z End location %lf"), nowLocation.Z);
 
 	SetActorLocation(nowLocation);
 }
@@ -153,19 +153,35 @@ void AEnemy3Character::Attack_Beam_Effect()
 		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
 		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
 		EffectSpawnFlg = true;
+
+		Beam_Collision_Spawn();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Not Spawn"));
+		//UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Not Spawn"));
 	}
 }
 
-int AEnemy3Character::Beam_Effect_Collision()
+void AEnemy3Character::Beam_Collision_Spawn()
 {
+	FVector SpawnLocation = GetActorLocation();
+	SpawnLocation.Z -= 100.0;
 
+	FRotator SpawnRotation = GetActorRotation();
+	SpawnRotation.Quaternion();
+	FQuat SpawnQuat = SpawnRotation.Quaternion();
 
+	FVector SpawnScale = FVector(0.3, 0.3, 30.0);
 
-	return 0;
+	//スポーンのパラメータ設定
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this; // このキャラクターを所有者に設定
+	SpawnParams.Instigator = GetInstigator();
+
+	AEnemy3AttackAllCollsion* SpawnedCharacter = GetWorld()->SpawnActor<AEnemy3AttackAllCollsion>(AEnemy3AttackAllCollsion::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
+	UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Collision Yes Spawn"));
+
+	SpawnedCharacter->SetActorScale3D(SpawnScale);
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
