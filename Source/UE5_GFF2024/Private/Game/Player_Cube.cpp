@@ -30,6 +30,7 @@
 #include "Components/ArrowComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Components/AudioComponent.h"
 
 #define DEFAULT_TARGET_ARM_LENGTH	800.f			//デフォルトのプレイヤーまでのカメラの距離
 #define	BLINK_COOLTIME	90							//回避のクールタイム
@@ -224,15 +225,6 @@ APlayer_Cube::APlayer_Cube()
 		GetUpTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
 
-	BlinkInitLocation = FVector(0.f);
-	KnockBackInitLocation = FVector(0.f);
-	BlinkForwardVector = FVector(0.f);
-	BlinkRightVector = FVector(0.f);
-	KnockBackForwardVector = FVector(0.f);
-	CameraImpactPoint = FVector(0.f);
-
-	KnockBackInitRotation = FRotator(0.f);
-
 	LockOnTargetActor = nullptr;
 
 	ConstructorHelpers::FObjectFinder<UParticleSystem> FindAttackEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
@@ -252,6 +244,35 @@ APlayer_Cube::APlayer_Cube()
 		BlinkParticle = FindBlinkEff.Object;
 	}
 
+	ConstructorHelpers::FObjectFinder<USoundBase>FindTakeDamageSe(TEXT("/Game/Game/Audio/SE/Player/TakeDamage"));
+	if (FindTakeDamageSe.Succeeded())
+	{
+		TakeDamageSe = FindTakeDamageSe.Object;
+	}
+	ConstructorHelpers::FObjectFinder<USoundBase>FindInflictDamageSe(TEXT("/Game/Game/Audio/SE/Player/InflictDamage"));
+	if (FindInflictDamageSe.Succeeded())
+	{
+		InflictDamageSe = FindInflictDamageSe.Object;
+	}
+	ConstructorHelpers::FObjectFinder<USoundBase>FindAttackSe(TEXT("/Game/Game/Audio/SE/Player/Attack"));
+	if (FindAttackSe.Succeeded())
+	{
+		AttackSe = FindAttackSe.Object;
+	}
+	ConstructorHelpers::FObjectFinder<USoundBase>FindBlinkSe(TEXT("/Game/Game/Audio/SE/Player/Blink"));
+	if (FindBlinkSe.Succeeded())
+	{
+		BlinkSe = FindBlinkSe.Object;
+	}
+
+	BlinkInitLocation = FVector(0.f);
+	KnockBackInitLocation = FVector(0.f);
+	BlinkForwardVector = FVector(0.f);
+	BlinkRightVector = FVector(0.f);
+	KnockBackForwardVector = FVector(0.f);
+	CameraImpactPoint = FVector(0.f);
+
+	KnockBackInitRotation = FRotator(0.f);
 
 	BlinkCoolTime = 0;
 	AttackCoolTime = 0;
@@ -361,6 +382,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 {
 	if (!InvincibleFlg)
 	{
+		UGameplayStatics::PlaySoundAtLocation(this, TakeDamageSe, GetActorLocation());
 		Health = Health - DamageAmount;
 		Health = Health <= 0 ? 0 : Health;
 		if (KnockBackTimeline && !KnockBackFlg)
@@ -373,29 +395,6 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			InvincibleFlg = true;
 		}
 		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
-
-		//HPが0以下なら
-		if (Health <= 0)
-		{
-			//ロックオンの候補がいるか調べる
-			if (LockOnCandidates.IsValidIndex(0))
-			{
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-				LockOnFlg = false;
-				LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
-				if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
-				{
-					ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
-				}
-				LockOnCandidates.Remove(LockOnTargetActor);
-			}
-
-			//GameModeを取得してAGameMode_InGameにCastする
-			if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
-			{
-				GameMode->KillPlayer(this);
-			}
-		}
 	}
 
 	return Health;
@@ -408,6 +407,8 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 
 	if ((ImpactActor != nullptr) && (ImpactActor != this))
 	{
+		UGameplayStatics::PlaySoundAtLocation(this, InflictDamageSe, GetActorLocation());
+
 		//ダメージイベントの作成
 		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 		FDamageEvent DamageEvent(ValidDamageTypeClass);
@@ -504,9 +505,34 @@ void APlayer_Cube::AttackTimelineFinished()
 
 void APlayer_Cube::KnockBackTimelineFinished()
 {
-	if (GetUpTimeline && KnockBackFlg && InvincibleFlg)
+	//HPが0以下なら
+	if (Health <= 0)
 	{
-		GetUpTimeline->PlayFromStart();
+		//ロックオンの候補がいるか調べる
+		if (LockOnCandidates.IsValidIndex(0))
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			LockOnFlg = false;
+			LockOnTargetActor = GetArraySortingFirstElement(LockOnCandidates);
+			if (LockOnTargetActor->GetClass()->ImplementsInterface(ULockOnInterface::StaticClass()))
+			{
+				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, false);
+			}
+			LockOnCandidates.Remove(LockOnTargetActor);
+		}
+
+		//GameModeを取得してAGameMode_InGameにCastする
+		if (AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(this)))
+		{
+			GameMode->KillPlayer(this);
+		}
+	}
+	else
+	{
+		if (GetUpTimeline && KnockBackFlg && InvincibleFlg)
+		{
+			GetUpTimeline->PlayFromStart();
+		}
 	}
 }
 
@@ -604,6 +630,7 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, BlinkParticle, this->GetActorLocation(), this->GetActorRotation(), FVector(1.f));
+		UGameplayStatics::PlaySoundAtLocation(this, BlinkSe, GetActorLocation());
 		Material_Instance->SetScalarParameterValue("Opacity", 0.2);
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
@@ -624,6 +651,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
 		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, 0.0f, 0.0f));
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSe, GetActorLocation());
 		AttackTimeline->PlayFromStart();
 		AttackCoolTime = ATTACK_COOLTIME;
 		AttackFlg = true;
