@@ -44,7 +44,7 @@ public:
 	void Attack_Beam_Effect();
 
 	UFUNCTION()
-	int Beam_Effect_Collision();
+	void Beam_Collision_Spawn();
 
 private:
 

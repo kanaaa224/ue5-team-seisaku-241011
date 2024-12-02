@@ -73,8 +73,7 @@ void UWidget_PauseMenu::onButtonTitleClicked()
 
 void UWidget_PauseMenu::onButtonQuitClicked()
 {
-	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-	{
+	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 		UKismetSystemLibrary::QuitGame(GetWorld(), playerController, EQuitPreference::Quit, false);
 	}
 }
