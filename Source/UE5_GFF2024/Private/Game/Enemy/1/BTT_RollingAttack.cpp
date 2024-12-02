@@ -9,6 +9,8 @@
 #include "Game//Enemy/1/AIC_Enemy1.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 UBTT_RollingAttack::UBTT_RollingAttack()
 {
@@ -118,10 +120,36 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                        //FVector tmp0 = { Enemy->TargetLocation.X ,Enemy->TargetLocation.Y ,Target.Z };
                        // FVector tmp1 = Enemy->GetActorLocation() - TargetLocation;
 
+                        // エフェクトをスポーン
+                        if (NiagaraComp == nullptr)
+                        {
+                            FVector SpawnLocation = Enemy->GetActorLocation() + LocationOffset;
+                            NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                                Enemy->GetWorld(),
+                                NiagaraEffect,
+                                SpawnLocation,
+                                FRotator::ZeroRotator,
+                                FVector(4.0f)
+                            );
+
+                            IsSpawnNiagara = false;
+
+                            //FTimerHandle TimerHandle;
+                            //GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
+                            //    {
+                            //        NiagaraComp->DestroyComponent();
+                            //    }, 0.1f, false);  // 2秒後に無効化
+                        }
+                        else
+                        {
+                            NiagaraComp->SetWorldLocation(Enemy->GetActorLocation());
+                        }
+
                        
                         if (/*tmp1.Length() > 100*/Count < 120)
                         {
                             //return EBTNodeResult::InProgress;
+                            IsSpawnNiagara = true;
                             return EBTNodeResult::Succeeded;
 
                         }
@@ -130,12 +158,14 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             Count = 0;
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
                             //Enemy->SetIsMoving(true);
+                            NiagaraComp->DestroyComponent();
+
 
                             AIC->SetState(3);
                             AIC->SetNextState(0);
                             Enemy->TargetLocation = { -1, -1, -10000 };
                             Enemy->GetPolygonRotationManager()->Init();
-                            Enemy->SetActorRotation({ 0,0,0 });
+                            //Enemy->SetActorRotation({ 0,0,0 });
                             Speed = 0;
                             IsAttacked = false;
                         }
