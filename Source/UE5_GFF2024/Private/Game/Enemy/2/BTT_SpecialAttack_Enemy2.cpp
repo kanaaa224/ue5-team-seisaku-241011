@@ -8,6 +8,8 @@
 //PlayController
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+//Enemy2AttackObject
+#include "Game/Enemy/2/Enemy2AttackObject.h"
 
 UBTT_SpecialAttack_Enemy2::UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
@@ -88,6 +90,12 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 			}
 		}
 	}
+	//地面に降りる処理
+	ULevel* CurrentLevel = GetWorld()->GetCurrentLevel();
+	if (AttackObjOfLevel(CurrentLevel, AEnemy2AttackObject::StaticClass()) == false && endCreateObject == true) {
+		//UE_LOG(LogTemp, Warning, TEXT("false -----------> DownObject"));
+		Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
+	}
 
 	return EBTNodeResult::Succeeded;
 }
@@ -116,4 +124,59 @@ FVector UBTT_SpecialAttack_Enemy2::OnecCalcFloatTargetLocation(AEnemy2Character*
 	}
 
 	return calcResultFTL;
+}
+
+void UBTT_SpecialAttack_Enemy2::Down(AEnemy2Character* myPawn, FVector targetLocation)
+{
+	//debugLog
+	//UE_LOG(LogTemp, Warning, TEXT("Down"));
+
+	FVector nowLocation = myPawn->GetActorLocation();
+
+	//nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
+
+	nowLocation.Z = nowLocation.Z + (GetWorld()->GetDeltaSeconds() * 3.0f) * ((targetLocation.Z - 1500.0f) - nowLocation.Z);
+	if (nowLocation.Z <= 341.0f) {
+		nowLocation.Z = 330.0f;
+	}
+
+	//debugLog
+	//UE_LOG(LogTemp, Warning, TEXT("nowLocation : X:%f Y:%f Z:%f"), nowLocation.X, nowLocation.Y, nowLocation.Z);
+	myPawn->SetActorLocation(nowLocation);
+}
+
+FVector UBTT_SpecialAttack_Enemy2::OnecCalcDownTargetLocation(AEnemy2Character* pawn)
+{
+	FVector tmp = pawn->GetActorLocation();
+
+	if (onecCalcDTL_Flg == false) {
+		calcResultDTL = FVector(tmp.X, tmp.Y, tmp.Z + (-1600.0f));//数字の部分は上昇する値と同じ
+		onecCalcDTL_Flg = true;
+	}
+	else if (onecCalcDTL_Flg == true) {
+		if (calcResultDTL.Z <= tmp.Z) {
+			downEnd = true;
+		}
+	}
+
+	return calcResultDTL;
+}
+
+bool UBTT_SpecialAttack_Enemy2::AttackObjOfLevel(ULevel* Level, TSubclassOf<AActor> ActorClass)
+{
+	if (!Level || !ActorClass)
+	{
+		return false;
+	}
+
+	// Level内のアクターを検索
+	for (AActor* Actor : Level->Actors)
+	{
+		if (Actor && Actor->IsA(ActorClass))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

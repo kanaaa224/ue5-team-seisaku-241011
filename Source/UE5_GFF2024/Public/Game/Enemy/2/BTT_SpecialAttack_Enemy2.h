@@ -23,11 +23,21 @@ private:
 
 	bool stopMove;
 
+	//浮き上がり処理の座標計算を一回のみ
 	bool onecCalcFTL_Flg = false;
+	//浮き上がりの座標の計算結果
 	FVector calcResultFTL;
+	//浮き上がりが終わったか
 	bool floatEnd = false;
 
 	bool endCreateObject = false;
+
+	//落ちる処理の座標計算を一回のみ
+	bool onecCalcDTL_Flg = false;
+	//落ちる時の座標の計算結果
+	FVector calcResultDTL;
+	//落ちる処理が終わったか
+	bool downEnd = false;
 
 public:
 	explicit UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer);
@@ -43,12 +53,10 @@ private:
 	void Float(AEnemy2Character* myPawn, FVector targetLocation);
 	FVector OnecCalcFloatTargetLocation(AEnemy2Character* pawn);
 
-	//攻撃前の分身を生成
-	void CreateOtherSelf();
+	//地面に降りる
+	void Down(AEnemy2Character* myPawn, FVector targetLocation);
+	FVector OnecCalcDownTargetLocation(AEnemy2Character* pawn);
 
-	//分身がプレイヤー目掛けて攻撃
-	void Attack();
-
-	//攻撃を終えて地面に降り立つ
-	void Down();
+	//分身がLevelにいるか調べる関数
+	bool AttackObjOfLevel(ULevel* Level, TSubclassOf<AActor> ActorClass);
 };
