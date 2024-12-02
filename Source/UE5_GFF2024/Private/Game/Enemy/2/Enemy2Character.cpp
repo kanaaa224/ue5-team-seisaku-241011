@@ -8,6 +8,7 @@
 
 #include "Math/UnrealMathUtility.h"
 
+//ダメージイベント
 #include "Engine/DamageEvents.h"
 
 //ロックオン
@@ -267,13 +268,18 @@ void AEnemy2Character::SpawnAttackObject(int createNum)
 	AEnemy2AttackObject* SpawnedCharacter = GetWorld()->SpawnActor<AEnemy2AttackObject>(AEnemy2AttackObject::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
 	if (SpawnedCharacter)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Pawn successfully spawned! : %d "),createNum);
+		UE_LOG(LogTemp, Log, TEXT("Pawn successfully spawned! : %d "), createNum);
 		SpawnedCharacter->SetCreateNumber(createNum);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Pawn."));
 	}
+}
+
+FVector AEnemy2Character::GetStartLocation()
+{
+	return startLocation;
 }
 
 void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -291,8 +297,9 @@ void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 				//ブラックボードにあるAttack変数の値を取得
 				bool AttackFlg = BlackboardComp->GetValueAsBool(TEXT("Attack"));
 
+				APlayer_Cube* tmpPlayer = Cast<APlayer_Cube>(OtherActor);
 				//ブラックボードから取得したAttack変数がTrueならプレイヤーに攻撃を与える
-				if (AttackFlg == true) {
+				if (AttackFlg == true && tmpPlayer) {
 					AttackPlayer();
 				}
 			}
