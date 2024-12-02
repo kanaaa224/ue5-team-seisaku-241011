@@ -8,6 +8,7 @@
 
 #include "Math/UnrealMathUtility.h"
 
+//ダメージイベント
 #include "Engine/DamageEvents.h"
 
 //ロックオン
@@ -296,8 +297,9 @@ void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 				//ブラックボードにあるAttack変数の値を取得
 				bool AttackFlg = BlackboardComp->GetValueAsBool(TEXT("Attack"));
 
+				APlayer_Cube* tmpPlayer = Cast<APlayer_Cube>(OtherActor);
 				//ブラックボードから取得したAttack変数がTrueならプレイヤーに攻撃を与える
-				if (AttackFlg == true) {
+				if (AttackFlg == true && tmpPlayer) {
 					AttackPlayer();
 				}
 			}

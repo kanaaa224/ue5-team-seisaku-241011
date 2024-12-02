@@ -74,6 +74,12 @@ public:
 	//移動をやめる
 	bool stopMove = false;
 
+	//このクラスを破棄するまでの時間
+	float secDestoryTime = 0.0f;
+
+	//攻撃を終えたか
+	bool endAttack = false;
+
 	//＊＊＊＊＊メンバ関数＊＊＊＊＊//
 public:
 	//生成時の番号を設定

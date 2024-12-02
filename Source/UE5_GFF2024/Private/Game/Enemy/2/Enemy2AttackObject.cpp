@@ -11,6 +11,8 @@
 //PlayController
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+//DamageEvent
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AEnemy2AttackObject::AEnemy2AttackObject()
@@ -74,18 +76,18 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 	//初期化
 	if (InitFlg == false) {
 		//攻撃までの時間を設定
-		timeToAttack = createNumber * 5;//数字の部分で攻撃までの時間を変更
+		timeToAttack = createNumber * 2;//数字の部分で攻撃までの時間を変更
 		InitFlg = true;
 	}
 
 	//生成されて何秒たったか
 	Super::Tick(DeltaTime);
 	secTime += DeltaTime;
-
 	if (player)
 	{
 		if (beginAttackFlg == false) {
 			RotateTowardsTarget(DeltaTime);
+			HeadToTarget(DeltaTime);
 		}
 	}
 	else
@@ -98,18 +100,26 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 	if (secTime >= timeToAttack) {
 		secAttackTime += DeltaTime;
 		beginAttackFlg = true;
-
-		if (secAttackTime <= 2.0f) {
+		if (secAttackTime <=0.2f) {
 			//プレイヤーの方向に頭を向ける
 			HeadToTarget(DeltaTime);
 		}
 		else {
+			//プレイヤーまでの移動をやめる
 			if ((player->GetActorLocation().Z + 50.0f) >= GetActorLocation().Z) {
 				stopMove = true;
 			}
 
+			//プレイヤーまで移動する
 			if (stopMove == false) {
 				TargetToMove(DeltaTime);
+			}
+			//地面について自分自身を破棄
+			if (stopMove == true) {
+				secDestoryTime += DeltaTime;
+				if (secDestoryTime >= 5.0f) {//ここの数字で破棄するまでの時間指定できる
+					Destroy();
+				}
 			}
 		}
 	}
@@ -156,7 +166,7 @@ void AEnemy2AttackObject::HeadToTarget(float deltaTime)
 	TargetRotation.Pitch = FMath::Atan2(Direction.Z, FVector(Direction.X, Direction.Y, 0.0f).Size()) * 180.0f / PI;
 	TargetRotation.Pitch += 90.0f;
 
-	FRotator SmoothRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, deltaTime, 5.0f);
+	FRotator SmoothRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, deltaTime, 100.0f);
 
 	SetActorRotation(SmoothRotation);
 }
@@ -175,9 +185,23 @@ void AEnemy2AttackObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 {
 	if (OtherActor && OtherActor != this) // 自分自身を除外
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Actor: %s"), *OtherActor->GetName());
-		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Comp: %s"), *OverlappedComp->GetName());
-		UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Comp: %s"), *OtherComp->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("BeginOverlap with Actor: %s"), *OtherActor->GetName());
+		
+		APlayer_Cube* tmpPlayer = Cast<APlayer_Cube>(OtherActor);
+		if (tmpPlayer) {
+			//UE_LOG(LogTemp, Warning, TEXT("Damage Actor ->: %s"), *OtherActor->GetName());
+
+			//プレイヤーのポーンを取得
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+			if (PlayerPawn) {
+				//ダメージ量を設定または取得
+				float DmageAmount = 50.0f;
+
+				//ダメージを与える（最後のパラメータには攻撃元の情報を渡す）
+				UGameplayStatics::ApplyDamage(PlayerPawn, DmageAmount, GetController(), this, nullptr);
+
+				//攻撃のサウンドをここに入れる
+			}
+		}
 	}
 }
-
