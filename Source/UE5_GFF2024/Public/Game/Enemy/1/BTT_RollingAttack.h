@@ -6,6 +6,10 @@
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include "BTT_RollingAttack.generated.h"
 
+
+class UNiagaraSystem;
+class UNiagaraComponent;
+
 /**
  * 
  */
@@ -34,5 +38,17 @@ public:
     bool IsAttacked = false;
 
     float Speed = 0.f;
+
+    // Niagaraシステムアセット
+    UPROPERTY(EditAnywhere, Category = "Niagara")
+    UNiagaraSystem* NiagaraEffect;
+
+    // スポーンする位置のオフセット
+    UPROPERTY(EditAnywhere, Category = "Niagara")
+    FVector LocationOffset = { 0,0,150 };
+
+    UNiagaraComponent* NiagaraComp;
+
+    bool IsSpawnNiagara = false;
 	
 };

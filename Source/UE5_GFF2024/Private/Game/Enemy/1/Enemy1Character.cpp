@@ -77,7 +77,7 @@ AEnemy1Character::AEnemy1Character()
 	// 視野
 	PawnSensingComp->SetPeripheralVisionAngle(60.f);
 	// 見える範囲
-	PawnSensingComp->SightRadius = 2000;
+	PawnSensingComp->SightRadius = 8000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy1Character::OnSeePlayer);
 
 	// StaticMeshComponentを追加

@@ -8,8 +8,9 @@
 
 class UTimelineComponent;
 class UCurveFloat;
-//class UNiagaraSystem;
+class UNiagaraSystem;
 class UParticleSystem;
+class UParticleSystemComponent;
 /**
  * 
  */
@@ -57,33 +58,34 @@ public:
 
 
 
-    //// Niagaraシステムアセット
-    //UPROPERTY(EditAnywhere, Category = "Niagara")
-    //UNiagaraSystem* NiagaraEffect;
-
-    //// スポーンする位置のオフセット
-    //UPROPERTY(EditAnywhere, Category = "Niagara")
-    //FVector LocationOffset = { 0,0,150 };
-
-    //bool IsSpawnNiagara = false;
-
-    // パーティクルシステムのアセット
-    UPROPERTY(EditAnywhere, Category = "Particle")
-    UParticleSystem* ParticleSystem;
+    // Niagaraシステムアセット
+    UPROPERTY(EditAnywhere, Category = "Niagara")
+    UNiagaraSystem* NiagaraEffect;
 
     // スポーンする位置のオフセット
-    UPROPERTY(EditAnywhere, Category = "Particle")
-    FVector LocationOffset;
+    UPROPERTY(EditAnywhere, Category = "Niagara")
+    FVector LocationOffset = { 0,0,150 };
 
-    // スポーンする回転
-    UPROPERTY(EditAnywhere, Category = "Particle")
-    FRotator RotationOffset;
+    bool IsSpawnNiagara = false;
 
-    // 持続時間を設定
-    UPROPERTY(EditAnywhere, Category = "Particle")
-    float Duration = 3.f;
+    //// パーティクルシステムのアセット
+    //UPROPERTY(EditAnywhere, Category = "Particle")
+    //UParticleSystem* ParticleSystem;
 
-    bool IsSpawnParticle = false;
+    //// スポーンする位置のオフセット
+    //UPROPERTY(EditAnywhere, Category = "Particle")
+    //FVector LocationOffset;
 
+    //// スポーンする回転
+    //UPROPERTY(EditAnywhere, Category = "Particle")
+    //FRotator RotationOffset;
+
+    //// 持続時間を設定
+    //UPROPERTY(EditAnywhere, Category = "Particle")
+    //float Duration = 3.f;
+
+    //bool IsSpawnParticle = false;
+
+    //UParticleSystemComponent* ParticleComp;
 
 };
