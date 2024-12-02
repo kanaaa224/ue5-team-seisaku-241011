@@ -24,6 +24,7 @@ public:
 
 public:
 	//初期化
+	UFUNCTION(BlueprintCallable)
 	void Initialize();
 
 };
