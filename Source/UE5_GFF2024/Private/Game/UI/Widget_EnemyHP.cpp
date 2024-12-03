@@ -9,7 +9,7 @@ void UWidget_EnemyHP::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetVisibility(ESlateVisibility::Collapsed);
+	//SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -20,7 +20,6 @@ void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	FText name = FText::FromString(TEXT(""));
 
-	// 現在のHUDインスタンスを取得
 	AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
 
 	if (hud)
@@ -37,8 +36,8 @@ void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		name = hud->enemyName;
 	}
 
-	if(isShow) SetVisibility(ESlateVisibility::Visible);
-	else       SetVisibility(ESlateVisibility::Collapsed);
+	if (isShow) SetVisibility(ESlateVisibility::Visible);
+	else        SetVisibility(ESlateVisibility::Collapsed);
 
 	if (progressBar)
 	{
