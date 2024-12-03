@@ -65,7 +65,7 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 
 	//エフェクト
 	// Niagaraコンポーネントの作成
-	Fire = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	Fire = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent_Fire"));
 	// Niagaraコンポーネントをルートにアタッチ
 	Fire->SetupAttachment(GetRootComponent());
 	// 初期化時は無効化しておく
@@ -80,6 +80,21 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 	Fire->SetWorldRotation(setRotaton);
 	//エフェクトの場所
 	Fire->SetRelativeLocation(FVector(0.0f, 0.0f, -100.0f));
+
+	//爆発エフェクト
+	// Cascade用のParticleSystemコンポーネントの作成
+	Bomb = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_Bomb"));
+	// ParticleSystemコンポーネントをルートにアタッチ
+	Bomb->SetupAttachment(GetRootComponent());
+	// 初期化時は無効化しておく
+	Bomb->bAutoActivate = false;
+	// エフェクトのアセットを設定
+	//Bomb->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_C.P_Explosion_Big_C")));
+	Bomb->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_B.P_Explosion_Big_B")));
+	// エフェクトの場所
+	Bomb->SetRelativeLocation(FVector(20.0f, 0.0f, -80.0f));
+	//エフェクトの大きさ
+	Bomb->SetWorldScale3D(FVector(8.0f));
 }
 
 // Called when the game starts or when spawned
@@ -136,6 +151,11 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 			}
 			//地面について自分自身を破棄
 			if (stopMove == true) {
+				//爆発エフェクトを発生
+				if (bombFlg == false) {
+					SpawnBombEffect();
+					bombFlg = true;
+				}
 				secDestoryTime += DeltaTime;
 				if (secDestoryTime >= 5.0f) {//ここの数字で破棄するまでの時間指定できる
 					Destroy();
@@ -229,4 +249,9 @@ void AEnemy2AttackObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 void AEnemy2AttackObject::SpawnFireEffect()
 {
 	Fire->Activate(true);
+}
+
+void AEnemy2AttackObject::SpawnBombEffect()
+{
+	Bomb->Activate(true);
 }

@@ -81,6 +81,12 @@ private:
 	UPROPERTY(EditAnywhere,Category = "Effects")
 	UNiagaraComponent* Fire;
 
+	//地面についた時のエフェクト
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystemComponent* Bomb;
+	//Bombエフェクトを一回のみ
+	bool bombFlg = false;
+
 	//＊＊＊＊＊メンバ関数＊＊＊＊＊//
 public:
 	//生成時の番号を設定
@@ -107,5 +113,7 @@ public:
 private:
 	//エフェクトをスポーンする関数
 	void SpawnFireEffect();
+	//爆発エフェクトをスポーンする関数
+	void SpawnBombEffect();
 };
 
