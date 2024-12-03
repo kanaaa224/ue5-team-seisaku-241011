@@ -4,14 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "Widget_PlayerHUD.generated.h"
 
-/**
- * 
- */
+class UTextBlock;
+
 UCLASS()
 class UE5_GFF2024_API UWidget_PlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 	
+protected:
+	void NativeConstruct() override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> text_stage_name;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> text_stage_description;
 };
