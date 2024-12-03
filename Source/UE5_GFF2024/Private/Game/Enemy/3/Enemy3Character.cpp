@@ -150,8 +150,8 @@ void AEnemy3Character::Attack_Beam_Effect()
 			SpawnTransform.GetScale3D()
 
 		);
-		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
-		UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
+		//UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Yes Spawn"));
+		//UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Effect Location.Z %lf"), SpawnLocation.Z);
 		EffectSpawnFlg = true;
 
 		Beam_Collision_Spawn();
@@ -179,7 +179,7 @@ void AEnemy3Character::Beam_Collision_Spawn()
 	SpawnParams.Instigator = GetInstigator();
 
 	AEnemy3AttackAllCollsion* SpawnedCharacter = GetWorld()->SpawnActor<AEnemy3AttackAllCollsion>(AEnemy3AttackAllCollsion::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
-	UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Collision Yes Spawn"));
+	//UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Collision Yes Spawn"));
 
 	SpawnedCharacter->SetActorScale3D(SpawnScale);
 }
