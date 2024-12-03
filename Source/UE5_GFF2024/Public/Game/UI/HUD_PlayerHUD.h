@@ -17,4 +17,18 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_playerHUD;
 	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_pauseMenu;
+
+public:
+	bool isShow_enemyHP = false;
+
+	float enemyHP_current = 0.0f;
+	float enemyHP_max     = 0.0f;
+
+	FText enemyName = FText::FromString(TEXT(""));
+
+	void set_isShow_enemyHP(bool); // 敵のHPゲージを表示するか
+
+	void set_enemyHP(float);    // 敵のHPを設定
+	void set_enemyMaxHP(float); // 敵の最大HPを設定
+	void set_enemyName(FText);  // 敵の名前を設定
 };
