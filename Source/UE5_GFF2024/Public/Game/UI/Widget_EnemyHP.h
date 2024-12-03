@@ -4,14 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "Widget_EnemyHP.generated.h"
 
-/**
- * 
- */
+class UProgressBar;
+class UTextBlock;
+
 UCLASS()
 class UE5_GFF2024_API UWidget_EnemyHP : public UUserWidget
 {
 	GENERATED_BODY()
 	
+protected:
+	void NativeConstruct() override;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> progressBar;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> text_hp;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> text_name;
 };
