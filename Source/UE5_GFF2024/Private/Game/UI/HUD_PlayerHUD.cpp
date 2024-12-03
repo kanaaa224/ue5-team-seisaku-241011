@@ -39,3 +39,23 @@ void AHUD_PlayerHUD::BeginPlay()
 		playerController->SetShowMouseCursor(false);
 	}
 }
+
+void AHUD_PlayerHUD::set_isShow_enemyHP(bool value)
+{
+	isShow_enemyHP = value;
+}
+
+void AHUD_PlayerHUD::set_enemyHP(float value)
+{
+	enemyHP_current = value;
+}
+
+void AHUD_PlayerHUD::set_enemyMaxHP(float value)
+{
+	enemyHP_max = value;
+}
+
+void AHUD_PlayerHUD::set_enemyName(FText value)
+{
+	enemyName = value;
+}
