@@ -11,6 +11,9 @@ class UE5_GFF2024_API AHUD_PlayerHUD : public AHUD
 {
 	GENERATED_BODY()
 	
+private:
+	AHUD_PlayerHUD();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -19,12 +22,18 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_pauseMenu;
 
 public:
-	bool isShow_enemyHP = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	FText stageName;
 
-	float enemyHP_current = 0.0f;
-	float enemyHP_max     = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	FText stageDescription;
 
-	FText enemyName = FText::FromString(TEXT(""));
+	bool isShow_enemyHP;
+
+	float enemyHP_current;
+	float enemyHP_max;
+
+	FText enemyName;
 
 	void set_isShow_enemyHP(bool); // 敵のHPゲージを表示するか
 

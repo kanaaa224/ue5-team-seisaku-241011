@@ -5,6 +5,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
+AHUD_PlayerHUD::AHUD_PlayerHUD()
+{
+	stageName        = FText::FromString(TEXT(""));
+	stageDescription = FText::FromString(TEXT(""));
+
+	isShow_enemyHP = false;
+
+	enemyHP_current = 0.0f;
+	enemyHP_max     = 0.0f;
+	enemyName       = FText::FromString(TEXT(""));
+}
+
 void AHUD_PlayerHUD::BeginPlay()
 {
 	// WidgetBlueprintのClassを取得
