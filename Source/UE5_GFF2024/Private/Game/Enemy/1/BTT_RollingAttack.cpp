@@ -11,6 +11,7 @@
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UBTT_RollingAttack::UBTT_RollingAttack()
 {
@@ -123,13 +124,18 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         // エフェクトをスポーン
                         if (NiagaraComp == nullptr)
                         {
+                            // FindLookAtRotationを使用してターゲットへの回転を計算
+                            FVector ReversalTargetLocation = { -Enemy->TargetLocation.X , -Enemy->TargetLocation.Y , -Enemy->TargetLocation.Z };
+                            FVector TargetVector = Enemy->TargetLocation - Enemy->GetActorLocation();
+                            FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Enemy->GetActorLocation(), Enemy->GetActorLocation() + -TargetVector);
+
                             FVector SpawnLocation = Enemy->GetActorLocation() + LocationOffset;
                             NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
                                 Enemy->GetWorld(),
                                 NiagaraEffect,
                                 SpawnLocation,
-                                FRotator::ZeroRotator,
-                                FVector(4.0f)
+                                LookAtRotation,
+                                FVector(5.0f)
                             );
 
                             IsSpawnNiagara = false;
@@ -143,10 +149,22 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         else
                         {
                             NiagaraComp->SetWorldLocation(Enemy->GetActorLocation());
+
+                            // FindLookAtRotationを使用してターゲットへの回転を計算
+                           /* FVector ReversalTargetLocation = { -Enemy->TargetLocation.X , -Enemy->TargetLocation.Y , -Enemy->TargetLocation.Z };
+                            FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Enemy->GetActorLocation(), ReversalTargetLocation);*/
+                          
+                            //NiagaraComp->SetWorldRotation(LookAtRotation);
+
+
+                            
+                            FVector Scale(50 / Count);
+                            NiagaraComp->SetWorldScale3D(Scale);
+                            
                         }
 
                        
-                        if (/*tmp1.Length() > 100*/Count < 120)
+                        if (/*tmp1.Length() > 100*/Count < 100)
                         {
                             //return EBTNodeResult::InProgress;
                             IsSpawnNiagara = true;
