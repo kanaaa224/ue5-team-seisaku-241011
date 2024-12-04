@@ -29,6 +29,8 @@
 //AttackObject(自分の分身クラス)
 #include "Game/Enemy/2/Enemy2AttackObject.h"
 
+#include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -131,6 +133,19 @@ void AEnemy2Character::BeginPlay()
 
 	//スタート時のLocationを取得
 	startLocation = GetActorLocation();
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyName(FText::FromString(TEXT("縦長長方形")));
+			hud->set_enemyHP(health);
+			hud->set_enemyMaxHP((float)_ENEMY2_MAX_HP_);
+			hud->set_isShow_enemyHP(true);
+		}
+	}
 }
 
 // Called every frame
@@ -185,6 +200,18 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	health -= DamageAmount;
 	//ダメージを受けた時に赤くする
 	//DamageMaterial();
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyHP(health);
+
+			if (health <= 0.0f) hud->set_isShow_enemyHP(false);
+		}
+	}
 
 	//ヘルスがゼロ以下なら死亡処理
 	if (health <= 0) {
