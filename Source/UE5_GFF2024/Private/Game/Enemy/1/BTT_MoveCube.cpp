@@ -8,6 +8,7 @@
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
+#include "Math\RandomStream.h"
 
 UBTT_MoveCube::UBTT_MoveCube()
 {
@@ -75,7 +76,9 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                     {
                         Enemy->SetIsMoving(false);
                         AIC->SetState(3);
-                        AIC->SetNextState(1);
+                        FRandomStream r;
+                        r.GenerateNewSeed();
+                        AIC->SetNextState(r.RandRange(1, 2));
                         IsNextState = false;
                         IsInit = false;
                     }
