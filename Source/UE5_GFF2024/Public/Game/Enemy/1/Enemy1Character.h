@@ -202,4 +202,7 @@ public:
 
 	FVector MoveDirection;
 
+
+	bool IsDestroy;
+
 };

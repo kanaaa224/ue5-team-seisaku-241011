@@ -162,11 +162,11 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 100.f;
+	health = 10.f;
 
 	MoveDirection = { 0,0,0 };
 
-	BeginPlay();
+	IsDestroy = false;
 }
 
 // Called when the game starts or when spawned
@@ -209,74 +209,92 @@ void AEnemy1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Delta = DeltaTime;
-
-	if (TargetLocation.Z > -10000 && !IsMoving)
+	if (health > 0)
 	{
+		Delta = DeltaTime;
 
-		FVector StartLocation = GetActorLocation();
-		FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
-
-		// ライントレース用のヒット結果
-		FHitResult HitResult;
-
-		// トレースの設定
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this); // 自分自身を無視
-
-		bool bDidHit = GetWorld()->LineTraceSingleByChannel(
-			HitResult,
-			StartLocation,
-			EndLocation,
-			ECC_Visibility,
-			QueryParams
-		);
-
-		FVector NewLocation;
-
-		switch ((int)AttackState)
+		if (TargetLocation.Z > -10000 && !IsMoving)
 		{
-		case 0:
-			break;
 
-		case 1:
-			NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
-			SetActorLocation(NewLocation, true);
-			break;
+			FVector StartLocation = GetActorLocation();
+			FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
 
-		case 2:
-			if (bDidHit)
+			// ライントレース用のヒット結果
+			FHitResult HitResult;
+
+			// トレースの設定
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(this); // 自分自身を無視
+
+			bool bDidHit = GetWorld()->LineTraceSingleByChannel(
+				HitResult,
+				StartLocation,
+				EndLocation,
+				ECC_Visibility,
+				QueryParams
+			);
+
+			FVector NewLocation;
+
+			switch ((int)AttackState)
 			{
-				// 障害物にぶつかった場合
-				UE_LOG(LogTemp, Warning, TEXT("Blocked by: %s"), *HitResult.GetActor()->GetName());
-			}
-			else
-			{
-				// 移動可能なら移動
+			case 0:
+				break;
+
+			case 1:
 				NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 				SetActorLocation(NewLocation, true);
-				//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
-			}
+				break;
 
-			break;
-		default:
-			break;
+			case 2:
+				if (bDidHit)
+				{
+					// 障害物にぶつかった場合
+					UE_LOG(LogTemp, Warning, TEXT("Blocked by: %s"), *HitResult.GetActor()->GetName());
+				}
+				else
+				{
+					// 移動可能なら移動
+					NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
+					SetActorLocation(NewLocation, true);
+					//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
+				}
+
+				break;
+			default:
+				break;
+			}
+		}
+
+		GetBottomNumber();
+		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
+
+		OldTargetLocation = TargetLocation;
+
+		if (IsMoving)
+		{
+			MoveProcess();
+		}
+
+		if (IsAttacking)
+		{
+			Attack();
 		}
 	}
-
-	GetBottomNumber();
-	//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
-
-	OldTargetLocation = TargetLocation;
-
-	if (IsMoving)
+	else
 	{
-		MoveProcess();
-	}
-	
-	if (IsAttacking)
-	{
-		Attack();
+		if (!IsDestroy)
+		{
+			//FTimerHandle TimerHandle;
+			//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+			//	{
+			//		delete RotationManager;
+			//		Destroy();
+			//	}, 2.f, false);  // 0.1秒後に無効化
+			IsDestroy = true;
+
+			SetLifeSpan(2.0f);
+		}
 	}
 
 	//AddMovementInput({ 1,0,0 }, 100);
