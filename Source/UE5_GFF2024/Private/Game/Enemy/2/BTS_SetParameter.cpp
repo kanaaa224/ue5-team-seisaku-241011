@@ -75,6 +75,7 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	//HPが半分以下なら特殊攻撃のFlgをON
 	if (HPRatio <= 0.5f && BlackboardComp->GetValueAsBool(CoolTime) == false) {
+		UE_LOG(LogTemp, Warning, TEXT("ULT-------------------------------------------ON"));
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(SpecialAttack, true);
 	}
