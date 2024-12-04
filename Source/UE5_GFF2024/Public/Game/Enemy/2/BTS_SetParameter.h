@@ -38,4 +38,10 @@ private:
 	//HPRatio
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	FName HPRatioKeyName;
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName SpecialAttack;
+
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName CoolTime;
 };

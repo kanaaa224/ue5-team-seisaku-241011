@@ -92,7 +92,7 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 	//Bomb->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_C.P_Explosion_Big_C")));
 	Bomb->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_B.P_Explosion_Big_B")));
 	// エフェクトの場所
-	Bomb->SetRelativeLocation(FVector(20.0f, 0.0f, -80.0f));
+	Bomb->SetRelativeLocation(FVector(-50.0f, 0.0f, -500.0f));
 	//エフェクトの大きさ
 	Bomb->SetWorldScale3D(FVector(8.0f));
 }

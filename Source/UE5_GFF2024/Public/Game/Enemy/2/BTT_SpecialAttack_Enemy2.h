@@ -39,6 +39,12 @@ private:
 	//落ちる処理が終わったか
 	bool downEnd = false;
 
+	//*****ブラックボードの変数*****//
+	UPROPERTY(EditDefaultsOnly, Category=AI)
+	FName SpecialAttackFlg;
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	FName CoolTime;
+
 public:
 	explicit UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer);
 
