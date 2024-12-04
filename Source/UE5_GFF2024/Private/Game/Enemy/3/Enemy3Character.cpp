@@ -75,6 +75,8 @@ AEnemy3Character::AEnemy3Character()
 	/* ビーム攻撃の仮Effectを読み込み*/
 	NiagaraEffect = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/RocketThrusterExhaustFX/FX/NS_RocketExhaust_Realistic"));
 
+
+	polygonrotation = new PolygonRotationManager(CubeVertices, CubeFaces);
 }
 
 // Called when the game starts or when spawned
@@ -88,6 +90,8 @@ void AEnemy3Character::BeginPlay()
 void AEnemy3Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	MoveProcess();
 
 }
 
@@ -190,4 +194,37 @@ void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 
 void AEnemy3Character::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+}
+
+void AEnemy3Character::MoveProcess()
+{
+	/* 後は、movementの中にPlayerの方向を渡せれば良い */
+
+	FVector scale = FVector(150.0);
+	FVector position = GetActorLocation();
+
+
+	polygonrotation->SetNextBottom(movement, scale, position);
+	polygonrotation->SetNewRotationAndLocation(position);
+
+	FRotator rot1 = polygonrotation->GetNowRotation();
+
+	AddActorWorldRotation(-1 * rot1);
+	if (GetActorRotation().Pitch > 360.)
+	{
+		SetActorRotation({ GetActorRotation().Pitch - 360, GetActorRotation().Yaw,GetActorRotation().Roll });
+	}
+	if (GetActorRotation().Yaw > 360.)
+	{
+		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw - 360,GetActorRotation().Roll });
+	}
+	if (GetActorRotation().Roll > 360.)
+	{
+		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw,GetActorRotation().Roll - 360 });
+	}
+
+
+	SetActorLocation(polygonrotation->GetNewLocation());
+
+	polygonrotation->DrawPolyhedronFaceCenters(GetWorld(), *polygonrotation, scale, position);
 }
