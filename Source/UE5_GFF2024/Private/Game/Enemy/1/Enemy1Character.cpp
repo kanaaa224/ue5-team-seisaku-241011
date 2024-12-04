@@ -165,6 +165,8 @@ AEnemy1Character::AEnemy1Character()
 	health = 100.f;
 
 	MoveDirection = { 0,0,0 };
+
+	BeginPlay();
 }
 
 // Called when the game starts or when spawned
@@ -181,12 +183,12 @@ void AEnemy1Character::BeginPlay()
 
 	//TargetLocation = new FVector(-1, -1, -1);
 
-	AttackCollisions[0]->SetRelativeScale3D({ 4,4,1 });
-	AttackCollisions[1]->SetRelativeScale3D({ 4,4,1 });
-	AttackCollisions[2]->SetRelativeScale3D({ 1,4,4 });
-	AttackCollisions[3]->SetRelativeScale3D({ 1,4,4 });
-	AttackCollisions[4]->SetRelativeScale3D({ 4,1,4 });
-	AttackCollisions[5]->SetRelativeScale3D({ 4,1,4 });
+	AttackCollisions[0]->SetRelativeScale3D({ 4,4,0.5 });
+	AttackCollisions[1]->SetRelativeScale3D({ 4,4,0.5 });
+	AttackCollisions[2]->SetRelativeScale3D({ 0.5,4,4 });
+	AttackCollisions[3]->SetRelativeScale3D({ 0.5,4,4 });
+	AttackCollisions[4]->SetRelativeScale3D({ 4,0.5,4 });
+	AttackCollisions[5]->SetRelativeScale3D({ 4,0.5,4 });
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
