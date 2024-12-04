@@ -2,6 +2,7 @@
 
 
 #include "Game/UI/Widget_TitleMenu.h"
+#include "Game/System/GameInstance_GFF2024.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -15,15 +16,16 @@ void UWidget_TitleMenu::NativeConstruct()
 
 void UWidget_TitleMenu::onButtonPlayClicked()
 {
-	// レベルをロード
-	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Stage1Map")));
+	UGameInstance_GFF2024* GameInstance = Cast<UGameInstance_GFF2024>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	if (GameInstance) GameInstance->Initialize(); // GameInstance初期化
+
+	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Stage1Map"))); // レベルをロード
 }
 
 void UWidget_TitleMenu::onButtonQuitClicked()
 {
-	// PlayerControllerを取得
 	if (APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-		// ゲームを終了
-		UKismetSystemLibrary::QuitGame(GetWorld(), playerController, EQuitPreference::Quit, false);
+		UKismetSystemLibrary::QuitGame(GetWorld(), playerController, EQuitPreference::Quit, false); // ゲームを終了
 	}
 }
