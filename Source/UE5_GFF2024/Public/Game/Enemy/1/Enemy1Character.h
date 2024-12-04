@@ -26,6 +26,8 @@ protected:
 	//virtual void BeginDestroy() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
+	virtual void Destroyed() override;
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -205,4 +207,7 @@ public:
 
 	bool IsDestroy;
 
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	TSoftObjectPtr<UWorld> LoadLevel;
 };

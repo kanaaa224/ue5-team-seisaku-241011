@@ -5,6 +5,7 @@
 
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/1/AIC_Enemy1.h"
@@ -167,6 +168,8 @@ AEnemy1Character::AEnemy1Character()
 	MoveDirection = { 0,0,0 };
 
 	IsDestroy = false;
+
+	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
 }
 
 // Called when the game starts or when spawned
@@ -197,6 +200,13 @@ void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	delete RotationManager;
 	//delete TargetLocation;
+}
+
+void AEnemy1Character::Destroyed()
+{
+	Super::Destroyed();
+
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
 }
 
 //void AEnemy1Character::BeginDestroy()
