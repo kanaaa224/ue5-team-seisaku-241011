@@ -131,7 +131,7 @@ APlayer_Cube::APlayer_Cube()
 	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
 	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
 
-	LockOnCollision->bHiddenInGame = false;
+	//LockOnCollision->bHiddenInGame = false;
 
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
@@ -226,7 +226,8 @@ APlayer_Cube::APlayer_Cube()
 	}
 
 	LockOnTargetActor = nullptr;
-
+	
+	//エフェクトの追加
 	ConstructorHelpers::FObjectFinder<UParticleSystem> FindAttackEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
 	if (FindAttackEff.Succeeded())
 	{
@@ -244,6 +245,7 @@ APlayer_Cube::APlayer_Cube()
 		BlinkParticle = FindBlinkEff.Object;
 	}
 
+	//SEの追加
 	ConstructorHelpers::FObjectFinder<USoundBase>FindTakeDamageSe(TEXT("/Game/Game/Audio/SE/Player/TakeDamage"));
 	if (FindTakeDamageSe.Succeeded())
 	{

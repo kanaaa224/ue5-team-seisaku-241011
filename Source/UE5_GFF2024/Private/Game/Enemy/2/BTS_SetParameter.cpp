@@ -21,6 +21,8 @@ UBTS_SetParameter::UBTS_SetParameter()
 	AttackKeyName = "Attack";
 	HPKeyName = "MyHealth";
 	HPRatioKeyName = "HPRatio";
+	SpecialAttack = "SpecialAttackFlg";
+	CoolTime = "CoolTime";
 }
 
 void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -61,7 +63,6 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	AEnemy2Character* EnemyCharacter = Cast<AEnemy2Character>(ControlledPawn);
 	if (EnemyCharacter){
 		HP = EnemyCharacter->GetHP();
-		UE_LOG(LogTemp, Log, TEXT("Enemy2 HP : %f"), HP);
 	}
 	//ブラックボードにあるfloat型のMyHealth変数に代入
 	ensure(BlackboardComp);
@@ -71,4 +72,11 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	//ブラックボードにあるfloat型のHPRatio変数に代入
 	ensure(BlackboardComp);
 	BlackboardComp->SetValueAsFloat(HPRatioKeyName, HPRatio);
+
+	//HPが半分以下なら特殊攻撃のFlgをON
+	if (HPRatio <= 0.5f && BlackboardComp->GetValueAsBool(CoolTime) == false) {
+		UE_LOG(LogTemp, Warning, TEXT("ULT-------------------------------------------ON"));
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(SpecialAttack, true);
+	}
 }
