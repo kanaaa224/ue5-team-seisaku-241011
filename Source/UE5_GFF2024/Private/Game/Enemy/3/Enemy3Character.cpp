@@ -77,6 +77,7 @@ AEnemy3Character::AEnemy3Character()
 
 
 	polygonrotation = new PolygonRotationManager(CubeVertices, CubeFaces);
+	
 }
 
 // Called when the game starts or when spawned
