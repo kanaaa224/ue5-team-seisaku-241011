@@ -4,7 +4,7 @@
 #include "Game/Enemy/2/BTT_CoolTime_Enemy2.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-#define _COOL_TIME_ 2.2f
+#define _COOL_TIME_ 1.7f
 
 UBTT_CoolTime_Enemy2::UBTT_CoolTime_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
