@@ -188,6 +188,11 @@ void AEnemy3Character::Beam_Collision_Spawn()
 	SpawnedCharacter->SetActorScale3D(SpawnScale);
 }
 
+void AEnemy3Character::SetMovement(double _move_x, double _move_y)
+{
+	movement = FVector(_move_x, _move_y, 0.0);
+}
+
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 }
