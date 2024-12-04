@@ -124,19 +124,19 @@ APlayer_Cube::APlayer_Cube()
 	//BoxComponentを追加する
 	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetBoxExtent(FVector(6000.f, 6000.f, 100.f));
+	LockOnCollision->SetBoxExtent(FVector(8000.f, 8000.f, 5000.f));
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
 	LockOnCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);								//コリジョンに対する反応をすべてIgnoreにする
 	LockOnCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);		//コリジョンに対する反応をPawnだけOverlapにする
 
-	//LockOnCollision->bHiddenInGame = false;
+	LockOnCollision->bHiddenInGame = false;
 
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	AttackCollision->SetupAttachment(RootComponent);
-	AttackCollision->InitSphereRadius(260.f);
+	AttackCollision->InitSphereRadius(300.f);
 	AttackCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_EngineTraceChannel2);										//コリジョンのオブジェクトタイプをAttackにする
@@ -394,7 +394,7 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			KnockBackFlg = true;
 			InvincibleFlg = true;
 		}
-		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
+		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
 	}
 
 	return Health;
@@ -415,7 +415,6 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 
 		//ダメージ量
 		const float DamageAmount = 10.0f;
-		UKismetSystemLibrary::PrintString(this,TEXT("damage"));
 
 		//ダメージを与えたアクターのHPが0以下なら
 		if (ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this) <= 0.f)
@@ -544,8 +543,6 @@ void APlayer_Cube::GetUpTimelineFinished()
 
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//UKismetSystemLibrary::PrintString(this, UKismetSystemLibrary::GetDisplayName(OtherActor));
-
 	if (!LockOnFlg && !AttackFlg)
 	{
 		LockOnCandidates.AddUnique(OtherActor);
@@ -565,7 +562,6 @@ void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* Overlapped
 			{
 				ILockOnInterface::Execute_SetLockOnEnable(LockOnTargetActor, true);
 			}
-			UKismetSystemLibrary::PrintString(this, TEXT("ON"));
 		}
 	}
 }
