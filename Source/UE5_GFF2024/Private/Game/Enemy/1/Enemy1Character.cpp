@@ -5,6 +5,7 @@
 
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/1/AIC_Enemy1.h"
@@ -162,9 +163,13 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 100.f;
+	health = 10.f;
 
 	MoveDirection = { 0,0,0 };
+
+	IsDestroy = false;
+
+	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
 }
 
 // Called when the game starts or when spawned
@@ -181,12 +186,12 @@ void AEnemy1Character::BeginPlay()
 
 	//TargetLocation = new FVector(-1, -1, -1);
 
-	AttackCollisions[0]->SetRelativeScale3D({ 4,4,1 });
-	AttackCollisions[1]->SetRelativeScale3D({ 4,4,1 });
-	AttackCollisions[2]->SetRelativeScale3D({ 1,4,4 });
-	AttackCollisions[3]->SetRelativeScale3D({ 1,4,4 });
-	AttackCollisions[4]->SetRelativeScale3D({ 4,1,4 });
-	AttackCollisions[5]->SetRelativeScale3D({ 4,1,4 });
+	AttackCollisions[0]->SetRelativeScale3D({ 4,4,0.5 });
+	AttackCollisions[1]->SetRelativeScale3D({ 4,4,0.5 });
+	AttackCollisions[2]->SetRelativeScale3D({ 0.5,4,4 });
+	AttackCollisions[3]->SetRelativeScale3D({ 0.5,4,4 });
+	AttackCollisions[4]->SetRelativeScale3D({ 4,0.5,4 });
+	AttackCollisions[5]->SetRelativeScale3D({ 4,0.5,4 });
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -195,6 +200,13 @@ void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	delete RotationManager;
 	//delete TargetLocation;
+}
+
+void AEnemy1Character::Destroyed()
+{
+	Super::Destroyed();
+
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
 }
 
 //void AEnemy1Character::BeginDestroy()
@@ -207,74 +219,92 @@ void AEnemy1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Delta = DeltaTime;
-
-	if (TargetLocation.Z > -10000 && !IsMoving)
+	if (health > 0)
 	{
+		Delta = DeltaTime;
 
-		FVector StartLocation = GetActorLocation();
-		FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
-
-		// ライントレース用のヒット結果
-		FHitResult HitResult;
-
-		// トレースの設定
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this); // 自分自身を無視
-
-		bool bDidHit = GetWorld()->LineTraceSingleByChannel(
-			HitResult,
-			StartLocation,
-			EndLocation,
-			ECC_Visibility,
-			QueryParams
-		);
-
-		FVector NewLocation;
-
-		switch ((int)AttackState)
+		if (TargetLocation.Z > -10000 && !IsMoving)
 		{
-		case 0:
-			break;
 
-		case 1:
-			NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
-			SetActorLocation(NewLocation, true);
-			break;
+			FVector StartLocation = GetActorLocation();
+			FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
 
-		case 2:
-			if (bDidHit)
+			// ライントレース用のヒット結果
+			FHitResult HitResult;
+
+			// トレースの設定
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(this); // 自分自身を無視
+
+			bool bDidHit = GetWorld()->LineTraceSingleByChannel(
+				HitResult,
+				StartLocation,
+				EndLocation,
+				ECC_Visibility,
+				QueryParams
+			);
+
+			FVector NewLocation;
+
+			switch ((int)AttackState)
 			{
-				// 障害物にぶつかった場合
-				UE_LOG(LogTemp, Warning, TEXT("Blocked by: %s"), *HitResult.GetActor()->GetName());
-			}
-			else
-			{
-				// 移動可能なら移動
+			case 0:
+				break;
+
+			case 1:
 				NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 				SetActorLocation(NewLocation, true);
-				//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
-			}
+				break;
 
-			break;
-		default:
-			break;
+			case 2:
+				if (bDidHit)
+				{
+					// 障害物にぶつかった場合
+					UE_LOG(LogTemp, Warning, TEXT("Blocked by: %s"), *HitResult.GetActor()->GetName());
+				}
+				else
+				{
+					// 移動可能なら移動
+					NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
+					SetActorLocation(NewLocation, true);
+					//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
+				}
+
+				break;
+			default:
+				break;
+			}
+		}
+
+		GetBottomNumber();
+		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
+
+		OldTargetLocation = TargetLocation;
+
+		if (IsMoving)
+		{
+			MoveProcess();
+		}
+
+		if (IsAttacking)
+		{
+			Attack();
 		}
 	}
-
-	GetBottomNumber();
-	//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
-
-	OldTargetLocation = TargetLocation;
-
-	if (IsMoving)
+	else
 	{
-		MoveProcess();
-	}
-	
-	if (IsAttacking)
-	{
-		Attack();
+		if (!IsDestroy)
+		{
+			//FTimerHandle TimerHandle;
+			//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+			//	{
+			//		delete RotationManager;
+			//		Destroy();
+			//	}, 2.f, false);  // 0.1秒後に無効化
+			IsDestroy = true;
+
+			SetLifeSpan(2.0f);
+		}
 	}
 
 	//AddMovementInput({ 1,0,0 }, 100);

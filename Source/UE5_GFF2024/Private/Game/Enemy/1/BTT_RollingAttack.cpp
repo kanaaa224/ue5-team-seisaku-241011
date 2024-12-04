@@ -104,7 +104,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             TargetLocation = Enemy->TargetLocation;
                         }
 
-                        if (Speed += 0.5f)
+                        if (Speed += 0.2f)
                         {
                             Enemy->SetSpeed(Speed);
                         }
@@ -138,6 +138,8 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                                 FVector(5.0f)
                             );
 
+                            NiagaraComp->Activate();
+
                             IsSpawnNiagara = false;
 
                             //FTimerHandle TimerHandle;
@@ -156,10 +158,9 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                           
                             //NiagaraComp->SetWorldRotation(LookAtRotation);
 
-
-                            
-                            FVector Scale(50 / Count);
-                            NiagaraComp->SetWorldScale3D(Scale);
+                            //FVector Scale(50 / Count);
+                            //NiagaraComp->SetWorldScale3D(Scale);
+                            NiagaraComp->SetWorldScale3D(FVector(5.));
                             
                         }
 
@@ -176,7 +177,8 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             Count = 0;
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
                             //Enemy->SetIsMoving(true);
-                            NiagaraComp->DestroyComponent();
+                            NiagaraComp->Deactivate();
+                            NiagaraComp = nullptr;
 
 
                             AIC->SetState(3);

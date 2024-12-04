@@ -26,6 +26,8 @@ protected:
 	//virtual void BeginDestroy() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
+	virtual void Destroyed() override;
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -119,30 +121,30 @@ public:
 	float a = 0;
 
 	// 頂点を回転させる関数
-	FVector RotateVertex(const FVector& Vertex, float AngleX, float AngleY, float AngleZ) {
-		// X軸回転
-		FVector Rotated = FVector(
-			Vertex.X,
-			Vertex.Y * FMath::Cos(AngleX) - Vertex.Z * FMath::Sin(AngleX),
-			Vertex.Y * FMath::Sin(AngleX) + Vertex.Z * FMath::Cos(AngleX)
-		);
+	//FVector RotateVertex(const FVector& Vertex, float AngleX, float AngleY, float AngleZ) {
+	//	// X軸回転
+	//	FVector Rotated = FVector(
+	//		Vertex.X,
+	//		Vertex.Y * FMath::Cos(AngleX) - Vertex.Z * FMath::Sin(AngleX),
+	//		Vertex.Y * FMath::Sin(AngleX) + Vertex.Z * FMath::Cos(AngleX)
+	//	);
 
-		// Y軸回転
-		Rotated = FVector(
-			Rotated.X * FMath::Cos(AngleY) + Rotated.Z * FMath::Sin(AngleY),
-			Rotated.Y,
-			-Rotated.X * FMath::Sin(AngleY) + Rotated.Z * FMath::Cos(AngleY)
-		);
+	//	// Y軸回転
+	//	Rotated = FVector(
+	//		Rotated.X * FMath::Cos(AngleY) + Rotated.Z * FMath::Sin(AngleY),
+	//		Rotated.Y,
+	//		-Rotated.X * FMath::Sin(AngleY) + Rotated.Z * FMath::Cos(AngleY)
+	//	);
 
-		// Z軸回転
-		Rotated = FVector(
-			Rotated.X * FMath::Cos(AngleZ) - Rotated.Y * FMath::Sin(AngleZ),
-			Rotated.X * FMath::Sin(AngleZ) + Rotated.Y * FMath::Cos(AngleZ),
-			Rotated.Z
-		);
+	//	// Z軸回転
+	//	Rotated = FVector(
+	//		Rotated.X * FMath::Cos(AngleZ) - Rotated.Y * FMath::Sin(AngleZ),
+	//		Rotated.X * FMath::Sin(AngleZ) + Rotated.Y * FMath::Cos(AngleZ),
+	//		Rotated.Z
+	//	);
 
-		return Rotated;
-	}
+	//	return Rotated;
+	//}
 
 	
 	float Delta;
@@ -202,4 +204,10 @@ public:
 
 	FVector MoveDirection;
 
+
+	bool IsDestroy;
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	TSoftObjectPtr<UWorld> LoadLevel;
 };

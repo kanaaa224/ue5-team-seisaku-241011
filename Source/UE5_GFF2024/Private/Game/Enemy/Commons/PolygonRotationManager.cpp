@@ -223,7 +223,10 @@ void PolygonRotationManager::SetNextBottom(FVector Vector, const FVector& Scale,
         }
 
         CalculateRotationDirection(Scale, Position);
-        if (FpsCounter == 0) GetShareFace(bottom, next, Scale, Position);
+        if (FpsCounter == 0) 
+        {
+            GetShareFace(bottom, next, Scale, Position);
+        }
     }
 }
 

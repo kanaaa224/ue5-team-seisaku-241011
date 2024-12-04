@@ -50,6 +50,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                     Normalize = { Normalize.X, Normalize.Y, 0. };
+
                     Enemy->SetVector(Normalize);
 
                     Enemy->SetIsMoving(true);
@@ -63,7 +64,7 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                         if (EnemyVector.Length() < 500)
                         {
                             FTimerHandle TimerHandle;
-                            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, Enemy, AIC]()
+                            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
                                 {
                                     IsNextState = true;
                                 }, 3.f, false);  // 3秒後に無効化

@@ -49,6 +49,10 @@ public:
 	UFUNCTION()
 	void Beam_Collision_Spawn();
 
+	UFUNCTION()
+	void SetMovement(double _move_x, double _move_y);
+	
+
 private:
 
 	/* DiceMehComponent */
@@ -87,7 +91,7 @@ private:
 public:
 
 	/* 移動方向 */
-	FVector movement = FVector(1.0, 1.0, 0.0);
+	FVector movement = { 1.,0.,0. };
 
 private:
 

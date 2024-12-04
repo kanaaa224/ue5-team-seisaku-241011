@@ -77,6 +77,7 @@ AEnemy3Character::AEnemy3Character()
 
 
 	polygonrotation = new PolygonRotationManager(CubeVertices, CubeFaces);
+	
 }
 
 // Called when the game starts or when spawned
@@ -186,6 +187,11 @@ void AEnemy3Character::Beam_Collision_Spawn()
 	//UE_LOG(LogTemp, Display, TEXT("Enemy3 Beam Collision Yes Spawn"));
 
 	SpawnedCharacter->SetActorScale3D(SpawnScale);
+}
+
+void AEnemy3Character::SetMovement(double _move_x, double _move_y)
+{
+	movement = FVector(_move_x, _move_y, 0.0);
 }
 
 void AEnemy3Character::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
