@@ -14,16 +14,30 @@
 UBTT_SpecialAttack_Enemy2::UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
 	stopMove = false;
+
+	SpecialAttackFlg = "SpecialAttackFlg";
+	CoolTime = "CoolTime";
 }
 
 void UBTT_SpecialAttack_Enemy2::Init()
 {
+	stopMove = false;
 	onecCalcFTL_Flg = false;
-	floatEnd = true;
+	floatEnd = false;
+	downEnd = false;
+	endCreateObject = false;
+	onecCalcDTL_Flg = false;
 }
 
 EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	UE_LOG(LogTemp, Log, TEXT("ExecuteTask : SpecialAttack"));
+
+	if (initFlg == false) {
+		Init();
+		initFlg = true;
+	}
+
 	//AIコントローラーを取得
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr) {
@@ -72,6 +86,14 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 		stopMove = false;
 	}
 
+	//BlackboardのComponentを変数に代入
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+
+
+	//
+	//ブラックボードのNormalAttack変数を立てる
+	ensure(BlackboardComp);
+	BlackboardComp->SetValueAsBool(SpecialAttackFlg, true);
 
 	//浮き上がり処理
 	if (stopMove == false) {
@@ -95,6 +117,14 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	if (AttackObjOfLevel(CurrentLevel, AEnemy2AttackObject::StaticClass()) == false && endCreateObject == true) {
 		//UE_LOG(LogTemp, Warning, TEXT("false -----------> DownObject"));
 		Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
+	}
+	if (downEnd == true) {
+		//ブラックボード変数のSpecialAttackFlgをfalseにする
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(SpecialAttackFlg, false);
+		ensure(BlackboardComp);
+		BlackboardComp->SetValueAsBool(CoolTime, true);
+		initFlg = false;
 	}
 
 	return EBTNodeResult::Succeeded;
@@ -137,8 +167,9 @@ void UBTT_SpecialAttack_Enemy2::Down(AEnemy2Character* myPawn, FVector targetLoc
 	nowLocation.Z = nowLocation.Z + (GetWorld()->GetDeltaSeconds() * 3.0f) * ((targetLocation.Z - 1500.0f) - nowLocation.Z);
 
 	//計算時にでた差異を修正
-	if (nowLocation.Z <= 341.0f) {
+	if (nowLocation.Z <= 351.0f) {
 		nowLocation.Z = 330.0f;
+		downEnd = true;
 	}
 
 	//debugLog
@@ -154,11 +185,11 @@ FVector UBTT_SpecialAttack_Enemy2::OnecCalcDownTargetLocation(AEnemy2Character* 
 		calcResultDTL = FVector(tmp.X, tmp.Y, tmp.Z + (-1600.0f));//数字の部分は上昇する値と同じ
 		onecCalcDTL_Flg = true;
 	}
-	else if (onecCalcDTL_Flg == true) {
-		if (calcResultDTL.Z <= tmp.Z) {
-			downEnd = true;
-		}
-	}
+	//else if (onecCalcDTL_Flg == true) {
+	//	if (calcResultDTL.Z <= tmp.Z) {
+	//		downEnd = true;
+	//	}
+	//}
 
 	return calcResultDTL;
 }
