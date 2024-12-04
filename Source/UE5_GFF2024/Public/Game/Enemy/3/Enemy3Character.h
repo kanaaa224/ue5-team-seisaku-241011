@@ -91,7 +91,7 @@ private:
 public:
 
 	/* 移動方向 */
-	FVector movement = FVector(0.0);
+	FVector movement = { 1.,0.,0. };
 
 private:
 
