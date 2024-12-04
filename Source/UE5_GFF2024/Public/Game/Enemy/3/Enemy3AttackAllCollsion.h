@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Enemy3AttackAllCollsion.generated.h"
 
 UCLASS()
@@ -26,17 +27,17 @@ public:
 
 public:
 
-	//UFUNCTION()
-	//void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	//UFUNCTION()
-	//void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 private:
 
 	/* BoxComponent Enemy3AttackのCollision用 */
-	/*UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UBoxComponent> AttackCollisionMesh;*/
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UBoxComponent> AttackCollisionMesh;
 
 
 };
