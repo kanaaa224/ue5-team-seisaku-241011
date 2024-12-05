@@ -46,6 +46,10 @@ private:
 	//スポーン時のLocationを取得
 	FVector startLocation;
 
+	//地面に落ちる時のエフェクト
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystemComponent* Spark;
+
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UPawnSensingComponent* PawnSensingComp;

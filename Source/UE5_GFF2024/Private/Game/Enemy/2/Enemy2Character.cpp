@@ -231,7 +231,8 @@ void AEnemy2Character::Die()
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	// 一定時間後にオブジェクトを削除
-	SetLifeSpan(1.0f); // 1秒後に削除
+	//SetLifeSpan(1.0f); // 1秒後に削除
+	Destroy();
 }
 
 void AEnemy2Character::DamageMaterial()

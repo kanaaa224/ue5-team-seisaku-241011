@@ -76,6 +76,8 @@ public:
 	//攻撃を終えたか
 	bool endAttack = false;
 
+	
+
 private:
 	//Niageraエフェクトのアセット
 	UPROPERTY(EditAnywhere,Category = "Effects")
