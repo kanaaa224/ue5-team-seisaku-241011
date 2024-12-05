@@ -32,5 +32,21 @@ protected:
     void Init();
 
 
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay;
+
+    /** 再生位置のオフセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    FVector SoundLocationOffset;
+
+    /** 音量 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float VolumeMultiplier = 1.0f;
+
+    /** ピッチ */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float PitchMultiplier = 1.0f;
+
 
 };

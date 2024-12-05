@@ -152,10 +152,11 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
                     if (Count < 1)
                     {
-                        EBTNodeResult::InProgress;
+                        //EBTNodeResult::InProgress;
                     }
                     else
                     {
+                        //次の状態
                         Enemy->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
                         //Enemy->SetIsMoving(true);
                         AIC->SetState(3);
@@ -181,10 +182,24 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         IsSpawnNiagara = false;
 
                         FTimerHandle TimerHandle;
-                            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
-                                {
-                                    NiagaraComp->DestroyComponent();
-                                }, 0.7f, false);  // 2秒後に無効化
+                        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
+                            {
+                                NiagaraComp->DestroyComponent();
+                            }, 0.7f, false);  // 2秒後に無効化
+
+
+                        //サウンド
+                        if (SoundToPlay)
+                        {
+                            FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+                            UGameplayStatics::PlaySoundAtLocation(
+                                Enemy->GetWorld(),
+                                SoundToPlay,
+                                PlayLocation,
+                                VolumeMultiplier,
+                                PitchMultiplier
+                            );
+                        }
                     }
 
 
