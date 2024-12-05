@@ -39,6 +39,9 @@ private:
 	//落ちる処理が終わったか
 	bool downEnd = false;
 
+	//
+	float secDownTime = 0.0f;
+
 	//*****ブラックボードの変数*****//
 	UPROPERTY(EditDefaultsOnly, Category=AI)
 	FName SpecialAttackFlg;
@@ -65,4 +68,7 @@ private:
 
 	//分身がLevelにいるか調べる関数
 	bool AttackObjOfLevel(ULevel* Level, TSubclassOf<AActor> ActorClass);
+
+	//4番目に生成された分身が発射されたか調べる関数
+	bool CheckFireFourthAttackObj(UWorld* WorldContext);
 };

@@ -11,6 +11,8 @@
 //Enemy2AttackObject
 #include "Game/Enemy/2/Enemy2AttackObject.h"
 
+#define _DOWN_TIME_SECONDS_ 1.0f
+
 UBTT_SpecialAttack_Enemy2::UBTT_SpecialAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
 	stopMove = false;
@@ -31,8 +33,6 @@ void UBTT_SpecialAttack_Enemy2::Init()
 
 EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	UE_LOG(LogTemp, Log, TEXT("ExecuteTask : SpecialAttack"));
-
 	if (initFlg == false) {
 		Init();
 		initFlg = true;
@@ -113,10 +113,14 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 		}
 	}
 	//地面に降りる処理
-	ULevel* CurrentLevel = GetWorld()->GetCurrentLevel();
-	if (AttackObjOfLevel(CurrentLevel, AEnemy2AttackObject::StaticClass()) == false && endCreateObject == true) {
-		//UE_LOG(LogTemp, Warning, TEXT("false -----------> DownObject"));
-		Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
+	if (CheckFireFourthAttackObj(GetWorld()) == true && endCreateObject == true) {
+		secDownTime += GetWorld()->GetDeltaSeconds();
+		if (secDownTime >= _DOWN_TIME_SECONDS_) {
+			Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
+		}
+	}
+	else {
+		secDownTime = 0.0f;
 	}
 	if (downEnd == true) {
 		//ブラックボード変数のSpecialAttackFlgをfalseにする
@@ -210,5 +214,19 @@ bool UBTT_SpecialAttack_Enemy2::AttackObjOfLevel(ULevel* Level, TSubclassOf<AAct
 		}
 	}
 
+	return false;
+}
+
+bool UBTT_SpecialAttack_Enemy2::CheckFireFourthAttackObj(UWorld* WorldContext)
+{
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(WorldContext, AActor::StaticClass(), FoundActors);
+	for (AActor* Actor : FoundActors) {
+		AEnemy2AttackObject* MyPawn = Cast<AEnemy2AttackObject>(Actor);
+
+		if (MyPawn && MyPawn->createNumber == 4 && MyPawn->beginAttackFlg == true) {
+			return true;
+		}
+	}
 	return false;
 }

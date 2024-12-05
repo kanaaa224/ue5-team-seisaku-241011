@@ -76,6 +76,8 @@ public:
 	//攻撃を終えたか
 	bool endAttack = false;
 
+	
+
 private:
 	//Niageraエフェクトのアセット
 	UPROPERTY(EditAnywhere,Category = "Effects")
@@ -91,6 +93,8 @@ private:
 public:
 	//生成時の番号を設定
 	void SetCreateNumber(int createNum);
+	//生成時の番号を取得
+	int GetCreateNumber();
 
 	//プレイヤーの方向を向く
 	void RotateTowardsTarget(float deltaTime);

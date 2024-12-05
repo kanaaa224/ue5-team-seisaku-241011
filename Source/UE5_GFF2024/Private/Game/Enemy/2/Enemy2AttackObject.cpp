@@ -170,6 +170,11 @@ void AEnemy2AttackObject::SetCreateNumber(int createNum)
 	createNumber = createNum;
 }
 
+int AEnemy2AttackObject::GetCreateNumber()
+{
+	return createNumber;
+}
+
 void AEnemy2AttackObject::RotateTowardsTarget(float deltaTime)
 {
 	if (!player) return;
