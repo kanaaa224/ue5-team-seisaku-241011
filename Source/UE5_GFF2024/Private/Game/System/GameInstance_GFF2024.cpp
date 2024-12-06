@@ -10,4 +10,5 @@ void UGameInstance_GFF2024::Initialize()
 
 	//初期値を設定する
 	this->Life = DefaultObject->Life;
+	this->Floor = DefaultObject->Floor;
 }
