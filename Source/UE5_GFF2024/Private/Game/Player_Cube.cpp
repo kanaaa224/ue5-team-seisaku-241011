@@ -124,7 +124,7 @@ APlayer_Cube::APlayer_Cube()
 	//BoxComponentを追加する
 	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetBoxExtent(FVector(8000.f, 8000.f, 5000.f));
+	LockOnCollision->SetBoxExtent(FVector(10000.f, 10000.f, 8000.f));
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
@@ -136,7 +136,7 @@ APlayer_Cube::APlayer_Cube()
 	//SphereComponentを追加する
 	AttackCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	AttackCollision->SetupAttachment(RootComponent);
-	AttackCollision->InitSphereRadius(300.f);
+	AttackCollision->InitSphereRadius(400.f);
 	AttackCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	AttackCollision->SetCollisionObjectType(ECollisionChannel::ECC_EngineTraceChannel2);										//コリジョンのオブジェクトタイプをAttackにする
@@ -289,6 +289,7 @@ APlayer_Cube::APlayer_Cube()
 	InvincibleFlg = false;
 	KnockBackFlg = false;
 	LockOnFlg = false;
+	MoveFlg = true;
 }
 
 // Called when the game starts or when spawned
@@ -398,6 +399,10 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		}
 		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
 	}
+	//else
+	//{
+	//	UGameplayStatics::SetGlobalTimeDilation(this, 0.5f);
+	//}
 
 	return Health;
 }
@@ -423,6 +428,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			LockOnFlg = false;
+			MoveFlg = false;
 			//LockOnCandidates.Remove(LockOnTargetActor);
 			//LockOnTargetActor = nullptr;
 			//消す
@@ -495,6 +501,7 @@ void APlayer_Cube::BlinkTimelineFinished()
 	Material_Instance->SetScalarParameterValue("Opacity", 1);
 	BlinkFlg = false;
 	InvincibleFlg = false;
+	//UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
 }
 
 void APlayer_Cube::AttackTimelineFinished()
@@ -597,7 +604,7 @@ void APlayer_Cube::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg && !AttackFlg)
+	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg && !AttackFlg && MoveFlg)
 	{
 		//進行方向を探す
 		const FRotator Rotation = Controller->GetControlRotation();
