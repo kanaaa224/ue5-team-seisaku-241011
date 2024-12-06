@@ -142,6 +142,8 @@ public:
 	bool KnockBackFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
+	//移動のフラグ
+	bool MoveFlg;
 
 public:
 	//コンストラクタ

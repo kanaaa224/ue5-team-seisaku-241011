@@ -26,6 +26,8 @@
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
 
+#include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -163,7 +165,7 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 70.f;
+	health = 100.f;
 
 	MoveDirection = { 0,0,0 };
 
@@ -192,6 +194,19 @@ void AEnemy1Character::BeginPlay()
 	AttackCollisions[3]->SetRelativeScale3D({ 0.5,4,4 });
 	AttackCollisions[4]->SetRelativeScale3D({ 4,0.5,4 });
 	AttackCollisions[5]->SetRelativeScale3D({ 4,0.5,4 });
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyName(FText::FromString(TEXT("立方体")));
+			hud->set_enemyHP(health);
+			hud->set_enemyMaxHP((float)100);
+			hud->set_isShow_enemyHP(true);
+		}
+	}
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -218,6 +233,18 @@ void AEnemy1Character::Destroyed()
 void AEnemy1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyHP(health);
+
+			if (health <= 0.0f) hud->set_isShow_enemyHP(false);
+		}
+	}
 
 	if (health > 0)
 	{
