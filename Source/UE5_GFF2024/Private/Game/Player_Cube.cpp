@@ -124,7 +124,7 @@ APlayer_Cube::APlayer_Cube()
 	//BoxComponentを追加する
 	LockOnCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	LockOnCollision->SetupAttachment(RootComponent);
-	LockOnCollision->SetBoxExtent(FVector(8000.f, 8000.f, 5000.f));
+	LockOnCollision->SetBoxExtent(FVector(10000.f, 10000.f, 8000.f));
 	LockOnCollision->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);					//コリジョンプリセットをカスタムに設定
 	LockOnCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);												//コリジョンを無効にする
 	LockOnCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);											//コリジョンのオブジェクトタイプをLockOnにする
