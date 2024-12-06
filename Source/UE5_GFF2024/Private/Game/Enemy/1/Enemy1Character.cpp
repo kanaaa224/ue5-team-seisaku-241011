@@ -163,7 +163,7 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 10.f;
+	health = 70.f;
 
 	MoveDirection = { 0,0,0 };
 
