@@ -53,7 +53,11 @@ public:
 	
     /** サウンドアセット */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-    USoundBase* SoundToPlay;
+    USoundBase* SoundToPlay; 
+
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay2;
 
     /** 再生位置のオフセット */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
@@ -66,4 +70,10 @@ public:
     /** ピッチ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
     float PitchMultiplier = 1.0f;
+
+    /** 生成されたAudioComponent */
+    UPROPERTY()
+    UAudioComponent* AudioComponent;
+
+    bool IsPlayedAudio = false;
 };

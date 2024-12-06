@@ -56,7 +56,7 @@ public:
     double StartLocationZ;
     bool IsStart;
 
-
+    int32 FpsCounter = 0;
 
     // Niagaraシステムアセット
     UPROPERTY(EditAnywhere, Category = "Niagara")
@@ -83,5 +83,17 @@ public:
     /** ピッチ */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
     float PitchMultiplier = 1.0f;
+
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay2;
+
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay3;
+
+    /** 生成されたAudioComponent */
+    UPROPERTY()
+    UAudioComponent* AudioComponent;
 
 };
