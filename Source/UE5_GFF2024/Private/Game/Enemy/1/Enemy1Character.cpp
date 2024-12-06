@@ -26,6 +26,8 @@
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
 
+#include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -163,7 +165,7 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 10.f;
+	health = 70.f;
 
 	MoveDirection = { 0,0,0 };
 
@@ -192,6 +194,19 @@ void AEnemy1Character::BeginPlay()
 	AttackCollisions[3]->SetRelativeScale3D({ 0.5,4,4 });
 	AttackCollisions[4]->SetRelativeScale3D({ 4,0.5,4 });
 	AttackCollisions[5]->SetRelativeScale3D({ 4,0.5,4 });
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyName(FText::FromString(TEXT("縦長長方形")));
+			hud->set_enemyHP(health);
+			hud->set_enemyMaxHP((float)70);
+			hud->set_isShow_enemyHP(true);
+		}
+	}
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -17,6 +17,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 UBTT_FallAttack::UBTT_FallAttack()
 {
@@ -101,8 +102,36 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     {
                         IsTimelineStart = true;
                         MyTimelineComponent->PlayFromStart();
-                    }
 
+                        //サウンド
+                        if (SoundToPlay2)
+                        {
+                            FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+
+                            // AudioComponentを生成して設定
+                            AudioComponent = UGameplayStatics::SpawnSoundAttached(
+                                SoundToPlay2,
+                                Enemy->GetRootComponent(),
+                                NAME_None,
+                                LocationOffset,
+                                EAttachLocation::KeepRelativeOffset,
+                                true, // bStopWhenAttachedToDestroyed
+                                VolumeMultiplier,
+                                PitchMultiplier,
+                                0.0f // StartTime
+                            );
+
+                            if (AudioComponent)
+                            {
+                                AudioComponent->SetVolumeMultiplier(VolumeMultiplier);
+                                AudioComponent->SetPitchMultiplier(PitchMultiplier);
+                                AudioComponent->bIsUISound = false; // 必要に応じてUIサウンド設定
+                                AudioComponent->bShouldRemainActiveIfDropped = true; // 必要に応じて設定
+                                AudioComponent->Play();                              
+                            }
+                        }
+                    }
+                   
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
                     FVector Normalize = EnemyVector / EnemyVector.Length();
            
@@ -143,6 +172,22 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     if (OldVelocity.Z > Velocity.Z)
                     {
                         Enemy->IsAttacking = true;
+                        if (AudioComponent->IsPlaying())
+                        {
+                            if (SoundToPlay3) 
+                            {
+                                FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+                                UGameplayStatics::PlaySoundAtLocation(
+                                    Enemy->GetWorld(),
+                                    SoundToPlay3,
+                                    PlayLocation,
+                                    VolumeMultiplier,
+                                    PitchMultiplier
+                                );
+                            }
+                        }
+
+                        AudioComponent->Stop();
                     }
                     else
                     {
@@ -200,54 +245,9 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                                 PitchMultiplier
                             );
                         }
-                    }
+                    }      
 
-
-                  
-
-                    //if (IsSpawnParticle)
-                    //{
-
-
-                    //    // パーティクルシステムをスポーン
-                    //    FVector SpawnLocation = Enemy->GetActorLocation() + LocationOffset;
-                    //    //FRotator SpawnRotation = Enemy->GetActorRotation() + RotationOffset;
-                    //    FRotator SpawnRotation = RotationOffset;
-
-                    //    ParticleComp = UGameplayStatics::SpawnEmitterAtLocation(
-                    //        Enemy->GetWorld(),
-                    //        ParticleSystem,
-                    //        SpawnLocation,
-                    //        SpawnRotation,
-                    //        true
-                    //    );
-                    //   
-
-                    //   
-
-                    //    IsSpawnParticle = false;
-
-                    //    FTimerHandle TimerHandle;
-                    //    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-                    //        {
-                    //            ParticleComp->DestroyComponent();
-                    //        }, 1.f, false);  // 2秒後に無効化
-                    //    
-                    //}
-
-                    //if (ParticleComp)
-                    //{
-                    //    //// Dynamic Parameterでの大きさ変更
-                    //    //ParticleComp->SetFloatParameter(FName("SizeX"), 5.0f);  // X軸のサイズを2に変更
-                    //    //ParticleComp->SetFloatParameter(FName("SizeY"), 5.0f);  // Y軸のサイズを2に変更
-                    //    //ParticleComp->SetFloatParameter(FName("SizeZ"), 5.0f);  // Z軸のサイズを2に変更
-
-                    //      // パーティクルシステム全体のスケールを変更
-                    //    //ParticleComp->SetWorldScale3D(FVector(2.0f, 2.0f, 2.0f));  // サイズを2倍に
-                    //}
-
-                    
-                  
+                    FpsCounter++;
                 }
             }
         }
@@ -264,6 +264,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
     Velocity = { 0,0,0 };
     Count = 0;
+    //FpsCounter = 0;
     return EBTNodeResult::Succeeded;
 }
 
