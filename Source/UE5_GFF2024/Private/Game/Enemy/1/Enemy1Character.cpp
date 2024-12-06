@@ -165,7 +165,7 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 70.f;
+	health = 100.f;
 
 	MoveDirection = { 0,0,0 };
 
@@ -201,9 +201,9 @@ void AEnemy1Character::BeginPlay()
 
 		if (hud)
 		{
-			hud->set_enemyName(FText::FromString(TEXT("縦長長方形")));
+			hud->set_enemyName(FText::FromString(TEXT("立方体")));
 			hud->set_enemyHP(health);
-			hud->set_enemyMaxHP((float)70);
+			hud->set_enemyMaxHP((float)100);
 			hud->set_isShow_enemyHP(true);
 		}
 	}
@@ -233,6 +233,18 @@ void AEnemy1Character::Destroyed()
 void AEnemy1Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// HPゲージの更新
+	if (true) {
+		AHUD_PlayerHUD* hud = Cast<AHUD_PlayerHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
+
+		if (hud)
+		{
+			hud->set_enemyHP(health);
+
+			if (health <= 0.0f) hud->set_isShow_enemyHP(false);
+		}
+	}
 
 	if (health > 0)
 	{
