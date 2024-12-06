@@ -12,6 +12,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 UBTT_RollingAttack::UBTT_RollingAttack()
 {
@@ -141,6 +142,20 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             NiagaraComp->Activate();
 
                             IsSpawnNiagara = false;
+
+
+                            //サウンド
+                            if (SoundToPlay)
+                            {
+                                FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+                                UGameplayStatics::PlaySoundAtLocation(
+                                    Enemy->GetWorld(),
+                                    SoundToPlay,
+                                    PlayLocation,
+                                    VolumeMultiplier,
+                                    PitchMultiplier
+                                );
+                            }
 
                             //FTimerHandle TimerHandle;
                             //GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()

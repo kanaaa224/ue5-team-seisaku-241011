@@ -68,24 +68,20 @@ public:
 
     bool IsSpawnNiagara = false;
 
-    //// パーティクルシステムのアセット
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //UParticleSystem* ParticleSystem;
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay;
 
-    //// スポーンする位置のオフセット
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //FVector LocationOffset;
+    /** 再生位置のオフセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    FVector SoundLocationOffset;
 
-    //// スポーンする回転
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //FRotator RotationOffset;
+    /** 音量 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float VolumeMultiplier = 1.0f;
 
-    //// 持続時間を設定
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //float Duration = 3.f;
-
-    //bool IsSpawnParticle = false;
-
-    //UParticleSystemComponent* ParticleComp;
+    /** ピッチ */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float PitchMultiplier = 1.0f;
 
 };

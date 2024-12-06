@@ -8,6 +8,8 @@
 #include "Game/Enemy/1/Enemy1Character.h"
 #include "Game//Enemy/1/AIC_Enemy1.h"
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
+#include "Math\RandomStream.h"
+#include "Kismet/GameplayStatics.h"
 
 UBTT_MoveCube::UBTT_MoveCube()
 {
@@ -21,7 +23,6 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     {
         Init();
     }
-
 
     // AIコントローラとブラックボードコンポーネントを取得
     AAIController* AIController = OwnerComp.GetAIOwner();
@@ -46,21 +47,31 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
             {
                 if (AActor* Player = Cast<AActor>(PlayerObject))
                 {
+                    //状態更新
                     FVector EnemyVector = Player->GetActorLocation() - Enemy->GetActorLocation();
-
                     FVector Normalize = EnemyVector / EnemyVector.Length();
                     Normalize = { Normalize.X, Normalize.Y, 0. };
-
                     Enemy->SetVector(Normalize);
-
                     Enemy->SetIsMoving(true);
-
                     Enemy->AttackState = 0;
 
-                    //return EBTNodeResult::Succeeded;
-
+                  
+                    //回転終了
                     if (!Enemy->GetPolygonRotationManager()->GetIsRotating())
                     {
+                        //サウンド
+                        if (SoundToPlay)
+                        {
+                            FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+                            UGameplayStatics::PlaySoundAtLocation(
+                                Enemy->GetWorld(),
+                                SoundToPlay,
+                                PlayLocation,
+                                VolumeMultiplier,
+                                PitchMultiplier
+                            );
+                        }
+                        //プレイヤーの距離を見て次の状態へ行くか判断
                         if (EnemyVector.Length() < 500)
                         {
                             FTimerHandle TimerHandle;
@@ -71,29 +82,21 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                         }
                     }
 
+                    //次の状態へ
                     if (IsNextState && !Enemy->GetPolygonRotationManager()->GetIsRotating())
                     {
                         Enemy->SetIsMoving(false);
                         AIC->SetState(3);
-                        AIC->SetNextState(1);
+                        FRandomStream r;
+                        r.GenerateNewSeed();
+                        AIC->SetNextState(r.RandRange(1, 2));
                         IsNextState = false;
                         IsInit = false;
                     }
+                    
 
                     return EBTNodeResult::Succeeded;
-                    //if (EnemyVector.Length() < 100 /*&& !Enemy->GetPolygonRotationManager()->GetIsRotating()*/)
-                    //{
-                    //    Enemy->SetIsMoving(false);
-                    //    if (!Enemy->IsMoving)
-                    //    {
-                    //        AIC->SetState(1);
-                    //    }
-                    //    return EBTNodeResult::Succeeded;
-                    //}
-                    //else
-                    //{
-                    //    return EBTNodeResult::Succeeded;
-                    //}
+ 
                 }
             }
         }

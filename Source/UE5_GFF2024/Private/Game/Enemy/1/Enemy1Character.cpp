@@ -235,6 +235,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 			// トレースの設定
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(this); // 自分自身を無視
+			//プレイヤーも無視
 
 			bool bDidHit = GetWorld()->LineTraceSingleByChannel(
 				HitResult,
