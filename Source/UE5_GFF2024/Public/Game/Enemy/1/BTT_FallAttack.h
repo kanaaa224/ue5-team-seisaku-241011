@@ -56,7 +56,7 @@ public:
     double StartLocationZ;
     bool IsStart;
 
-
+    int32 FpsCounter = 0;
 
     // Niagaraシステムアセット
     UPROPERTY(EditAnywhere, Category = "Niagara")
@@ -68,24 +68,32 @@ public:
 
     bool IsSpawnNiagara = false;
 
-    //// パーティクルシステムのアセット
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //UParticleSystem* ParticleSystem;
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay;
 
-    //// スポーンする位置のオフセット
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //FVector LocationOffset;
+    /** 再生位置のオフセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    FVector SoundLocationOffset;
 
-    //// スポーンする回転
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //FRotator RotationOffset;
+    /** 音量 */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float VolumeMultiplier = 1.0f;
 
-    //// 持続時間を設定
-    //UPROPERTY(EditAnywhere, Category = "Particle")
-    //float Duration = 3.f;
+    /** ピッチ */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    float PitchMultiplier = 1.0f;
 
-    //bool IsSpawnParticle = false;
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay2;
 
-    //UParticleSystemComponent* ParticleComp;
+    /** サウンドアセット */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    USoundBase* SoundToPlay3;
+
+    /** 生成されたAudioComponent */
+    UPROPERTY()
+    UAudioComponent* AudioComponent;
 
 };

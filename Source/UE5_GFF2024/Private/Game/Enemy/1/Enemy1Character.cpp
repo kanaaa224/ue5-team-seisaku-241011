@@ -163,7 +163,7 @@ AEnemy1Character::AEnemy1Character()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
 
 
-	health = 10.f;
+	health = 70.f;
 
 	MoveDirection = { 0,0,0 };
 
@@ -235,6 +235,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 			// トレースの設定
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(this); // 自分自身を無視
+			//プレイヤーも無視
 
 			bool bDidHit = GetWorld()->LineTraceSingleByChannel(
 				HitResult,

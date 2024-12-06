@@ -12,6 +12,8 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 UBTT_RollingAttack::UBTT_RollingAttack()
 {
@@ -66,11 +68,44 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         Enemy->TargetLocation.Z = Target.Z;
                         Enemy->SetSpeed(5.f);
 
+                        Enemy->AttackState = 1;
+
+                        FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+
+                        if (!IsPlayedAudio) {
+                            // AudioComponentを生成して設定
+                            AudioComponent = UGameplayStatics::SpawnSoundAttached(
+                                SoundToPlay2,
+                                Enemy->GetRootComponent(),
+                                NAME_None,
+                                LocationOffset,
+                                EAttachLocation::KeepRelativeOffset,
+                                true, // bStopWhenAttachedToDestroyed
+                                VolumeMultiplier,
+                                PitchMultiplier,
+                                0.0f // StartTime
+                            );
+                        }
+
+                        if (AudioComponent && !IsPlayedAudio)
+                        {
+                            AudioComponent->SetVolumeMultiplier(VolumeMultiplier);
+                            AudioComponent->SetPitchMultiplier(PitchMultiplier);
+                            AudioComponent->bIsUISound = false; // 必要に応じてUIサウンド設定
+                            AudioComponent->bShouldRemainActiveIfDropped = true; // 必要に応じて設定
+                            AudioComponent->Play();
+
+                            IsPlayedAudio = true;
+                        }
 
                         return EBTNodeResult::Succeeded;
                     }
                     else
                     {
+                        if (AudioComponent && AudioComponent->IsPlaying())
+                        {
+                            AudioComponent->Stop();
+                        }
                         FVector Normalize = Vector / Vector.Length();
                         Normalize = { Normalize.X, Normalize.Y, 0. };
                         Enemy->SetIsMoving(false);
@@ -141,6 +176,20 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             NiagaraComp->Activate();
 
                             IsSpawnNiagara = false;
+
+
+                            //サウンド
+                            if (SoundToPlay)
+                            {
+                                FVector PlayLocation = Enemy->GetActorLocation() + SoundLocationOffset;
+                                UGameplayStatics::PlaySoundAtLocation(
+                                    Enemy->GetWorld(),
+                                    SoundToPlay,
+                                    PlayLocation,
+                                    VolumeMultiplier,
+                                    PitchMultiplier
+                                );
+                            }
 
                             //FTimerHandle TimerHandle;
                             //GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
