@@ -121,6 +121,22 @@ AEnemy2Character::AEnemy2Character()
 	CubeMesh->OnComponentBeginOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapBegin);
 	//オーバーラップ終了のイベントをバインと
 	CubeMesh->OnComponentEndOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapEnd);
+
+	//エフェクト
+	NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
+	NormalSpark->SetupAttachment(CubeMesh);
+	NormalSpark->bAutoActivate = false;
+	NormalSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_F.P_Sparks_F")));
+	NormalSpark->SetRelativeLocation(FVector(0.0f,0.0f,100.0f));
+	NormalSpark->SetWorldRotation(FRotator(90.0f, 0.0f, 0.0f));
+	NormalSpark->SetWorldScale3D(FVector(1.0f));
+
+	SpecialSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_SpecialSpark"));
+	SpecialSpark->SetupAttachment(GetRootComponent());
+	SpecialSpark->bAutoActivate = false;
+	SpecialSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_B.P_Sparks_B")));
+	SpecialSpark->SetRelativeLocation(FVector(0.0f));
+	SpecialSpark->SetWorldScale3D(FVector(100.0f));
 }
 	
 
@@ -177,6 +193,12 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
+void AEnemy2Character::Destroyed()
+{
+	Super::Destroyed();
+	UE_LOG(LogTemp, Log, TEXT("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));	
+}
+
 void AEnemy2Character::ApplyDamage(AActor* Other)
 {
 	AActor* ImpactActor = Other;
@@ -230,9 +252,20 @@ void AEnemy2Character::Die()
 
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
-	// 一定時間後にオブジェクトを削除
-	//SetLifeSpan(1.0f); // 1秒後に削除
+	
+
 	Destroy();
+
+	//次のLevelに遷移
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
+		}, 2.f, false
+	);  // 0.1秒後に無効化
+	
+
+	UE_LOG(LogTemp, Log, TEXT("Die"));
 }
 
 void AEnemy2Character::DamageMaterial()
@@ -255,6 +288,26 @@ void AEnemy2Character::NormalMaterial()
 	if (normalMaterial) {
 		CubeMesh->SetMaterial(0, normalMaterial);
 	}
+}
+
+void AEnemy2Character::TrueSpecialSparkEffect()
+{
+	SpecialSpark->Activate(true);
+}
+
+void AEnemy2Character::FalseSpecialSparkEffct()
+{
+	SpecialSpark->Activate(false);
+}
+
+void AEnemy2Character::TrueNormalSparkEffect()
+{
+	NormalSpark->Activate(true);
+}
+
+void AEnemy2Character::FalseNormalSparkEffect()
+{
+	NormalSpark->Activate(false);
 }
 
 void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)

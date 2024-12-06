@@ -63,6 +63,10 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 	if (ControlledPawn == nullptr) {
 		return EBTNodeResult::Failed;
 	}
+	AEnemy2Character* MyPawn = Cast<AEnemy2Character>(ControlledPawn);
+	if (MyPawn == nullptr) {
+		return EBTNodeResult::Failed;
+	}
 
 	//ブラックボードのNormalAttack変数を立てる
 	ensure(BlackboardComp);
@@ -96,12 +100,16 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 		if (frameCnt_Attack_Down == 10) {
 			endAttack = true;
+			//MyPawn->TrueNormalSparkEffect();
+			UE_LOG(LogTemp, Log, TEXT("SparkEffect------------>true"));
 		}
 	}
 
 	//攻撃から起き上がる
 	if (endJump == true && endAttack == true && endTask == false) {
 		frameCnt_Attack_Up++;
+		//MyPawn->FalseNormalSparkEffect();
+		UE_LOG(LogTemp, Log, TEXT("SparkEffect------------>false"));
 
 		nowLocation.operator+=(FVector(0.0f, 0.0f, 20.0f));
 

@@ -114,6 +114,7 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	}
 	//地面に降りる処理
 	if (CheckFireFourthAttackObj(GetWorld()) == true && endCreateObject == true) {
+		//MyPawn->TrueSpecialSparkEffect();
 		secDownTime += GetWorld()->GetDeltaSeconds();
 		if (secDownTime >= _DOWN_TIME_SECONDS_) {
 			Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
@@ -121,6 +122,7 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	}
 	else {
 		secDownTime = 0.0f;
+		//MyPawn->FalseSpecialSparkEffct();
 	}
 	if (downEnd == true) {
 		//ブラックボード変数のSpecialAttackFlgをfalseにする
