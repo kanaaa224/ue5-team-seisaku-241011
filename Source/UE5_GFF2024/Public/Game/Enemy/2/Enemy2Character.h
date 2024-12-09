@@ -46,9 +46,13 @@ private:
 	//スポーン時のLocationを取得
 	FVector startLocation;
 
+	//通常攻撃のエフェクト
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystemComponent* NormalSpark;
+
 	//地面に落ちる時のエフェクト
 	UPROPERTY(EditAnywhere, Category = "Effects")
-	UParticleSystemComponent* Spark;
+	UParticleSystemComponent* SpecialSpark;
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
@@ -56,6 +60,8 @@ public:
 
 	UFUNCTION()
 	void OnSeePlayer(APawn* Pawn);
+
+	virtual void Destroyed() override;
 
 public:
 	void ApplyDamage(AActor* Other);
@@ -72,6 +78,16 @@ public:
 	void DamageMaterial();
 	//
 	void NormalMaterial();
+
+	//特殊攻撃で自分がだすエフェクトをON
+	void TrueSpecialSparkEffect();
+	//特殊攻撃で自分がだすエフェクトをOFF
+	void FalseSpecialSparkEffct();
+
+	//通常攻撃でだすエフェクトをON
+	void TrueNormalSparkEffect();
+	//通常攻撃でだすエフェクトをOFF
+	void FalseNormalSparkEffect();
 
 public:
 	//ロックオン
