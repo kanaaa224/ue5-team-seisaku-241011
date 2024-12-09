@@ -78,7 +78,7 @@ AEnemy1Character::AEnemy1Character()
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
 	// 視野
-	PawnSensingComp->SetPeripheralVisionAngle(60.f);
+	PawnSensingComp->SetPeripheralVisionAngle(180.f);
 	// 見える範囲
 	PawnSensingComp->SightRadius = 8000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy1Character::OnSeePlayer);
@@ -90,9 +90,15 @@ AEnemy1Character::AEnemy1Character()
 	UStaticMesh* TmpMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/LevelPrototyping/Meshes/SM_ChamferCube"));
 	box->SetStaticMesh(TmpMesh);
 
+	box->SetWorldScale3D(FVector(3.0f));
+
 	box->SetupAttachment(RootComponent);
 
-	
+	//重力
+	GetCharacterMovement()->GravityScale = 0.0f;
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(220.f);
+
 	Speed = 0;
 
 
@@ -207,11 +213,15 @@ void AEnemy1Character::BeginPlay()
 			hud->set_isShow_enemyHP(true);
 		}
 	}
+
+	LockOnMarkerWidget->SetVisibility(true);
 }
 
 void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	LockOnMarkerWidget->SetVisibility(false);
 
 	delete RotationManager;
 	//delete TargetLocation;
@@ -220,6 +230,8 @@ void AEnemy1Character::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AEnemy1Character::Destroyed()
 {
 	Super::Destroyed();
+
+	LockOnMarkerWidget->SetVisibility(false);
 
 	UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
 }
@@ -398,6 +410,10 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 				{
+					if (!IsValid(this))
+					{
+						return;
+					}
 					IsAttackCoolTime = false;
 				}, 2.f, false);  // 0.1秒後に無効化
 		}
@@ -416,7 +432,7 @@ void AEnemy1Character::MoveProcess()
 	IsAttacking = true;
 
 	//スケールと位置を指定して面の中心座標を計算・デバッグ描画
-	FVector Scale = FVector(100, 100, 100);  // スケール
+	FVector Scale = FVector(150, 150, 150);  // スケール
 	FVector Position = GetActorLocation();  // オブジェクトの位置
 
 	//Cube->SetNextBottom(FVector(0, 1, 0), Scale, Position);
@@ -484,6 +500,10 @@ void AEnemy1Character::Attack()
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 			{
+				if (!IsValid(this) || !AttackCollisions.IsValidIndex(BottomCollisionNumber))
+				{
+					return;
+				}
 				AttackCollisions[BottomCollisionNumber]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			}, 0.5f, false);  // 0.1秒後に無効化
 	}
@@ -501,6 +521,10 @@ void AEnemy1Character::Attack()
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, i]()
 				{
+					if (!IsValid(this) || !AttackCollisions.IsValidIndex(i))
+					{
+						return;
+					}
 					AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 				}, 0.1f, false);  // 0.1秒後に無効化
 		}

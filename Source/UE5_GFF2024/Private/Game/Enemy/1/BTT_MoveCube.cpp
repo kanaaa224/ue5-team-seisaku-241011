@@ -77,6 +77,10 @@ EBTNodeResult::Type UBTT_MoveCube::ExecuteTask(UBehaviorTreeComponent& OwnerComp
                             FTimerHandle TimerHandle;
                             GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
                                 {
+                                    if (!IsValid(this))
+                                    {
+                                        return;
+                                    }
                                     IsNextState = true;
                                 }, 3.f, false);  // 3秒後に無効化
                         }

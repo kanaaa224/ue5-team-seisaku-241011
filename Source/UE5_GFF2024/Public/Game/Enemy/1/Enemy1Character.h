@@ -45,6 +45,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Character, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> box;
 
+	//FTimerHandle TimerHandle;
+
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	class UPawnSensingComponent* PawnSensingComp;
@@ -57,7 +59,6 @@ public:
 
 	//ダメージを受ける処理
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
-
 public:
 	void MoveProcess();
 
