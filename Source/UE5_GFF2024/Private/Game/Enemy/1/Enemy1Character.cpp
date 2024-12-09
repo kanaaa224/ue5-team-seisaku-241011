@@ -31,6 +31,8 @@
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
+	Tags.Add(FName(TEXT("Enemy1")));
+
 	/*:::::変数:::::*/
 		//体力
 	health = 100.0f;
