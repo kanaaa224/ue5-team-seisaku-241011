@@ -117,5 +117,11 @@ private:
 	void SpawnFireEffect();
 	//爆発エフェクトをスポーンする関数
 	void SpawnBombEffect();
+
+private:
+	//地面について爆発するSE
+	USoundBase* BombSE;
+	UFUNCTION()
+	void PlaySE_Bomb();
 };
 

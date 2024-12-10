@@ -95,6 +95,13 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 	Bomb->SetRelativeLocation(FVector(-50.0f, 0.0f, -500.0f));
 	//エフェクトの大きさ
 	Bomb->SetWorldScale3D(FVector(8.0f));
+
+	// 効果音を動的にロード
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj(TEXT("/Game/Game/enemy/2/SE/Bomb.Bomb"));
+	if (SoundEffectObj.Succeeded())
+	{
+		BombSE = SoundEffectObj.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -151,10 +158,11 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 			}
 			//地面について自分自身を破棄
 			if (stopMove == true) {
-				//爆発エフェクトを発生
+				//爆発エフェクトを発生,SE再生
 				if (bombFlg == false) {
 					SpawnBombEffect();
 					bombFlg = true;
+					PlaySE_Bomb();
 				}
 				secDestoryTime += DeltaTime;
 				if (secDestoryTime >= 5.0f) {//ここの数字で破棄するまでの時間指定できる
@@ -254,4 +262,13 @@ void AEnemy2AttackObject::SpawnFireEffect()
 void AEnemy2AttackObject::SpawnBombEffect()
 {
 	Bomb->Activate(true);
+}
+
+void AEnemy2AttackObject::PlaySE_Bomb()
+{
+	if (BombSE)
+	{
+		// 効果音を再生
+		UGameplayStatics::PlaySoundAtLocation(this, BombSE, GetActorLocation());
+	}
 }

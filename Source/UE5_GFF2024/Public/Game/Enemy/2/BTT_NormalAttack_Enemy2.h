@@ -67,4 +67,13 @@ private:
 
 private:
 	FRotator CombineRotators(FRotator R1, FRotator R2);
+
+private:
+	//効果音
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")*/
+	USoundBase* SoundEffect;
+
+	// 効果音を再生する関数
+	UFUNCTION()
+	void PlaySoundEffect(AEnemy2Character* pawn);
 };
