@@ -240,6 +240,22 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         }
                     }
                 }
+                else {
+                    Count = 0;
+                    Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+                    //Enemy->SetIsMoving(true);
+                    NiagaraComp->Deactivate();
+                    NiagaraComp = nullptr;
+
+
+                    AIC->SetState(3);
+                    AIC->SetNextState(0);
+                    Enemy->TargetLocation = { -1, -1, -10000 };
+                    Enemy->GetPolygonRotationManager()->Init();
+                    //Enemy->SetActorRotation({ 0,0,0 });
+                    Speed = 0;
+                    IsAttacked = false;
+                }
             }
         }
 

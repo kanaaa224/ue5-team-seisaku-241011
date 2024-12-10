@@ -172,6 +172,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     if (OldVelocity.Z > Velocity.Z)
                     {
                         Enemy->IsAttacking = true;
+                        UKismetSystemLibrary::PrintString(this, TEXT("Enemy1 : fall"));
                         if (AudioComponent->IsPlaying())
                         {
                             if (SoundToPlay3) 
@@ -229,6 +230,10 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         FTimerHandle TimerHandle;
                         GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
                             {
+                                if (!IsValid(this))
+                                {
+                                    return;
+                                }
                                 NiagaraComp->DestroyComponent();
                             }, 0.7f, false);  // 2秒後に無効化
 
