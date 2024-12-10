@@ -123,5 +123,11 @@ private:
 	USoundBase* BombSE;
 	UFUNCTION()
 	void PlaySE_Bomb();
+
+	//火のSE
+	USoundBase* FireSE;
+	UFUNCTION()
+	void PlaySE_Fire();
+	UAudioComponent* FireAudio;
 };
 

@@ -14,6 +14,8 @@
 //DamageEvent
 #include "Engine/DamageEvents.h"
 
+#include "Components/AudioComponent.h"
+
 // Sets default values
 AEnemy2AttackObject::AEnemy2AttackObject()
 {
@@ -97,10 +99,15 @@ AEnemy2AttackObject::AEnemy2AttackObject()
 	Bomb->SetWorldScale3D(FVector(8.0f));
 
 	// 効果音を動的にロード
-	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj(TEXT("/Game/Game/enemy/2/SE/Bomb.Bomb"));
-	if (SoundEffectObj.Succeeded())
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj_1(TEXT("/Game/Game/enemy/2/SE/Bomb.Bomb"));
+	if (SoundEffectObj_1.Succeeded())
 	{
-		BombSE = SoundEffectObj.Object;
+		BombSE = SoundEffectObj_1.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj_2(TEXT("/Game/Game/enemy/2/SE/Fire.Fire"));
+	if (SoundEffectObj_2.Succeeded())
+	{
+		FireSE = SoundEffectObj_2.Object;
 	}
 }
 
@@ -119,12 +126,17 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 	if (InitFlg == false) {
 		//攻撃までの時間を設定
 		timeToAttack = createNumber * 2;//数字の部分で攻撃までの時間を変更
+		//SE再生
+		//PlaySE_Fire();
+		FireAudio = UGameplayStatics::SpawnSoundAttached(FireSE, GetRootComponent());
+		FireAudio->SetVolumeMultiplier(0.3f);
 		InitFlg = true;
 	}
 
 	//生成されて何秒たったか
 	Super::Tick(DeltaTime);
 	secTime += DeltaTime;
+
 	if (player)
 	{
 		if (beginAttackFlg == false) {
@@ -167,6 +179,7 @@ void AEnemy2AttackObject::Tick(float DeltaTime)
 				secDestoryTime += DeltaTime;
 				if (secDestoryTime >= 5.0f) {//ここの数字で破棄するまでの時間指定できる
 					Destroy();
+					FireAudio->Stop();
 				}
 			}
 		}
@@ -271,4 +284,9 @@ void AEnemy2AttackObject::PlaySE_Bomb()
 		// 効果音を再生
 		UGameplayStatics::PlaySoundAtLocation(this, BombSE, GetActorLocation());
 	}
+}
+
+void AEnemy2AttackObject::PlaySE_Fire()
+{
+	
 }
