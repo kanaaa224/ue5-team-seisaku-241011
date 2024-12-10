@@ -41,7 +41,12 @@ void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if (progressBar)
 	{
-		progressBar->SetPercent(hp);
+		float percent = progressBar->Percent;
+
+		if (percent != hp) {
+			percent = FMath::FInterpTo(percent, hp, InDeltaTime, 7.5f);
+			progressBar->SetPercent(percent);
+		}
 	}
 
 	if (text_hp) text_hp->SetText(FText::FromString(FString::Printf(TEXT("%d"), (int)(hp * 100))));

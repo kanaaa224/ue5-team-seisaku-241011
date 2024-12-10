@@ -19,6 +19,19 @@ UBTT_SpecialAttack_Enemy2::UBTT_SpecialAttack_Enemy2(FObjectInitializer const& O
 
 	SpecialAttackFlg = "SpecialAttackFlg";
 	CoolTime = "CoolTime";
+
+	// 効果音を動的にロード
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj_1(TEXT("/Game/Game/enemy/2/SE/Jump.Jump"));
+	if (SoundEffectObj_1.Succeeded())
+	{
+		JumpSE = SoundEffectObj_1.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj_2(TEXT("/Game/Game/enemy/2/SE/Down.Down"));
+	if (SoundEffectObj_2.Succeeded())
+	{
+		DownSE = SoundEffectObj_2.Object;
+	}
+
 }
 
 void UBTT_SpecialAttack_Enemy2::Init()
@@ -29,6 +42,8 @@ void UBTT_SpecialAttack_Enemy2::Init()
 	downEnd = false;
 	endCreateObject = false;
 	onecCalcDTL_Flg = false;
+	onecJumpSE_Flg = false;
+	onecDownSE_Flg = false;
 }
 
 EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -98,6 +113,10 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 	//浮き上がり処理
 	if (stopMove == false) {
 		Float(MyPawn, OnecCalcFloatTargetLocation(MyPawn));
+		if (onecJumpSE_Flg == false) {
+			PlaySE_Jump(MyPawn);
+			onecJumpSE_Flg = true;
+		}
 	}
 	//棒の生成処理
 	if (floatEnd == true) {
@@ -118,6 +137,10 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 		secDownTime += GetWorld()->GetDeltaSeconds();
 		if (secDownTime >= _DOWN_TIME_SECONDS_) {
 			Down(MyPawn, OnecCalcDownTargetLocation(MyPawn));
+			if (onecDownSE_Flg == false) {
+				PlaySE_Down(MyPawn);
+				onecDownSE_Flg = true;
+			}
 		}
 	}
 	else {
@@ -232,3 +255,23 @@ bool UBTT_SpecialAttack_Enemy2::CheckFireFourthAttackObj(UWorld* WorldContext)
 	}
 	return false;
 }
+
+void UBTT_SpecialAttack_Enemy2::PlaySE_Jump(AEnemy2Character* pawn)
+{
+	if (JumpSE)
+	{
+		// 効果音を再生
+		UGameplayStatics::PlaySoundAtLocation(this, JumpSE, pawn->GetActorLocation());
+	}
+}
+
+void UBTT_SpecialAttack_Enemy2::PlaySE_Down(AEnemy2Character* pawn)
+{
+	if (DownSE)
+	{
+		// 効果音を再生
+		UGameplayStatics::PlaySoundAtLocation(this, DownSE, pawn->GetActorLocation());
+	}
+}
+
+

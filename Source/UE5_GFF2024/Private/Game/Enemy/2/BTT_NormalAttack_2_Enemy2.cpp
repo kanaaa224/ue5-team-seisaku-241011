@@ -12,6 +12,7 @@
 
 UBTT_NormalAttack_2_Enemy2::UBTT_NormalAttack_2_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
+	
 }
 
 EBTNodeResult::Type UBTT_NormalAttack_2_Enemy2::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

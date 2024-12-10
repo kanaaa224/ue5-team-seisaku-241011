@@ -71,4 +71,17 @@ private:
 
 	//4番目に生成された分身が発射されたか調べる関数
 	bool CheckFireFourthAttackObj(UWorld* WorldContext);
+
+private:
+	USoundBase* JumpSE;
+	// 効果音を再生する関数
+	UFUNCTION()
+	void PlaySE_Jump(AEnemy2Character* pawn);
+	bool onecJumpSE_Flg = false;
+
+	USoundBase* DownSE;
+	// 効果音を再生する関数
+	UFUNCTION()
+	void PlaySE_Down(AEnemy2Character* pawn);
+	bool onecDownSE_Flg= false;
 };

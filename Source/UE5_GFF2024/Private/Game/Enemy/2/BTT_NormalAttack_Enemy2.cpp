@@ -9,6 +9,11 @@
 //Enemy2のキャラクター
 #include "Game/Enemy/2/Enemy2Character.h"
 
+#include "Sound/SoundBase.h"
+#include "GameFramework/Actor.h"
+#include <Kismet/GameplayStatics.h>
+#include <Perception/AIPerceptionComponent.h>
+
 UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& ObjectInitializer)
 {
 	//ブラックボードにある変数を設定
@@ -21,6 +26,13 @@ UBTT_NormalAttack_Enemy2::UBTT_NormalAttack_Enemy2(FObjectInitializer const& Obj
 	endJump = false;
 	frameCnt_Jump = 0;
 	startStandUp = false;
+
+	// 効果音を動的にロード
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundEffectObj(TEXT("/Game/Game/enemy/2/SE/NormalAttack.NormalAttack"));
+	if (SoundEffectObj.Succeeded())
+	{
+		SoundEffect = SoundEffectObj.Object;
+	}
 }
 
 void UBTT_NormalAttack_Enemy2::Init()
@@ -102,6 +114,8 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 			endAttack = true;
 			//MyPawn->TrueNormalSparkEffect();
 			UE_LOG(LogTemp, Log, TEXT("SparkEffect------------>true"));
+			//効果音の再生
+			PlaySoundEffect(MyPawn);
 		}
 	}
 
@@ -142,4 +156,13 @@ FRotator UBTT_NormalAttack_Enemy2::CombineRotators(FRotator R1, FRotator R2)
 	FRotator result = R1 + R2;
 
 	return FRotator(result);
+}
+
+void UBTT_NormalAttack_Enemy2::PlaySoundEffect(AEnemy2Character* pawn)
+{
+	if (SoundEffect)
+	{
+		// 効果音を再生
+		UGameplayStatics::PlaySoundAtLocation(this, SoundEffect, pawn->GetActorLocation());
+	}
 }
