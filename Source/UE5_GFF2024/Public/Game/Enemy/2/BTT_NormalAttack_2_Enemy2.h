@@ -36,5 +36,4 @@ private:
 private:
 	//倒れる処理
 	void Fall(AEnemy2Character* pawn);
-
 };
