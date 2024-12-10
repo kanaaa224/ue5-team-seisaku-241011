@@ -28,6 +28,8 @@
 
 #include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
 
+#include "Game/UI/Widget_StageClear.h"
+
 // Sets default values
 AEnemy1Character::AEnemy1Character()
 {
@@ -180,6 +182,13 @@ AEnemy1Character::AEnemy1Character()
 	IsDestroy = false;
 
 	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
+
+
+	ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
+	if (WidgetBPClass.Succeeded())
+	{
+		WidgetClass = WidgetBPClass.Class;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -345,7 +354,25 @@ void AEnemy1Character::Tick(float DeltaTime)
 			//	}, 2.f, false);  // 0.1秒後に無効化
 			IsDestroy = true;
 
-			SetLifeSpan(2.0f);
+			SetLifeSpan(5.0f);
+
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+				{
+					if (!IsValid(this))
+					{
+						return;
+					}
+					if (WidgetClass)
+					{
+						WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
+						if (WidgetInstance)
+						{
+							WidgetInstance->AddToViewport();
+						}
+					}
+				}, 1.f, false);  // 0.1秒後に無効化
+			
 		}
 	}
 
@@ -417,7 +444,7 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 						return;
 					}
 					IsAttackCoolTime = false;
-				}, 2.f, false);  // 0.1秒後に無効化
+				}, 1.f, false);  // 0.1秒後に無効化
 		}
 	}
 }
