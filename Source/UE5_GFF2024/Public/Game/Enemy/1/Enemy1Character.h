@@ -211,4 +211,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
 	TSoftObjectPtr<UWorld> LoadLevel;
+
+
+	UPROPERTY()
+	TSubclassOf<UUserWidget> WidgetClass;
+
+	UPROPERTY()
+	UUserWidget* WidgetInstance;
 };
