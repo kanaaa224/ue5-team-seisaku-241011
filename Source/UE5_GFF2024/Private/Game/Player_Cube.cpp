@@ -290,6 +290,7 @@ APlayer_Cube::APlayer_Cube()
 	InflictDamageFlg = false;
 	InvincibleFlg = false;
 	KnockBackFlg = false;
+	KnockBackSweepFlg = false;
 	LockOnFlg = false;
 	MoveFlg = true;
 }
@@ -475,11 +476,28 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	//ノックバックの初期座標から前方のベクトルに-5かけた値と上方向のベクトルの値を取得
 	FVector NewLocation = (KnockBackForwardVector * -(Value * 10.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
 
-	//FHitResult* Hit;
+	//半径
+	float SphereRadius = 60.f;
+	//無視したいアクター
+	TArray<AActor*> ActorToIgnore{ this };
+	//結果
+	FHitResult OutHit;
+	//スフィアトレース
+	UKismetSystemLibrary::SphereTraceSingle(this, GetActorLocation(), GetActorLocation(), SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::ForDuration, OutHit, true);
 
-	SetActorLocation(NewLocation, true);
+	if (OutHit.bBlockingHit)
+	{
+		if (OutHit.GetActor()->ActorHasTag(FName(TEXT("Wall"))))
+		{
+			KnockBackSweepFlg = true;
+		}
+		else
+		{
+			KnockBackSweepFlg = false;
+		}
+	}
 
-	//Hit->GetActor()->ActorHasTag(FName(TEXT("Enemy1")))
+	SetActorLocation(NewLocation, KnockBackSweepFlg);
 
 	if (GetCharacterMovement()->IsFalling())
 	{

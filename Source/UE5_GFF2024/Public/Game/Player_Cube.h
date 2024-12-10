@@ -140,6 +140,8 @@ public:
 	bool InvincibleFlg;
 	//ノックバックのフラグ
 	bool KnockBackFlg;
+	//ノックバックのすり抜けフラグ
+	bool KnockBackSweepFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
 	//移動のフラグ
