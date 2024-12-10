@@ -73,7 +73,7 @@ APlayer_Cube::APlayer_Cube()
 	//UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
 
 	Cube->SetMaterial(0, Material);
-	Material_Instance = Cube->CreateAndSetMaterialInstanceDynamic(0);
+	
 
 	//CollisionPresetを「PhysicsActor」に変更する
 	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
@@ -299,6 +299,8 @@ APlayer_Cube::APlayer_Cube()
 void APlayer_Cube::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Material_Instance = Cube->CreateAndSetMaterialInstanceDynamic(0);
 
 	LockOnCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionBeginOverlap);
 	LockOnCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionEndOverlap);

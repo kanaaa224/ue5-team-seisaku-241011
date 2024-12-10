@@ -43,7 +43,7 @@ private:
 
 	FName StageEdgeVector[4];
 
-	UMaterialInstanceDynamic* DynamicMaterial;
+	UMaterialInstanceDynamic* DynamicMaterial = nullptr;
 
 	bool PlayerIsRange[4];
 

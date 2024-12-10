@@ -52,7 +52,7 @@ AStage2EgdeGuard::AStage2EgdeGuard()
 
 	// 動的マテリアルインスタンスの作成
 	// Set Scalar Palameter Value を使う際に必要になる
-	//DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
+	
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -64,6 +64,7 @@ AStage2EgdeGuard::AStage2EgdeGuard()
 void AStage2EgdeGuard::BeginPlay()
 {
 	Super::BeginPlay();
+	DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
 	
 }
 
