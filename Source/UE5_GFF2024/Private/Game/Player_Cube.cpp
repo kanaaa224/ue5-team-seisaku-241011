@@ -44,10 +44,12 @@ APlayer_Cube::APlayer_Cube()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
-
+	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	Tags.Add(FName(TEXT("Player")));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1000.0f, 0.0f);
@@ -269,7 +271,7 @@ APlayer_Cube::APlayer_Cube()
 
 	BlinkInitLocation = FVector(0.f);
 	KnockBackInitLocation = FVector(0.f);
-	BlinkForwardVector = FVector(0.f);
+	BlinkForwardVector = GetActorForwardVector() * -1.f;
 	BlinkRightVector = FVector(0.f);
 	KnockBackForwardVector = FVector(0.f);
 	CameraImpactPoint = FVector(0.f);
@@ -471,9 +473,13 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	//上方向のベクトルにかける値
 	float ZVec = Value < 50 ? Value : 50.f - (Value - 50.f);
 	//ノックバックの初期座標から前方のベクトルに-5かけた値と上方向のベクトルの値を取得
-	FVector NewLocation = (KnockBackForwardVector * -(Value * 5.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
+	FVector NewLocation = (KnockBackForwardVector * -(Value * 10.f)) + ((UpVector * ZVec) * 2.f) + KnockBackInitLocation;
+
+	//FHitResult* Hit;
 
 	SetActorLocation(NewLocation, true);
+
+	//Hit->GetActor()->ActorHasTag(FName(TEXT("Enemy1")))
 
 	if (GetCharacterMovement()->IsFalling())
 	{
@@ -737,13 +743,13 @@ void APlayer_Cube::LockOnTarget()
 		
 		//Z軸のみの距離を取得
 		double Distance = UKismetMathLibrary::Vector_Distance(FVector(0.f, 0.f, this->GetActorLocation().Z), FVector(0.f, 0.f, LockOnTargetActor->GetActorLocation().Z));
-		//Z軸の距離が800以上なら
-		if (Distance >= 800)
+		//Z軸の距離が750以上なら
+		if (Distance >= 750)
 		{
 			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, MaxTargetArmLength, GetWorld()->GetDeltaSeconds(), 3.f);
 			CameraBoom->TargetArmLength = ArmLength;
 		}
-		//Z軸の距離が800以上ではないなら
+		//Z軸の距離が750以上ではないなら
 		else
 		{
 			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3.f);
