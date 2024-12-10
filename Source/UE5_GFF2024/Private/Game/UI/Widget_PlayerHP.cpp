@@ -28,7 +28,12 @@ void UWidget_PlayerHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 
 	if (progressBar)
 	{
-		progressBar->SetPercent(hp);
+		float percent = progressBar->Percent;
+
+		if (percent != hp) {
+			percent = FMath::FInterpTo(percent, hp, InDeltaTime, 7.5f);
+			progressBar->SetPercent(percent);
+		}
 
 		FLinearColor colorA, colorB;
 
