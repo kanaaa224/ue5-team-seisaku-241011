@@ -17,6 +17,8 @@ class UE5_GFF2024_API AGameMode_InGame : public AGameModeBase
 public:
 	FTransform SpawnTransform;			//スポーン座標
 
+	TSubclassOf <class UUserWidget> GameOverWidget;
+
 public:
 	//コンストラクタ
 	AGameMode_InGame();

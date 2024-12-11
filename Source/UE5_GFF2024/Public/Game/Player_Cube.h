@@ -19,7 +19,7 @@ private:
 
 	//マテリアルインスタンス
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	class UMaterialInstanceDynamic* Material_Instance;
+	class UMaterialInstanceDynamic* PlayerMaterialInstance;
 
 	//スプリングアーム
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -144,8 +144,8 @@ public:
 	bool KnockBackSweepFlg;
 	//ロックオンのフラグ
 	bool LockOnFlg;
-	//移動のフラグ
-	bool MoveFlg;
+	//行動のフラグ
+	bool ActionFlg;
 
 public:
 	//コンストラクタ
