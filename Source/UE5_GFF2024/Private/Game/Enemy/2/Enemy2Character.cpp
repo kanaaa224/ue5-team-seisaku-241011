@@ -121,7 +121,7 @@ AEnemy2Character::AEnemy2Character()
 	CubeMesh->OnComponentEndOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapEnd);
 
 	//エフェクト
-	NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
+	/*NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
 	NormalSpark->SetupAttachment(CubeMesh);
 	NormalSpark->bAutoActivate = false;
 	NormalSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_F.P_Sparks_F")));
@@ -134,7 +134,7 @@ AEnemy2Character::AEnemy2Character()
 	SpecialSpark->bAutoActivate = false;
 	SpecialSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_B.P_Sparks_B")));
 	SpecialSpark->SetRelativeLocation(FVector(0.0f));
-	SpecialSpark->SetWorldScale3D(FVector(100.0f));
+	SpecialSpark->SetWorldScale3D(FVector(100.0f));*/
 }
 	
 
@@ -301,25 +301,25 @@ void AEnemy2Character::NormalMaterial()
 	}
 }
 
-void AEnemy2Character::TrueSpecialSparkEffect()
-{
-	SpecialSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseSpecialSparkEffct()
-{
-	SpecialSpark->Activate(false);
-}
-
-void AEnemy2Character::TrueNormalSparkEffect()
-{
-	NormalSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseNormalSparkEffect()
-{
-	NormalSpark->Activate(false);
-}
+//void AEnemy2Character::TrueSpecialSparkEffect()
+//{
+//	SpecialSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseSpecialSparkEffct()
+//{
+//	SpecialSpark->Activate(false);
+//}
+//
+//void AEnemy2Character::TrueNormalSparkEffect()
+//{
+//	NormalSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseNormalSparkEffect()
+//{
+//	NormalSpark->Activate(false);
+//}
 
 void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 {
