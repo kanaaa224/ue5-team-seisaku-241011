@@ -9,6 +9,10 @@
 #include "Game/System/GameInstance_GFF2024.h"
 #include "Game/UI/HUD_PlayerHUD.h"
 
+#include "Game/UI/Widget_GameClear.h"
+#include "Game/UI/Widget_GameOver.h"
+#include "Game/UI/Widget_StageClear.h"
+
 AGameMode_InGame::AGameMode_InGame()
 {
 	DefaultPawnClass = APlayer_Cube::StaticClass();
@@ -20,6 +24,18 @@ AGameMode_InGame::AGameMode_InGame()
 	if (FindGameOverWidget.Succeeded())
 	{
 		GameOverWidget = FindGameOverWidget.Class;
+	}
+
+	ConstructorHelpers::FClassFinder<UUserWidget> FindGameClearWidget(TEXT("/Game/Game/UI/Blueprints/WBP_GameClear"));
+	if (FindGameClearWidget.Succeeded())
+	{
+		GameClearWidget = FindGameClearWidget.Class;
+	}
+
+	ConstructorHelpers::FClassFinder<UUserWidget> FindStageClearWidget(TEXT("/Game/Game/UI/Blueprints/WBP_StageClear"));
+	if (FindStageClearWidget.Succeeded())
+	{
+		StageClearWidget = FindStageClearWidget.Class;
 	}
 }
 
@@ -91,6 +107,44 @@ void AGameMode_InGame::RestartGame()
 	FTimerHandle TimerHandle;
 
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu"); }, 2.f, false);
+}
+
+void AGameMode_InGame::GameClear()
+{
+	//ゲームオーバーのクラスが読み込まれているならウィジェット作成
+	if (GameClearWidget)
+	{
+		UUserWidget* WidgetInstancec = CreateWidget<UUserWidget>(GetWorld(), GameClearWidget);
+
+		//ウィジェットを作成できているならウィジェットを表示
+		if (WidgetInstancec)
+		{
+			WidgetInstancec->AddToViewport();
+		}
+	}
+
+	FTimerHandle TimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu"); }, 2.f, false);
+}
+
+void AGameMode_InGame::StageClear()
+{
+	//ゲームオーバーのクラスが読み込まれているならウィジェット作成
+	if (StageClearWidget)
+	{
+		UUserWidget* WidgetInstancec = CreateWidget<UUserWidget>(GetWorld(), StageClearWidget);
+
+		//ウィジェットを作成できているならウィジェットを表示
+		if (WidgetInstancec)
+		{
+			WidgetInstancec->AddToViewport();
+		}
+	}
+
+	FTimerHandle TimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Stage2"); }, 2.f, false);
 }
 
 void AGameMode_InGame::RespawnPlayer()

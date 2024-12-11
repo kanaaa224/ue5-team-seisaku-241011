@@ -31,6 +31,8 @@
 
 #include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
 
+#include "Game/System/GameMode_InGame.h"//ゲームモード
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -185,6 +187,12 @@ void AEnemy2Character::Destroyed()
 {
 	Super::Destroyed();
 	UE_LOG(LogTemp, Log, TEXT("Enemy2---------->destroyed"));	
+
+	AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->GameClear();
+	}
 }
 
 void AEnemy2Character::ApplyDamage(AActor* Other)
@@ -247,18 +255,18 @@ void AEnemy2Character::Die()
 	//SetLifeSpan(_SEC_CHANGE_LEVEL_);
 
 	//次のLevelに遷移
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-		{
-			//画面遷移中のErrorを回避
-			if (!IsValid(this)) {
-				return;
-			}
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	//	{
+	//		//画面遷移中のErrorを回避
+	//		if (!IsValid(this)) {
+	//			return;
+	//		}
 
-			//レベル遷移
-			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
-		}, _SEC_CHANGE_LEVEL_, false
-	);  // 2秒後に無効化
+	//		//レベル遷移
+	//		UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
+	//	}, _SEC_CHANGE_LEVEL_, false
+	//);  // 2秒後に無効化
 	
 
 	UE_LOG(LogTemp, Log, TEXT("Enemy2----->Die"));
