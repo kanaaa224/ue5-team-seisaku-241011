@@ -22,7 +22,6 @@
 #include "Engine/DamageEvents.h"
 #include "Game/System/LockOnInterface.h"
 #include "Engine/Classes/Particles/ParticleSystem.h"
-#include "Engine/Classes/Particles/ParticleSystemComponent.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Game/System/GameMode_InGame.h"
 #include "Game/System/GameInstance_GFF2024.h"
@@ -43,6 +42,7 @@ APlayer_Cube::APlayer_Cube()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	//カプセルコンポーネントのサイズの初期化
 	GetCapsuleComponent()->InitCapsuleSize(49.f, 49.f);
 	
 	bUseControllerRotationPitch = false;
@@ -51,6 +51,7 @@ APlayer_Cube::APlayer_Cube()
 
 	Tags.Add(FName(TEXT("Player")));
 
+	//キャラクタームーブメントの初期化
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 1000.0f, 0.0f);
 
@@ -71,9 +72,7 @@ APlayer_Cube::APlayer_Cube()
 	//マテリアルを追加する
 	UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Game/Game/Player/Material/M_Player"));
 	//UMaterial* Material = LoadObject<UMaterial>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial"));
-
 	Cube->SetMaterial(0, Material);
-	
 
 	//CollisionPresetを「PhysicsActor」に変更する
 	Cube->SetCollisionProfileName(TEXT("PhysicsActor"));
@@ -81,33 +80,23 @@ APlayer_Cube::APlayer_Cube()
 	//HitEventを有効にする
 	Cube->BodyInstance.bNotifyRigidBodyCollision = true;
 
-	//camera boomを追加する
+	//CameraBoomを追加する
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = DEFAULT_TARGET_ARM_LENGTH;			//SpringArmの長さを調整する
 	CameraBoom->bUsePawnControlRotation = true; 						//PawnのControllerRotationを使用する
-	//CameraBoom->bDoCollisionTest = false;
 
+	//SpringArmを追加する
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(CameraBoom);
 	SpringArm->TargetArmLength = 0.f;
-
 	SpringArm->bDoCollisionTest = false;
-	//SpringArm->bEnableCameraLag = true;
-	//SpringArm->bEnableCameraRotationLag = true;
-
-	//SpringArm->CameraLagSpeed = 5.f;
-	//SpringArm->CameraRotationLagSpeed = 5.f;
 
 	//follow cameraを追加する
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	//FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;		//PawnのControllerRotationを使用する
-
-
-	//MotoinBlurをオフにする
-	FollowCamera->PostProcessSettings.MotionBlurAmount = 0.f;
+	FollowCamera->bUsePawnControlRotation = false;				//PawnのControllerRotationを使用する
+	FollowCamera->PostProcessSettings.MotionBlurAmount = 0.f;	//MotoinBlurをオフにする
 
 	//IM_Defaultを読みこむ
 	DefaultMappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/ThirdPerson/Input/IMC_Default"));
@@ -148,24 +137,28 @@ APlayer_Cube::APlayer_Cube()
 	//AttackCollision->bHiddenInGame = false;
 
 	//カーブの作成
+	//ブリンク
 	BlinkCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("BlinkCurve"));
 	if (BlinkCurve)
 	{
 		BlinkCurve->FloatCurve.AddKey(0.f, 0.f);
 		BlinkCurve->FloatCurve.AddKey(0.5f, 100.f);
 	}
+	//攻撃
 	AttackCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("AttackCurve"));
 	if (AttackCurve)
 	{
 		AttackCurve->FloatCurve.AddKey(0.f, 0.f);
 		AttackCurve->FloatCurve.AddKey(0.5f, 1.f);
 	}
+	//ノックバック
 	KnockBackCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("KnockBackCurve"));
 	if (KnockBackCurve)
 	{
 		KnockBackCurve->FloatCurve.AddKey(0.f, 0.f);
 		KnockBackCurve->FloatCurve.AddKey(0.5f, 100.f);
 	}
+	//ノックバックから起き上がるとき
 	GetUpCurve = NewObject<UCurveFloat>(this, UCurveFloat::StaticClass(), TEXT("GetUpCurve"));
 	if (GetUpCurve)
 	{
@@ -174,6 +167,7 @@ APlayer_Cube::APlayer_Cube()
 	}
 
 	//タイムラインの追加
+	//ブリンク
 	BlinkTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("BlinkTimelineComponent"));
 	if (BlinkTimeline)
 	{
@@ -187,6 +181,7 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("BlinkTimelineFinished"));
 		BlinkTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	//攻撃
 	AttackTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AttackTimelineComponent"));
 	if (AttackTimeline)
 	{
@@ -200,6 +195,7 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("AttackTimelineFinished"));
 		AttackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	//ノックバック
 	KnockBackTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("KnockBackTimelineComponent"));
 	if (KnockBackTimeline)
 	{
@@ -213,6 +209,7 @@ APlayer_Cube::APlayer_Cube()
 		TimelineFinishedFunc.BindUFunction(this, TEXT("KnockBackTimelineFinished"));
 		KnockBackTimeline->SetTimelineFinishedFunc(TimelineFinishedFunc);
 	}
+	//ノックバックから起き上がるとき
 	GetUpTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("GetUpTimelineComponent"));
 	if (GetUpTimeline)
 	{
@@ -230,17 +227,19 @@ APlayer_Cube::APlayer_Cube()
 	LockOnTargetActor = nullptr;
 	
 	//エフェクトの追加
+	//攻撃
 	ConstructorHelpers::FObjectFinder<UParticleSystem> FindAttackEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Cube_Mesh_Test"));
 	if (FindAttackEff.Succeeded())
 	{
 		AttackParticle = FindAttackEff.Object;
 	}
+	//ダメージを与えたとき
 	ConstructorHelpers::FObjectFinder<UParticleSystem> FindDamageEff(TEXT("/Game/InfinityBladeEffects/Effects/FX_Combat_Base/WeaponCombo/P_Enemy_Damage"));
 	if (FindDamageEff.Succeeded())
 	{
 		InflictDamageParticle = FindDamageEff.Object;
 	}
-
+	//ブリンク
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> FindBlinkEff(TEXT("/Game/BlinkAndDashVFX/VFX_Niagara/NS_Blink_Psionic"));
 	if (FindBlinkEff.Succeeded())
 	{
@@ -248,27 +247,32 @@ APlayer_Cube::APlayer_Cube()
 	}
 
 	//SEの追加
+	//ダメージを受けたとき
 	ConstructorHelpers::FObjectFinder<USoundBase>FindTakeDamageSe(TEXT("/Game/Game/Audio/SE/Player/TakeDamage"));
 	if (FindTakeDamageSe.Succeeded())
 	{
 		TakeDamageSe = FindTakeDamageSe.Object;
 	}
+	//ダメージを与えたとき
 	ConstructorHelpers::FObjectFinder<USoundBase>FindInflictDamageSe(TEXT("/Game/Game/Audio/SE/Player/InflictDamage"));
 	if (FindInflictDamageSe.Succeeded())
 	{
 		InflictDamageSe = FindInflictDamageSe.Object;
 	}
+	//攻撃
 	ConstructorHelpers::FObjectFinder<USoundBase>FindAttackSe(TEXT("/Game/Game/Audio/SE/Player/Attack"));
 	if (FindAttackSe.Succeeded())
 	{
 		AttackSe = FindAttackSe.Object;
 	}
+	//ブリンク
 	ConstructorHelpers::FObjectFinder<USoundBase>FindBlinkSe(TEXT("/Game/Game/Audio/SE/Player/Blink"));
 	if (FindBlinkSe.Succeeded())
 	{
 		BlinkSe = FindBlinkSe.Object;
 	}
 
+	//Fvector型の初期化
 	BlinkInitLocation = FVector(0.f);
 	KnockBackInitLocation = FVector(0.f);
 	BlinkForwardVector = GetActorForwardVector() * -1.f;
@@ -276,15 +280,19 @@ APlayer_Cube::APlayer_Cube()
 	KnockBackForwardVector = FVector(0.f);
 	CameraImpactPoint = FVector(0.f);
 
+	//FRotator型の初期化
 	KnockBackInitRotation = FRotator(0.f);
 
+	//int型の初期化
 	BlinkCoolTime = 0;
 	AttackCoolTime = 0;
 
+	//float型の初期化
 	Timer = 0.f;
 	Health = 100.f;
-	MaxTargetArmLength = 2000.f;
+	MaxTargetArmLength = 3000.f;
 
+	//bool型の初期化
 	BlinkFlg = false;
 	AttackFlg = false;
 	InflictDamageFlg = false;
@@ -292,7 +300,7 @@ APlayer_Cube::APlayer_Cube()
 	KnockBackFlg = false;
 	KnockBackSweepFlg = false;
 	LockOnFlg = false;
-	MoveFlg = true;
+	ActionFlg = true;
 }
 
 // Called when the game starts or when spawned
@@ -300,31 +308,14 @@ void APlayer_Cube::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Material_Instance = Cube->CreateAndSetMaterialInstanceDynamic(0);
+	//動的にマテリアルインスタンスをつくる場合はBeginPlayで作成する
+	PlayerMaterialInstance = Cube->CreateAndSetMaterialInstanceDynamic(0);
 
 	LockOnCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionBeginOverlap);
 	LockOnCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnLockOnCollisionEndOverlap);
 
 	AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionBeginOverlap);
 	AttackCollision->OnComponentEndOverlap.AddDynamic(this, &APlayer_Cube::OnAttackCollisionEndOverlap);
-
-	if (UGameInstance_GFF2024* GameInstance = Cast<UGameInstance_GFF2024>(UGameplayStatics::GetGameInstance(this)))
-	{
-		switch (GameInstance->Floor)
-		{
-		case 1:
-			MaxTargetArmLength = 3000.f;
-			break;
-		case 2:
-			MaxTargetArmLength = 2500.f;
-			break;
-		case 3:
-		default:
-			MaxTargetArmLength = 2000.f;
-			break;
-		}
-		
-	}
 
 	//InputMappingContextの追加
 	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -388,12 +379,15 @@ void APlayer_Cube::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	//無敵ではないなら
 	if (!InvincibleFlg)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, TakeDamageSe, GetActorLocation());
 		Health = Health - DamageAmount;
 		Health = Health <= 0 ? 0 : Health;
-		if (KnockBackTimeline && !KnockBackFlg)
+		PlayerMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 0.f, 0.f));
+		if (KnockBackTimeline &&		//ノックバックのタイムラインが読み込まれているなら
+			!KnockBackFlg)				//ノックバックしていないなら
 		{
 			KnockBackInitLocation = GetActorLocation();
 			KnockBackForwardVector = GetActorForwardVector();
@@ -402,7 +396,6 @@ float APlayer_Cube::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 			KnockBackFlg = true;
 			InvincibleFlg = true;
 		}
-		//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Player_Cube Health:%f"), Health));
 	}
 	//else
 	//{
@@ -433,7 +426,7 @@ void APlayer_Cube::InflictDamage(AActor* Other)
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			LockOnFlg = false;
-			MoveFlg = false;
+			ActionFlg = false;
 			//LockOnCandidates.Remove(LockOnTargetActor);
 			//LockOnTargetActor = nullptr;
 			//消す
@@ -485,10 +478,12 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 	//結果
 	FHitResult OutHit;
 	//スフィアトレース
-	UKismetSystemLibrary::SphereTraceSingle(this, GetActorLocation(), GetActorLocation(), SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::ForDuration, OutHit, true);
+	UKismetSystemLibrary::SphereTraceSingle(this, GetActorLocation(), GetActorLocation(), SphereRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), false, ActorToIgnore, EDrawDebugTrace::None, OutHit, true);
 
+	//当たったなら
 	if (OutHit.bBlockingHit)
 	{
+		//ActorのタグがWallなら
 		if (OutHit.GetActor()->ActorHasTag(FName(TEXT("Wall"))))
 		{
 			KnockBackSweepFlg = true;
@@ -501,6 +496,7 @@ void APlayer_Cube::KnockBackTimelineUpdate(float Value)
 
 	SetActorLocation(NewLocation, KnockBackSweepFlg);
 
+	//落下状態なら
 	if (GetCharacterMovement()->IsFalling())
 	{
 		//回転情報を取得
@@ -524,7 +520,7 @@ void APlayer_Cube::GetUpTimelineUpdate(float Value)
 
 void APlayer_Cube::BlinkTimelineFinished()
 {
-	Material_Instance->SetScalarParameterValue("Opacity", 1);
+	PlayerMaterialInstance->SetScalarParameterValue(TEXT("Opacity"), 1);
 	BlinkFlg = false;
 	InvincibleFlg = false;
 	//UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
@@ -563,8 +559,11 @@ void APlayer_Cube::KnockBackTimelineFinished()
 	}
 	else
 	{
-		if (GetUpTimeline && KnockBackFlg && InvincibleFlg)
+		if (GetUpTimeline &&		//起き上がるときのタイムラインが読み込まれているなら
+			KnockBackFlg &&			//ノックバックしているなら
+			InvincibleFlg)			//無敵なら
 		{
+			PlayerMaterialInstance->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 1.f, 1.f));
 			GetUpTimeline->PlayFromStart();
 		}
 	}
@@ -578,8 +577,10 @@ void APlayer_Cube::GetUpTimelineFinished()
 
 void APlayer_Cube::OnLockOnCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!LockOnFlg && !AttackFlg)
+	if (!LockOnFlg &&		//ロックオンしていないなら
+		!AttackFlg)			//攻撃していないなら
 	{
+		//配列に追加
 		LockOnCandidates.AddUnique(OtherActor);
 		//ロックオンの候補がいるか調べる
 		if (LockOnCandidates.IsValidIndex(0))
@@ -630,7 +631,11 @@ void APlayer_Cube::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && !BlinkFlg && !KnockBackFlg && !AttackFlg && MoveFlg)
+	if (Controller != nullptr &&		//Controllerがnullではないなら
+		!BlinkFlg &&					//ブリンクしていないなら
+		!KnockBackFlg &&				//ノックバックしていないなら
+		!AttackFlg &&					//攻撃していないなら
+		ActionFlg)						//行動できるなら
 	{
 		//進行方向を探す
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -658,11 +663,12 @@ void APlayer_Cube::Blink(const FInputActionValue& Value)
 		!BlinkFlg &&							//ブリンク判定ではないなら
 		!AttackFlg &&							//攻撃判定ではないなら
 		!KnockBackFlg &&						//ノックバック判定ではないなら
+		ActionFlg &&							//行動できるなら
 		BlinkCoolTime <= 0)						//ブリンクのクールタイムがないなら
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, BlinkParticle, this->GetActorLocation(), this->GetActorRotation(), FVector(1.f));
 		UGameplayStatics::PlaySoundAtLocation(this, BlinkSe, GetActorLocation());
-		Material_Instance->SetScalarParameterValue("Opacity", 0.2);
+		PlayerMaterialInstance->SetScalarParameterValue(TEXT("Opacity"), 0.2);
 		BlinkInitLocation = GetActorLocation();
 		BlinkTimeline->PlayFromStart();
 		BlinkCoolTime = BLINK_COOLTIME;
@@ -679,6 +685,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 		!AttackFlg &&							//攻撃判定なら
 		!BlinkFlg &&							//ブリンク判定ではないなら
 		!KnockBackFlg &&						//ノックバック判定ではないなら
+		ActionFlg &&							//行動できるなら
 		AttackCoolTime <= 0)					//攻撃のクールタイムがないなら
 	{
 		UGameplayStatics::SpawnEmitterAttached(AttackParticle, RootComponent, NAME_None, FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, 0.0f, 0.0f));
@@ -692,6 +699,7 @@ void APlayer_Cube::Attack(const FInputActionValue& Value)
 
 void APlayer_Cube::SmoothCameraCollision()
 {
+
 	if (!LockOnFlg)
 	{
 		//始点座標
@@ -738,8 +746,8 @@ void APlayer_Cube::SmoothCameraCollision()
 
 void APlayer_Cube::LockOnTarget()
 {
-	//ロックオンしているなら
-	if (LockOnFlg && LockOnTargetActor)
+	if (LockOnFlg && 			//ロックオンしているなら
+		LockOnTargetActor)		//ロックオンの対象がいるなら
 	{
 		//向きたい方向へのプレイヤーの回転値を取得
 		FRotator FindActorRotation = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), LockOnTargetActor->GetActorLocation());
@@ -748,6 +756,7 @@ void APlayer_Cube::LockOnTarget()
 		
 		SetActorRotation(FRotator(this->GetActorRotation().Pitch, InterpActorRotarion.Yaw, this->GetActorRotation().Roll));
 		
+		//コントローラーが有効なら
 		if (Controller)
 		{
 			//向きたい方向へのコントローラーの回転値の補間
@@ -763,13 +772,13 @@ void APlayer_Cube::LockOnTarget()
 		
 		//Z軸のみの距離を取得
 		double Distance = UKismetMathLibrary::Vector_Distance(FVector(0.f, 0.f, this->GetActorLocation().Z), FVector(0.f, 0.f, LockOnTargetActor->GetActorLocation().Z));
-		//Z軸の距離が750以上なら
-		if (Distance >= 750)
+		//Z軸の距離が700以上なら
+		if (Distance >= 700)
 		{
 			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, MaxTargetArmLength, GetWorld()->GetDeltaSeconds(), 3.f);
 			CameraBoom->TargetArmLength = ArmLength;
 		}
-		//Z軸の距離が750以上ではないなら
+		//Z軸の距離が700以上ではないなら
 		else
 		{
 			float ArmLength = UKismetMathLibrary::FInterpTo(CameraBoom->TargetArmLength, DEFAULT_TARGET_ARM_LENGTH, GetWorld()->GetDeltaSeconds(), 3.f);
@@ -814,7 +823,7 @@ void APlayer_Cube::PlayerTransparent()
 		//OutRnageB:マテリアルが通常状態のOpacity値
 		double Opacity = UKismetMathLibrary::MapRangeClamped(Distance, 200, 300, 0, 1);
 
-		Material_Instance->SetScalarParameterValue("Opacity", Opacity);
+		PlayerMaterialInstance->SetScalarParameterValue(TEXT("Opacity"), Opacity);
 	}
 }
 
