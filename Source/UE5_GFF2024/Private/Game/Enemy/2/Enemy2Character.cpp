@@ -51,9 +51,9 @@ AEnemy2Character::AEnemy2Character()
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
 	// 視野
-	PawnSensingComp->SetPeripheralVisionAngle(60.f);
+	PawnSensingComp->SetPeripheralVisionAngle(179.9f);
 	// 見える範囲
-	PawnSensingComp->SightRadius = 2000;
+	PawnSensingComp->SightRadius = 200000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy2Character::OnSeePlayer);
 
 	//ロックオン//
