@@ -161,6 +161,9 @@ EBTNodeResult::Type UBTT_SpecialAttack_Enemy2::ExecuteTask(UBehaviorTreeComponen
 
 void UBTT_SpecialAttack_Enemy2::Float(AEnemy2Character* myPawn, FVector targetLocation)
 {
+	//Enemy2Characterクラスの変数をTRUEに
+	myPawn->No_ApplyDamage = false;
+
 	FVector nowLocation = myPawn->GetActorLocation();
 
 	nowLocation = FMath::VInterpTo(nowLocation, targetLocation, GetWorld()->GetDeltaSeconds(), 3.0f);
@@ -187,8 +190,8 @@ FVector UBTT_SpecialAttack_Enemy2::OnecCalcFloatTargetLocation(AEnemy2Character*
 
 void UBTT_SpecialAttack_Enemy2::Down(AEnemy2Character* myPawn, FVector targetLocation)
 {
-	//debugLog
-	//UE_LOG(LogTemp, Warning, TEXT("Down"));
+	//Enemy2Characterクラスの変数をTRUEに
+	myPawn->No_ApplyDamage = true;
 
 	FVector nowLocation = myPawn->GetActorLocation();
 

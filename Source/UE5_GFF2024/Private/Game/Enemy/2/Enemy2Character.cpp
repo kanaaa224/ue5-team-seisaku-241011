@@ -381,7 +381,7 @@ void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 
 				APlayer_Cube* tmpPlayer = Cast<APlayer_Cube>(OtherActor);
 				//ブラックボードから取得したAttack変数がTrueならプレイヤーに攻撃を与える
-				if (AttackFlg == true && tmpPlayer) {
+				if (AttackFlg == true && tmpPlayer && No_ApplyDamage == false) {
 					AttackPlayer();
 				}
 			}

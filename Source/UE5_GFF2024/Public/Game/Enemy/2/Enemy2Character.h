@@ -127,4 +127,7 @@ private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* CubeMesh;
+
+public:
+	bool No_ApplyDamage = false;
 };
