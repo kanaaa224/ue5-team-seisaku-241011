@@ -47,6 +47,9 @@ private:
 
 	bool PlayerIsRange[4];
 
+	UMaterialInterface* FrontMaterial = nullptr;
+	UMaterialInterface* BackMaterial = nullptr;
+
 private:
 
 	UFUNCTION()
@@ -55,4 +58,9 @@ private:
 	UFUNCTION()
 	void OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+public:
+
+	void ApplyMaterialToStageEdge();
+
+	void BackApplicableColor();
 };
