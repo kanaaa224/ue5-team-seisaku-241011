@@ -16,6 +16,7 @@
 #include "CollisionQueryParams.h"
 #include "Game/UI/HUD_PlayerHUD.h" 
 #include "Game/UI/Widget_StageClear.h"
+#include "Game/System/GameMode_InGame.h"
 
 AEnemy1Character::AEnemy1Character()
 {
@@ -138,14 +139,8 @@ void AEnemy1Character::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//SpawnDefaultController();
-
-	//GetCharacterMovement()->MaxWalkSpeed = 1200.0f;
-
 	GetCharacterMovement()->MaxAcceleration = 4096.0f; // 高速移動向けに加速を強化
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f; // 減速時の制御
-
-	//TargetLocation = new FVector(-1, -1, -1);
 
 	AttackCollisions[0]->SetRelativeScale3D({ 4,4,0.5 });
 	AttackCollisions[1]->SetRelativeScale3D({ 4,4,0.5 });
@@ -187,6 +182,12 @@ void AEnemy1Character::Destroyed()
 	LockOnMarkerWidget->SetVisibility(false);
 
 	//UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
+
+	AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->StageClear();
+	}
 }
 
 //void AEnemy1Character::BeginDestroy()
@@ -293,7 +294,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 			IsDestroy = true;
 
 			//5秒後に破壊
-			SetLifeSpan(5.0f);
+			SetLifeSpan(0.1f);
 		}
 	}
 }

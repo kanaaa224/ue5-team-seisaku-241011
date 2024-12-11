@@ -31,6 +31,8 @@
 
 #include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
 
+#include "Game/System/GameMode_InGame.h"//ゲームモード
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -185,6 +187,12 @@ void AEnemy2Character::Destroyed()
 {
 	Super::Destroyed();
 	UE_LOG(LogTemp, Log, TEXT("Enemy2---------->destroyed"));	
+
+	AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->GameClear();
+	}
 }
 
 void AEnemy2Character::ApplyDamage(AActor* Other)
