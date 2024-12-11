@@ -42,8 +42,6 @@ AEnemy2Character::AEnemy2Character()
 	/*:::::変数:::::*/
 	//体力
 	health = _ENEMY2_MAX_HP_;
-	//ダメージを受けて何秒マテリアルを変化させるか
-	sec_ChangeDamegeMaterial = 0.0f;
 
 	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
@@ -260,7 +258,6 @@ void AEnemy2Character::Die()
 
 void AEnemy2Character::DamageMaterial()
 {
-	sec_ChangeDamegeMaterial = _SEC_CHANGE_DAMAGE_MATERIAL;
 	ChangeDamageMaterial();
 	UE_LOG(LogTemp, Log, TEXT("Material---------->damage"));
 
@@ -268,9 +265,8 @@ void AEnemy2Character::DamageMaterial()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
 			NormalMaterial();//sec_ChangeDamageMaterial秒後に元のマテリアルに変える
-			sec_ChangeDamegeMaterial = 0.0f;
 			UE_LOG(LogTemp, Log, TEXT("Material---------->normal"));
-		}, sec_ChangeDamegeMaterial, false
+		}, _SEC_CHANGE_DAMAGE_MATERIAL, false
 	); 
 }
 

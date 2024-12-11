@@ -46,8 +46,6 @@ private:
 	//体力
 	float health;
 
-	float sec_ChangeDamegeMaterial = 0.0f;
-
 	//スポーン時のLocationを取得
 	FVector startLocation;
 
