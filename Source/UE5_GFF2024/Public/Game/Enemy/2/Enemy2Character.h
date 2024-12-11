@@ -21,6 +21,12 @@
 #define _DAMAGETYPE_ULT_ATTACK_    1 //特殊攻撃
 #define _DAMAGE_ULT_ATTACK_        50//特殊攻撃のダメージ量
 
+//レベル遷移する秒数
+#define _SEC_CHANGE_LEVEL_          2.0f
+
+//ダメージを受けた時にマテリアルを変える秒数
+#define _SEC_CHANGE_DAMAGE_MATERIAL 0.3f
+
 UCLASS()
 class UE5_GFF2024_API AEnemy2Character : public ACharacter , public ILockOnInterface
 {
@@ -39,9 +45,6 @@ private:
 	/*:::::変数:::::*/
 	//体力
 	float health;
-
-	bool damageMaterialFlg;
-	float timeCnt;
 
 	//スポーン時のLocationを取得
 	FVector startLocation;
@@ -76,6 +79,7 @@ public:
 
 	//
 	void DamageMaterial();
+	void ChangeDamageMaterial();
 	//
 	void NormalMaterial();
 
@@ -121,4 +125,7 @@ private:
 	//CubeMeshComponent
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* CubeMesh;
+
+public:
+	bool No_ApplyDamage = false;
 };
