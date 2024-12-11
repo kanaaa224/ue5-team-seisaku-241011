@@ -247,18 +247,18 @@ void AEnemy2Character::Die()
 	//SetLifeSpan(_SEC_CHANGE_LEVEL_);
 
 	//次のLevelに遷移
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-		{
-			//画面遷移中のErrorを回避
-			if (!IsValid(this)) {
-				return;
-			}
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	//	{
+	//		//画面遷移中のErrorを回避
+	//		if (!IsValid(this)) {
+	//			return;
+	//		}
 
-			//レベル遷移
-			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
-		}, _SEC_CHANGE_LEVEL_, false
-	);  // 2秒後に無効化
+	//		//レベル遷移
+	//		UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
+	//	}, _SEC_CHANGE_LEVEL_, false
+	//);  // 2秒後に無効化
 	
 
 	UE_LOG(LogTemp, Log, TEXT("Enemy2----->Die"));
