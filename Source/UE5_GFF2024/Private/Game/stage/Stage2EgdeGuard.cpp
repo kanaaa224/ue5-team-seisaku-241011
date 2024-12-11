@@ -85,7 +85,7 @@ void AStage2EgdeGuard::BeginPlay()
 	//	}
 	//}
 
-	DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
+	//DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
 }
 
 // Called every frame
@@ -114,34 +114,34 @@ void AStage2EgdeGuard::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		{
 		case 0:
 
-			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 0"));
 			BackApplicableColor();
 			PlayerIsRange[0] = true;
 			break;
 
 		case 90:
 
-			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 90"));
 			BackApplicableColor();
 			PlayerIsRange[1] = true;
 			break;
 
 		case 180:
 
-			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 180"));
 			BackApplicableColor();
 			PlayerIsRange[2] = true;
 			break;
 
 		case -90:
 
-			if (DynamicMaterial)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
-				//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[3], 1.0f);
-				//StageWall->SetMaterial(0, DynamicMaterial);
-				BackApplicableColor();
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			BackApplicableColor();
+			//if (DynamicMaterial)
+			//{
+			//	//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[3], 1.0f);
+			//	//StageWall->SetMaterial(0, DynamicMaterial);
+			//}
 			PlayerIsRange[3] = true;
 			break;
 
