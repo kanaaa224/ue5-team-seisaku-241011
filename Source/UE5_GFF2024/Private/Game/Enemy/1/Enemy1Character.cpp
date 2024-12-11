@@ -1,82 +1,33 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Game/Enemy/1/Enemy1Character.h"
-
 #include "Perception/PawnSensingComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-
 #include "Game/Player_Cube.h"
 #include "Game/Enemy/1/AIC_Enemy1.h"
-
 #include "Math/UnrealMathUtility.h"
-
 #include "Game/Enemy/Commons/PolygonRotationManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
 #include "Engine/DamageEvents.h"
-
 #include "Components/BoxComponent.h"
-
-//ロックオン
 #include "Components/WidgetComponent.h"
 #include "Components/CapsuleComponent.h"
-
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
-
-#include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
-
+#include "Game/UI/HUD_PlayerHUD.h" 
 #include "Game/UI/Widget_StageClear.h"
 
-// Sets default values
 AEnemy1Character::AEnemy1Character()
 {
-	Tags.Add(FName(TEXT("Enemy1")));
-
-	/*:::::変数:::::*/
-		//体力
+	//体力
 	health = 100.0f;
-
+	//移動フラグ
 	IsMoving = false;
-	//IsMoving = true;
-
+	//移動先
 	Vector = { 0.,0.,0., };
-
-	//float AngleX = -FMath::Atan2(CubeVertices[11].Z, CubeVertices[11].Y); // x軸回りの回転
-	//float AngleZ = FMath::Atan2(CubeVertices[5].X, CubeVertices[5].Y);    // z軸回りの回転
-	//float AngleY = 0.0f; // 必要ないので 0 に設定
-
-	//// 面0がy軸（地面）に平行になるよう回転
-	//float AngleX = FMath::Atan2(CubeVertices[0].Z, CubeVertices[0].Y);  // x軸回りの回転
-	//float AngleZ = 0.0f;  // z軸回りの回転を固定
-	//float AngleY = 0.0f;  // y軸回りの回転は不要
-
-	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
-	//FVector VertexA = CubeVertices[0];
-	//FVector VertexB = CubeVertices[11];
-	//FVector VertexC = CubeVertices[5];
-
-	//// y軸回りの回転角度を計算
-	//float AngleY = 0;//-FMath::Atan2(VertexA.Z, VertexA.X);
-
-	//// x軸回りの回転角度を計算（面のz軸成分がy軸に水平になるように）
-	//float AngleX = 0;//FMath::Atan2(VertexA.Z, VertexA.Y);
-
-	//// z軸回りの回転は不要または特定の調整で設定
-	//float AngleZ = 0.0f;
-
-	//TArray<FVector> RotatedVertices;
-	//for (const auto& Vertex : CubeVertices) {
-	//	RotatedVertices.Add(RotateVertex(Vertex, AngleX, AngleY, AngleZ));
-	//}
-	//RotVertices = RotatedVertices;
+	//回転制御
 	RotationManager = new PolygonRotationManager(CubeVertices, CubeFaces);
-	//RotationManager = new PolygonRotationManager(RotatedVertices, CubeFaces);
 
-
-	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
@@ -84,7 +35,7 @@ AEnemy1Character::AEnemy1Character()
 	// 視野
 	PawnSensingComp->SetPeripheralVisionAngle(180.f);
 	// 見える範囲
-	PawnSensingComp->SightRadius = 8000;
+	PawnSensingComp->SightRadius = 16000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy1Character::OnSeePlayer);
 
 	// StaticMeshComponentを追加
@@ -117,28 +68,28 @@ AEnemy1Character::AEnemy1Character()
 		switch (i)
 		{
 		case 0://下
-			NewCollision->SetRelativeLocation({ 0,0,-150 });
+			NewCollision->SetRelativeLocation({ 0,0,-120 });
 			NewCollision->SetRelativeScale3D({ 4,4,1 });
 			//NewCollision->SetWorldScale3D({ 4,4,1 });
 			break;
 		case 1://上
-			NewCollision->SetRelativeLocation({ 0,0,150 });
+			NewCollision->SetRelativeLocation({ 0,0,120 });
 			NewCollision->SetRelativeScale3D({ 4,4,1 });
 			break;
 		case 2://後ろ
-			NewCollision->SetRelativeLocation({ -150,0,0 });
+			NewCollision->SetRelativeLocation({ -120,0,0 });
 			NewCollision->SetRelativeScale3D({ 1,4,4 });
 			break;
 		case 3://前
-			NewCollision->SetRelativeLocation({ 150,0,0 });
+			NewCollision->SetRelativeLocation({ 120,0,0 });
 			NewCollision->SetRelativeScale3D({ 1,4,4 });
 			break;
 		case 4://左
-			NewCollision->SetRelativeLocation({ 0,-150,0 });
+			NewCollision->SetRelativeLocation({ 0,-120,0 });
 			NewCollision->SetRelativeScale3D({ 4,1,4 });
 			break;
 		case 5://右
-			NewCollision->SetRelativeLocation({ 0,150,0 });
+			NewCollision->SetRelativeLocation({ 0,120,0 });
 			NewCollision->SetRelativeScale3D({ 4,1,4 });
 			break;
 		default:
@@ -180,15 +131,6 @@ AEnemy1Character::AEnemy1Character()
 	MoveDirection = { 0,0,0 };
 
 	IsDestroy = false;
-
-	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
-
-
-	//ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
-	//if (WidgetBPClass.Succeeded())
-	//{
-	//	WidgetClass = WidgetBPClass.Class;
-	//}
 }
 
 // Called when the game starts or when spawned
@@ -277,7 +219,7 @@ void AEnemy1Character::Tick(float DeltaTime)
 		{
 
 			FVector StartLocation = GetActorLocation();
-			FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 8.5;
+			FVector EndLocation = StartLocation + MoveDirection * Speed * DeltaTime * 300;
 
 			// ライントレース用のヒット結果
 			FHitResult HitResult;
@@ -318,7 +260,6 @@ void AEnemy1Character::Tick(float DeltaTime)
 					// 移動可能なら移動
 					NewLocation = FMath::VInterpTo(GetActorLocation(), TargetLocation, Delta, Speed);
 					SetActorLocation(NewLocation, true);
-					//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TargetLocation.Z), true, true, FColor::Blue, 2.f);
 				}
 
 				break;
@@ -328,76 +269,47 @@ void AEnemy1Character::Tick(float DeltaTime)
 		}
 
 		GetBottomNumber();
-		//UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat((float)BottomCollisionNumber), true, true, FColor::Blue, 2.f);
+		
 
-		OldTargetLocation = TargetLocation;
-
+		//動いているか
 		if (IsMoving)
 		{
+			//回転移動
 			MoveProcess();
 		}
 
+		//攻撃中か
 		if (IsAttacking)
 		{
+			//攻撃
 			Attack();
 		}
 	}
 	else
 	{
+		//一回だけ
 		if (!IsDestroy)
 		{
-			//FTimerHandle TimerHandle;
-			//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-			//	{
-			//		delete RotationManager;
-			//		Destroy();
-			//	}, 2.f, false);  // 0.1秒後に無効化
 			IsDestroy = true;
 
+			//5秒後に破壊
 			SetLifeSpan(5.0f);
-			
 		}
 	}
-
-	//AddMovementInput({ 1,0,0 }, 100);
-
-	//// 面0（例えば {0, 11, 5}）がy軸に平行になるよう回転
-	//FVector VertexA = CubeVertices[0];
-	//FVector VertexB = CubeVertices[11];
-	//FVector VertexC = CubeVertices[5];
-
-	//a += 0.001;
-
-	//// y軸回りの回転角度を計算
-	//float AngleY = 0 + a;//-FMath::Atan2(VertexA.Z, VertexA.X);
-
-	//// x軸回りの回転角度を計算（面のz軸成分がy軸に水平になるように）
-	//float AngleX = 0;//FMath::Atan2(VertexA.Z, VertexA.Y);
-
-	//// z軸回りの回転は不要または特定の調整で設定
-	//float AngleZ = 0.0f;
-
-	//TArray<FVector> RotatedVertices;
-	//for (const auto& Vertex : CubeVertices) {
-	//	RotatedVertices.Add(RotateVertex(Vertex, AngleX, AngleY, AngleZ));
-	//}
-	//RotVertices = RotatedVertices;
 }
 
 void AEnemy1Character::OnSeePlayer(APawn* Pawn)
 {
+	//AIController
 	AAIC_Enemy1* AIController = Cast<AAIC_Enemy1>(GetController());
-	// プレイヤー
+	//プレイヤー
 	APlayer_Cube* player = Cast<APlayer_Cube>(Pawn);
 
 	if (AIController && player)
 	{
-		// AIControllerにプレイヤー情報を設定
+		//AIControllerにプレイヤー情報を設定
 		AIController->SetPlayerKey(player);
 	}
-
-	// 視野に入ったら画面に"See"と表示
-	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
 void AEnemy1Character::ApplyDamage(AActor* Other)
@@ -414,20 +326,6 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 			//ダメージ量
 			const float DamageAmount = 25.0f;
 			ImpactActor->TakeDamage(DamageAmount, DamageEvent, Controller, this);
-
-			UKismetSystemLibrary::PrintString(this, TEXT("Enemy1 : Attack"));
-
-			IsAttackCoolTime = true;
-
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-				{
-					if (!IsValid(this))
-					{
-						return;
-					}
-					IsAttackCoolTime = false;
-				}, 1.f, false);  // 0.1秒後に無効化
 		}
 	}
 }
@@ -448,17 +346,11 @@ void AEnemy1Character::MoveProcess()
 	FVector Scale = FVector(150, 150, 150);  // スケール
 	FVector Position = GetActorLocation();  // オブジェクトの位置
 
-	//Cube->SetNextBottom(FVector(0, 1, 0), Scale, Position);
-	//RotationManager->SetNextBottom(FVector(1, 1, 0), Scale, Position);
 	RotationManager->SetNextBottom(Vector, Scale, Position);
 
 	RotationManager->SetNewRotationAndLocation(Position);
 
 	FRotator rot1 = RotationManager->GetNowRotation();
-
-	//box->SetRelativeRotation(-1 * rot1);
-
-	//SetActorRotation(-1 * rot1);
 
 	AddActorWorldRotation(-1 * rot1);
 	if (GetActorRotation().Pitch > 360.)
@@ -474,29 +366,10 @@ void AEnemy1Character::MoveProcess()
 		SetActorRotation({ GetActorRotation().Pitch, GetActorRotation().Yaw,GetActorRotation().Roll - 360 });
 	}
 
-
 	SetActorLocation(RotationManager->GetNewLocation());
-
 
 	//デバッグ表示
 	RotationManager->DrawPolyhedronFaceCenters(GetWorld(), *RotationManager, {200,200,200}, Position);
-
-	//for (int i = 0; i < CubeFaces.Num(); i++)
-	//{
-	//	for (int j = 0; j < CubeFaces[i].Num(); j++)
-	//	{
-	//		int k = j + 1;
-	//		if (k >= 3)
-	//		{
-	//			k = 0;
-	//		}
-	//		/*FVector Start = RotVertices[CubeFaces[i][j]] * Scale + Position;
-	//		FVector End = RotVertices[CubeFaces[i][k]] * Scale + Position;*/
-	//		FVector Start = CubeVertices[CubeFaces[i][j]] * Scale + Position;
-	//		FVector End = CubeVertices[CubeFaces[i][k]] * Scale + Position;
-	//		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 0.1f);
-	//	}
-	//}
 }
 
 void AEnemy1Character::Attack()
@@ -510,15 +383,22 @@ void AEnemy1Character::Attack()
 		AttackCollisions[BottomCollisionNumber]->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
 		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		int32 tmp = BottomCollisionNumber;
 		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, tmp]()
 			{
-				if (!IsValid(this) || !AttackCollisions.IsValidIndex(BottomCollisionNumber))
+				if (!IsValid(this))
 				{
 					return;
 				}
-				AttackCollisions[BottomCollisionNumber]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			}, 0.5f, false);  // 0.1秒後に無効化
+
+				if (!AttackCollisions.IsValidIndex(tmp))
+				{
+					return;
+				}
+
+				AttackCollisions[tmp]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}, 1.f, false);  // 0.1秒後に無効化
 	}
 	else
 	{
@@ -534,12 +414,18 @@ void AEnemy1Character::Attack()
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, i]()
 				{
-					if (!IsValid(this) || !AttackCollisions.IsValidIndex(i))
+					if (!IsValid(this))
 					{
 						return;
 					}
+
+					if (!AttackCollisions.IsValidIndex(i))
+					{
+						return;
+					}
+
 					AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				}, 0.1f, false);  // 0.1秒後に無効化
+				}, 1.f, false);  // 0.1秒後に無効化
 		}
 	}
 }
@@ -554,6 +440,7 @@ void AEnemy1Character::OnAttackHit(UPrimitiveComponent* OverlappedComponent, AAc
 
 void AEnemy1Character::GetBottomNumber()
 {
+	//一番下の面を求める
 	for (int i = 0; i < 6; i++)
 	{
 		for (int j = 0; j < 6; j++)
@@ -568,6 +455,7 @@ void AEnemy1Character::GetBottomNumber()
 
 void AEnemy1Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 {
+	//ロックオンの表示
 	if (LockOnFlg)
 	{
 		LockOnMarkerWidget->SetVisibility(true);
@@ -582,13 +470,13 @@ void AEnemy1Character::ChangeMaterial(UMaterialInterface* NewMaterial)
 {
 	if (box && NewMaterial)
 	{
+		// 元のマテリアル
 		UMaterialInterface* OldMaterial = box->GetMaterial(0);
 
 		// メッシュのマテリアルを変更
 		box->SetMaterial(0, NewMaterial);
 
-
-		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		// 攻撃ヒット時マテリアルを変更後元に戻す
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, OldMaterial]()
 			{
@@ -597,7 +485,7 @@ void AEnemy1Character::ChangeMaterial(UMaterialInterface* NewMaterial)
 					return;
 				}
 				box->SetMaterial(0, OldMaterial);
-			}, 0.3f, false);  // 0.1秒後に無効化
+			}, 0.3f, false);  // 0.3秒後に無効化
 	}
 }
 
