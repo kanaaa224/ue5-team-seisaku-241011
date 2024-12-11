@@ -5,6 +5,7 @@
 #include "Game/Player_Cube.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -17,6 +18,9 @@ AStage2EgdeGuard::AStage2EgdeGuard()
 	StageWall = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	/* StaticMeshをLaodしてStaticMeshComponentのStaticMeshに設定する */
 	UStaticMesh* LoadMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/Cube"));
+
+	RootComponent = StageWall;
+
 	/* StaticMeshをStaticMeshComponentに設定する */
 	StageWall->SetStaticMesh(LoadMesh);
 	/* StageWallのサイズを変更する */
@@ -64,8 +68,24 @@ AStage2EgdeGuard::AStage2EgdeGuard()
 void AStage2EgdeGuard::BeginPlay()
 {
 	Super::BeginPlay();
-	DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
 	
+	ApplyMaterialToStageEdge();
+
+	UGameplayStatics::GetAllActorsOfClass(world, actors, FoundActors);
+
+	//for (AActor* Actor : FoundActors)
+	//{
+	//	if (Actor)
+	//	{
+	//		// 回転角度（Rotation）を取得
+	//		FRotator Rotation = Actor->GetActorRotation();
+
+	//		// ログに出力
+	//		UE_LOG(LogTemp, Log, TEXT("Actor: %s, Rotation: %s"), *Actor->GetName(), *Rotation.ToString());
+	//	}
+	//}
+
+	//DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
 }
 
 // Called every frame
@@ -88,41 +108,40 @@ void AStage2EgdeGuard::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		/* 回転をSwitch文の頭として使いたいため 切り上げている */
 		int32 result = FMath::CeilToInt(Rotator.Yaw);
 
+		UE_LOG(LogTemp, Warning, TEXT("Rotation Yaw %d "), result);
+
 		switch (result)
 		{
 		case 0:
 
-			if (DynamicMaterial)
-			{
-				DynamicMaterial->SetScalarParameterValue(StageEdgeVector[0], 1.0f);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 0"));
+			BackApplicableColor();
 			PlayerIsRange[0] = true;
 			break;
 
 		case 90:
 
-			if (DynamicMaterial)
-			{
-				DynamicMaterial->SetScalarParameterValue(StageEdgeVector[1], 1.0f);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 90"));
+			BackApplicableColor();
 			PlayerIsRange[1] = true;
 			break;
 
 		case 180:
 
-			if (DynamicMaterial)
-			{
-				DynamicMaterial->SetScalarParameterValue(StageEdgeVector[2], 1.0f);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material 180"));
+			BackApplicableColor();
 			PlayerIsRange[2] = true;
 			break;
 
 		case -90:
 
-			if (DynamicMaterial)
-			{
-				DynamicMaterial->SetScalarParameterValue(StageEdgeVector[3], 1.0f);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			BackApplicableColor();
+			//if (DynamicMaterial)
+			//{
+			//	//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[3], 1.0f);
+			//	//StageWall->SetMaterial(0, DynamicMaterial);
+			//}
 			PlayerIsRange[3] = true;
 			break;
 
@@ -147,9 +166,46 @@ void AStage2EgdeGuard::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AAct
 			if (PlayerIsRange[i] == true)
 			{
 				/* オパシティを 0.0に戻し、色を消す */
-				DynamicMaterial->SetScalarParameterValue(StageEdgeVector[i], 0.0f);
+				//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[i], 0.0f);
+				//StageWall->SetMaterial(0, DynamicMaterial);
+				StageWall->SetMaterial(0, FrontMaterial);
 			}
 		}
 	}
 }
 
+void AStage2EgdeGuard::ApplyMaterialToStageEdge()
+{
+	/* マテリアルのロード */
+	/* MaterialFinderオブジェクトにマテリアルをロードする */
+	/* FObjectFinderは特定のアセットをロードするために使う 今回はマテリアルをロードする */
+	//static ConstructorHelpers::FObjectFinder<UMaterialInterface> MaterialFinder(TEXT("/Game/Game/stage/gamemain/Stage_Material/Stage2Material/M_Stage2transparent1"));
+	//if (MaterialFinder.Succeeded())
+	//{
+	//	UMaterialInterface* BaseMaterial = MaterialFinder.Object;
+
+	//	/* 動的マテリアルの生成 */
+	//	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+
+	//	if (DynamicMaterial)
+	//	{
+	//		/* パラメータを設定 */
+	//		DynamicMaterial->SetScalarParameterValue(StageEdgeVector[0], 0.0f);
+
+	//		StageWall->SetMaterial(0, DynamicMaterial);
+	//	}
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Base material not found! Check the path."));
+	//}
+
+	FrontMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/stage/gamemain/Stage_Material/M_transparent"));
+	BackMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/stage/gamemain/Stage_Material/Material"));
+	StageWall->SetMaterial(0, FrontMaterial);
+}
+
+void AStage2EgdeGuard::BackApplicableColor()
+{
+	StageWall->SetMaterial(0, BackMaterial);
+}

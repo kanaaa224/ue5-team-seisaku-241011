@@ -148,19 +148,17 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     }
 
 
-                    //if (Velocity.Z >= 0.000001) {
-                        FVector EnemyLocation;
-                        EnemyLocation = Enemy->GetActorLocation() + Velocity;
-                        EnemyLocation.Z = (Velocity.Z * 1000) + StartLocationZ;
+                    
+                    FVector EnemyLocation;
+                    EnemyLocation = Enemy->GetActorLocation() + Velocity;
+                    EnemyLocation.Z = (Velocity.Z * 1000) + StartLocationZ;
 
                        
-                        Enemy->TargetLocation = EnemyLocation;
-                        Enemy->SetSpeed(30.f);
+                    Enemy->TargetLocation = EnemyLocation;
+                    Enemy->SetSpeed(30.f);
 
-                        Enemy->AttackState = 1;
-                        //UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(EnemyLocation.Z), true, true, FColor::Blue, 2.f);
-                       
-                    //}
+                    Enemy->AttackState = 1;
+                    
                     if ((float)Velocity.Z <= 0.f)
                     {
                         Enemy->TargetLocation = Enemy->GetActorLocation();
@@ -172,7 +170,9 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                     if (OldVelocity.Z > Velocity.Z)
                     {
                         Enemy->IsAttacking = true;
+                        Enemy->AttackState = 2;
                         UKismetSystemLibrary::PrintString(this, TEXT("Enemy1 : fall"));
+
                         if (AudioComponent->IsPlaying())
                         {
                             if (SoundToPlay3) 
@@ -207,6 +207,7 @@ EBTNodeResult::Type UBTT_FallAttack::ExecuteTask(UBehaviorTreeComponent& OwnerCo
                         //Enemy->SetIsMoving(true);
                         AIC->SetState(3);
                         AIC->SetNextState(2);
+                        Enemy->AttackState = 0;
                         Enemy->TargetLocation = { -1, -1, -10000 };
                         IsStart = true;
                         Velocity = { 0,0,0 };

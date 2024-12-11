@@ -50,12 +50,12 @@ private:
 	FVector startLocation;
 
 	//通常攻撃のエフェクト
-	UPROPERTY(EditAnywhere, Category = "Effects")
-	UParticleSystemComponent* NormalSpark;
+	//UPROPERTY(EditAnywhere, Category = "Effects")
+	//UParticleSystemComponent* NormalSpark;
 
 	//地面に落ちる時のエフェクト
-	UPROPERTY(EditAnywhere, Category = "Effects")
-	UParticleSystemComponent* SpecialSpark;
+	//UPROPERTY(EditAnywhere, Category = "Effects")
+	//UParticleSystemComponent* SpecialSpark;
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "AI")

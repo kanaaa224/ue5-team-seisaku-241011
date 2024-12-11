@@ -31,6 +31,8 @@
 
 #include "Game/UI/HUD_PlayerHUD.h" // HPゲージ表示用のHUDクラス
 
+#include "Game/System/GameMode_InGame.h"//ゲームモード
+
 // Sets default values
 AEnemy2Character::AEnemy2Character()
 {
@@ -49,9 +51,9 @@ AEnemy2Character::AEnemy2Character()
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
 	// 視野
-	PawnSensingComp->SetPeripheralVisionAngle(60.f);
+	PawnSensingComp->SetPeripheralVisionAngle(179.9f);
 	// 見える範囲
-	PawnSensingComp->SightRadius = 2000;
+	PawnSensingComp->SightRadius = 200000;
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AEnemy2Character::OnSeePlayer);
 
 	//ロックオン//
@@ -121,7 +123,7 @@ AEnemy2Character::AEnemy2Character()
 	CubeMesh->OnComponentEndOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapEnd);
 
 	//エフェクト
-	NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
+	/*NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
 	NormalSpark->SetupAttachment(CubeMesh);
 	NormalSpark->bAutoActivate = false;
 	NormalSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_F.P_Sparks_F")));
@@ -134,7 +136,7 @@ AEnemy2Character::AEnemy2Character()
 	SpecialSpark->bAutoActivate = false;
 	SpecialSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_B.P_Sparks_B")));
 	SpecialSpark->SetRelativeLocation(FVector(0.0f));
-	SpecialSpark->SetWorldScale3D(FVector(100.0f));
+	SpecialSpark->SetWorldScale3D(FVector(100.0f));*/
 }
 	
 
@@ -185,6 +187,12 @@ void AEnemy2Character::Destroyed()
 {
 	Super::Destroyed();
 	UE_LOG(LogTemp, Log, TEXT("Enemy2---------->destroyed"));	
+
+	AGameMode_InGame* GameMode = Cast<AGameMode_InGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->GameClear();
+	}
 }
 
 void AEnemy2Character::ApplyDamage(AActor* Other)
@@ -241,16 +249,24 @@ void AEnemy2Character::Die()
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	
-
+	//アクタを削除
 	Destroy();
+	
+	//SetLifeSpan(_SEC_CHANGE_LEVEL_);
 
 	//次のLevelに遷移
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-		{
-			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
-		}, _SEC_CHANGE_LEVEL_, false
-	);  // 2秒後に無効化
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	//	{
+	//		//画面遷移中のErrorを回避
+	//		if (!IsValid(this)) {
+	//			return;
+	//		}
+
+	//		//レベル遷移
+	//		UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
+	//	}, _SEC_CHANGE_LEVEL_, false
+	//);  // 2秒後に無効化
 	
 
 	UE_LOG(LogTemp, Log, TEXT("Enemy2----->Die"));
@@ -264,8 +280,14 @@ void AEnemy2Character::DamageMaterial()
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
+			//画面遷移中のErrorを回避
+			if (!IsValid(this)) {
+				return;
+			}
+			//マテリアル変更
 			NormalMaterial();//sec_ChangeDamageMaterial秒後に元のマテリアルに変える
 			UE_LOG(LogTemp, Log, TEXT("Material---------->normal"));
+			
 		}, _SEC_CHANGE_DAMAGE_MATERIAL, false
 	); 
 }
@@ -287,25 +309,25 @@ void AEnemy2Character::NormalMaterial()
 	}
 }
 
-void AEnemy2Character::TrueSpecialSparkEffect()
-{
-	SpecialSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseSpecialSparkEffct()
-{
-	SpecialSpark->Activate(false);
-}
-
-void AEnemy2Character::TrueNormalSparkEffect()
-{
-	NormalSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseNormalSparkEffect()
-{
-	NormalSpark->Activate(false);
-}
+//void AEnemy2Character::TrueSpecialSparkEffect()
+//{
+//	SpecialSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseSpecialSparkEffct()
+//{
+//	SpecialSpark->Activate(false);
+//}
+//
+//void AEnemy2Character::TrueNormalSparkEffect()
+//{
+//	NormalSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseNormalSparkEffect()
+//{
+//	NormalSpark->Activate(false);
+//}
 
 void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 {

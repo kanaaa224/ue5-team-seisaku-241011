@@ -19,6 +19,10 @@ public:
 
 	TSubclassOf <class UUserWidget> GameOverWidget;
 
+	TSubclassOf <class UUserWidget> GameClearWidget;
+
+	TSubclassOf <class UUserWidget> StageClearWidget;
+
 public:
 	//コンストラクタ
 	AGameMode_InGame();
@@ -34,6 +38,12 @@ public:
 
 	//GameをRestartする
 	void RestartGame();
+
+	//ゲームクリア
+	void GameClear();
+
+	//ステージクリア
+	void StageClear();
 
 private:
 	//PlayerをRespawnする
