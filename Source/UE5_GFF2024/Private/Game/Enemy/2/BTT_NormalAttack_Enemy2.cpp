@@ -92,6 +92,9 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 	//攻撃前にジャンプ処理
 	if (endJump == false) {
+		//Enemy2Characterクラスの変数をTrue（プレイヤーにダメージを与えない）
+		MyPawn->No_ApplyDamage = true;
+
 		frameCnt_Jump++;
 		nowLocation.operator+=(FVector(0.0f, 0.0f, 50.0f));
 		nowRotaton.operator+=(FRotator(1.5f,0.0,0.0));
@@ -103,6 +106,9 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 
 	//攻撃振り下ろす
 	if (endJump == true && endAttack == false) {
+		//Enemy2Characterクラスの変数をFalse（プレイヤーにダメージを与える）
+		MyPawn->No_ApplyDamage = false;
+
 		startAttack = true;
 		frameCnt_Attack_Down++;
 

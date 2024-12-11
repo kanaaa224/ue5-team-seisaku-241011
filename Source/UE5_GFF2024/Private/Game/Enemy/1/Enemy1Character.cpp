@@ -184,11 +184,11 @@ AEnemy1Character::AEnemy1Character()
 	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
 
 
-	ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
-	if (WidgetBPClass.Succeeded())
-	{
-		WidgetClass = WidgetBPClass.Class;
-	}
+	//ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
+	//if (WidgetBPClass.Succeeded())
+	//{
+	//	WidgetClass = WidgetBPClass.Class;
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -244,7 +244,7 @@ void AEnemy1Character::Destroyed()
 
 	LockOnMarkerWidget->SetVisibility(false);
 
-	UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
+	//UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
 }
 
 //void AEnemy1Character::BeginDestroy()
@@ -355,23 +355,6 @@ void AEnemy1Character::Tick(float DeltaTime)
 			IsDestroy = true;
 
 			SetLifeSpan(5.0f);
-
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-				{
-					if (!IsValid(this))
-					{
-						return;
-					}
-					if (WidgetClass)
-					{
-						WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
-						if (WidgetInstance)
-						{
-							WidgetInstance->AddToViewport();
-						}
-					}
-				}, 1.f, false);  // 0.1秒後に無効化
 			
 		}
 	}
@@ -451,6 +434,7 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	ChangeMaterial(HitMaterial);
 	health -= DamageAmount;
 	UKismetSystemLibrary::PrintString(this, "TakeDamage", true, true, FColor::Blue, 2.f);
 	return health;
@@ -591,6 +575,29 @@ void AEnemy1Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 	else
 	{
 		LockOnMarkerWidget->SetVisibility(false);
+	}
+}
+
+void AEnemy1Character::ChangeMaterial(UMaterialInterface* NewMaterial)
+{
+	if (box && NewMaterial)
+	{
+		UMaterialInterface* OldMaterial = box->GetMaterial(0);
+
+		// メッシュのマテリアルを変更
+		box->SetMaterial(0, NewMaterial);
+
+
+		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, OldMaterial]()
+			{
+				if (!IsValid(this))
+				{
+					return;
+				}
+				box->SetMaterial(0, OldMaterial);
+			}, 0.3f, false);  // 0.1秒後に無効化
 	}
 }
 
