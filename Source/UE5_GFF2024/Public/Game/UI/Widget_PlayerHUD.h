@@ -6,9 +6,11 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/SizeBox.h"
 #include "Widget_PlayerHUD.generated.h"
 
 class UTextBlock;
+class USizeBox;
 
 UCLASS()
 class UE5_GFF2024_API UWidget_PlayerHUD : public UUserWidget
@@ -26,4 +28,7 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> text_stage_description;
+
+	UPROPERTY(meta = (BindWidget))
+	USizeBox* sizeBox_wbp_enemyHP;
 };
