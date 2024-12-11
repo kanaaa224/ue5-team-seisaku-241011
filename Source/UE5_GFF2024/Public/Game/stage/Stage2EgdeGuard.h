@@ -50,6 +50,12 @@ private:
 	UMaterialInterface* FrontMaterial = nullptr;
 	UMaterialInterface* BackMaterial = nullptr;
 
+	TArray<AActor*> FoundActors;
+
+	TSubclassOf<AActor> actors;
+
+	UWorld* world = nullptr;
+
 private:
 
 	UFUNCTION()

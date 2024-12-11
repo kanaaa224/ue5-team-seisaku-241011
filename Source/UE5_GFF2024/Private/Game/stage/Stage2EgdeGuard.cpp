@@ -71,6 +71,20 @@ void AStage2EgdeGuard::BeginPlay()
 	
 	ApplyMaterialToStageEdge();
 
+	UGameplayStatics::GetAllActorsOfClass(world, actors, FoundActors);
+
+	//for (AActor* Actor : FoundActors)
+	//{
+	//	if (Actor)
+	//	{
+	//		// 回転角度（Rotation）を取得
+	//		FRotator Rotation = Actor->GetActorRotation();
+
+	//		// ログに出力
+	//		UE_LOG(LogTemp, Log, TEXT("Actor: %s, Rotation: %s"), *Actor->GetName(), *Rotation.ToString());
+	//	}
+	//}
+
 	DynamicMaterial = StageWall->CreateAndSetMaterialInstanceDynamic(0);  // 0番目のマテリアルインデックスを使用
 }
 
@@ -89,8 +103,6 @@ void AStage2EgdeGuard::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		/* キャストが成功した場合 */
 		UE_LOG(LogTemp, Warning, TEXT("Successfully cast OtherActor to AMyCharacter: %s"), *player->GetName());
 
-		//UGameplayStatics::GetAllActorsOfClass();
-
 		FRotator Rotator = GetActorRotation();
 
 		/* 回転をSwitch文の頭として使いたいため 切り上げている */
@@ -102,41 +114,22 @@ void AStage2EgdeGuard::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AA
 		{
 		case 0:
 
-			if (DynamicMaterial)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
-				BackApplicableColor();
-				//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[0], 1.0f);
-				//StageWall->SetMaterial(0, DynamicMaterial);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Not Material"));
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			BackApplicableColor();
 			PlayerIsRange[0] = true;
 			break;
 
 		case 90:
 
-			if (DynamicMaterial)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
-				//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[1], 1.0f);
-				//StageWall->SetMaterial(0, DynamicMaterial);
-				BackApplicableColor();
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			BackApplicableColor();
 			PlayerIsRange[1] = true;
 			break;
 
 		case 180:
 
-			if (DynamicMaterial)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
-				//DynamicMaterial->SetScalarParameterValue(StageEdgeVector[2], 1.0f);
-				//StageWall->SetMaterial(0, DynamicMaterial);
-				BackApplicableColor();
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Change The Material"));
+			BackApplicableColor();
 			PlayerIsRange[2] = true;
 			break;
 
