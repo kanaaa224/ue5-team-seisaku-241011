@@ -241,8 +241,10 @@ void AEnemy2Character::Die()
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	
-
+	//アクタを削除
 	Destroy();
+	
+	//SetLifeSpan(_SEC_CHANGE_LEVEL_);
 
 	//次のLevelに遷移
 	FTimerHandle TimerHandle;
