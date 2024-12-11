@@ -181,15 +181,12 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 		// AIControllerにプレイヤー情報を設定
 		AIController->SetPlayerKey(player);
 	}
-
-	// 視野に入ったら画面に"See"と表示
-	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
 void AEnemy2Character::Destroyed()
 {
 	Super::Destroyed();
-	UE_LOG(LogTemp, Log, TEXT("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));	
+	UE_LOG(LogTemp, Log, TEXT("Enemy2---------->destroyed"));	
 }
 
 void AEnemy2Character::ApplyDamage(AActor* Other)
@@ -211,7 +208,7 @@ void AEnemy2Character::ApplyDamage(AActor* Other)
 
 float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	//受けたダメージ量分HPを減産
+	//受けたダメージ量分HPを減算
 	health -= DamageAmount;
 	//ダメージを受けた時に赤くする
 	DamageMaterial();
@@ -254,16 +251,16 @@ void AEnemy2Character::Die()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
 			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
-		}, 2.f, false
+		}, _SEC_CHANGE_LEVEL_, false
 	);  // 2秒後に無効化
 	
 
-	UE_LOG(LogTemp, Log, TEXT("Die"));
+	UE_LOG(LogTemp, Log, TEXT("Enemy2----->Die"));
 }
 
 void AEnemy2Character::DamageMaterial()
 {
-	sec_ChangeDamegeMaterial += 0.3f;
+	sec_ChangeDamegeMaterial = _SEC_CHANGE_DAMAGE_MATERIAL;
 	ChangeDamageMaterial();
 	UE_LOG(LogTemp, Log, TEXT("Material---------->damage"));
 
