@@ -184,11 +184,11 @@ AEnemy1Character::AEnemy1Character()
 	//OnDestroyed.AddDynamic(this, &AEnemy1Character::OnDestroyed);
 
 
-	ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
-	if (WidgetBPClass.Succeeded())
-	{
-		WidgetClass = WidgetBPClass.Class;
-	}
+	//ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Game/Game/UI/BluePrints/WBP_StageClear.WBP_StageClear_C"));
+	//if (WidgetBPClass.Succeeded())
+	//{
+	//	WidgetClass = WidgetBPClass.Class;
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -244,7 +244,7 @@ void AEnemy1Character::Destroyed()
 
 	LockOnMarkerWidget->SetVisibility(false);
 
-	UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
+	//UGameplayStatics::OpenLevelBySoftObjectPtr(this, LoadLevel);
 }
 
 //void AEnemy1Character::BeginDestroy()
@@ -355,23 +355,6 @@ void AEnemy1Character::Tick(float DeltaTime)
 			IsDestroy = true;
 
 			SetLifeSpan(5.0f);
-
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-				{
-					if (!IsValid(this))
-					{
-						return;
-					}
-					if (WidgetClass)
-					{
-						WidgetInstance = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
-						if (WidgetInstance)
-						{
-							WidgetInstance->AddToViewport();
-						}
-					}
-				}, 1.f, false);  // 0.1秒後に無効化
 			
 		}
 	}

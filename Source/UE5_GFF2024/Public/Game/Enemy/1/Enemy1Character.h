@@ -209,15 +209,15 @@ public:
 	bool IsDestroy;
 
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
-	TSoftObjectPtr<UWorld> LoadLevel;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	//TSoftObjectPtr<UWorld> LoadLevel;
 
 
-	UPROPERTY()
-	TSubclassOf<UUserWidget> WidgetClass;
+	//UPROPERTY()
+	//TSubclassOf<UUserWidget> WidgetClass;
 
-	UPROPERTY()
-	UUserWidget* WidgetInstance;
+	//UPROPERTY()
+	//UUserWidget* WidgetInstance;
 
 	// マテリアル変更関数
 	UFUNCTION(BlueprintCallable, Category = "Material")
