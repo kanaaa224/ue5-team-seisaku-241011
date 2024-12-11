@@ -451,6 +451,7 @@ void AEnemy1Character::ApplyDamage(AActor* Other)
 
 float AEnemy1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	ChangeMaterial(HitMaterial);
 	health -= DamageAmount;
 	UKismetSystemLibrary::PrintString(this, "TakeDamage", true, true, FColor::Blue, 2.f);
 	return health;
@@ -591,6 +592,29 @@ void AEnemy1Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 	else
 	{
 		LockOnMarkerWidget->SetVisibility(false);
+	}
+}
+
+void AEnemy1Character::ChangeMaterial(UMaterialInterface* NewMaterial)
+{
+	if (box && NewMaterial)
+	{
+		UMaterialInterface* OldMaterial = box->GetMaterial(0);
+
+		// メッシュのマテリアルを変更
+		box->SetMaterial(0, NewMaterial);
+
+
+		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, OldMaterial]()
+			{
+				if (!IsValid(this))
+				{
+					return;
+				}
+				box->SetMaterial(0, OldMaterial);
+			}, 0.3f, false);  // 0.1秒後に無効化
 	}
 }
 

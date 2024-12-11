@@ -218,4 +218,11 @@ public:
 
 	UPROPERTY()
 	UUserWidget* WidgetInstance;
+
+	// マテリアル変更関数
+	UFUNCTION(BlueprintCallable, Category = "Material")
+	void ChangeMaterial(UMaterialInterface* NewMaterial);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* HitMaterial;
 };
