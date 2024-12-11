@@ -8,5 +8,12 @@ void UWidget_StageClear::OpenNextLevel()
 {
 	FTimerHandle TimerHandle;
 
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Stage2"); }, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+		{
+			if (!IsValid(this))
+			{
+				return;
+			}
+			UGameplayStatics::OpenLevel(GetWorld(), "Stage2"); 
+		}, 2.f, false);
 }
