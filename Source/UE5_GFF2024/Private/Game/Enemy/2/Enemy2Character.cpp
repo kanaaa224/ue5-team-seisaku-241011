@@ -42,8 +42,8 @@ AEnemy2Character::AEnemy2Character()
 	/*:::::変数:::::*/
 	//体力
 	health = _ENEMY2_MAX_HP_;
-	damageMaterialFlg = false;
-	timeCnt = 0;
+	//ダメージを受けて何秒マテリアルを変化させるか
+	sec_ChangeDamegeMaterial = 0.0f;
 
 	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
@@ -168,13 +168,6 @@ void AEnemy2Character::BeginPlay()
 void AEnemy2Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (damageMaterialFlg == true) {
-		timeCnt += DeltaTime;
-		if (timeCnt >= 0.7f) {
-			damageMaterialFlg = false;
-			NormalMaterial();
-		}
-	}
 }
 
 void AEnemy2Character::OnSeePlayer(APawn* Pawn)
@@ -221,7 +214,7 @@ float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	//受けたダメージ量分HPを減産
 	health -= DamageAmount;
 	//ダメージを受けた時に赤くする
-	//DamageMaterial();
+	DamageMaterial();
 
 	// HPゲージの更新
 	if (true) {
@@ -262,7 +255,7 @@ void AEnemy2Character::Die()
 		{
 			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
 		}, 2.f, false
-	);  // 0.1秒後に無効化
+	);  // 2秒後に無効化
 	
 
 	UE_LOG(LogTemp, Log, TEXT("Die"));
@@ -270,14 +263,25 @@ void AEnemy2Character::Die()
 
 void AEnemy2Character::DamageMaterial()
 {
+	sec_ChangeDamegeMaterial += 0.3f;
+	ChangeDamageMaterial();
+	UE_LOG(LogTemp, Log, TEXT("Material---------->damage"));
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+		{
+			NormalMaterial();//sec_ChangeDamageMaterial秒後に元のマテリアルに変える
+			sec_ChangeDamegeMaterial = 0.0f;
+			UE_LOG(LogTemp, Log, TEXT("Material---------->normal"));
+		}, sec_ChangeDamegeMaterial, false
+	); 
+}
+
+void AEnemy2Character::ChangeDamageMaterial()
+{
 	//マテリアルをロード
 	UMaterialInterface* damageMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/enemy/2/Material/M_damage.M_damage"));
-
-	if (damageMaterial) {
-		CubeMesh->SetMaterial(0, damageMaterial);
-		damageMaterialFlg = true;
-		UE_LOG(LogTemp, Warning, TEXT("damageMaterial"));
-	}
+	CubeMesh->SetMaterial(0, damageMaterial);
 }
 
 void AEnemy2Character::NormalMaterial()

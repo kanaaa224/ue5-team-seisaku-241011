@@ -55,7 +55,7 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (distance <= 450 && BlackboardComp->GetValueAsBool(AttackKeyName) != true) {
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(AttackKeyName, true);
-		UE_LOG(LogTemp, Log, TEXT("SetAttack : true"));
+		UE_LOG(LogTemp, Log, TEXT("AttackState---------->SpecialAttack"));
 	}
 
 	float HP;
@@ -75,7 +75,7 @@ void UBTS_SetParameter::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	//HPが半分以下なら特殊攻撃のFlgをON
 	if (HPRatio <= 0.5f && BlackboardComp->GetValueAsBool(CoolTime) == false) {
-		UE_LOG(LogTemp, Warning, TEXT("ULT-------------------------------------------ON"));
+		UE_LOG(LogTemp, Log, TEXT("AttackState---------->SpecialAttack"));
 		ensure(BlackboardComp);
 		BlackboardComp->SetValueAsBool(SpecialAttack, true);
 	}

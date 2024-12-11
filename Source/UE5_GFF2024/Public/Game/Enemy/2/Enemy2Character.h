@@ -40,8 +40,7 @@ private:
 	//体力
 	float health;
 
-	bool damageMaterialFlg;
-	float timeCnt;
+	float sec_ChangeDamegeMaterial = 0.0f;
 
 	//スポーン時のLocationを取得
 	FVector startLocation;
@@ -76,6 +75,7 @@ public:
 
 	//
 	void DamageMaterial();
+	void ChangeDamageMaterial();
 	//
 	void NormalMaterial();
 
