@@ -17,6 +17,8 @@ class UE5_GFF2024_API UWidget_TitleMenu : public UUserWidget
 protected:
 	void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> button_play;

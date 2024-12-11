@@ -7,21 +7,41 @@
 
 void AHUD_TitleMenu::BeginPlay()
 {
-	// WidgetBlueprintのClassを取得
-	FString path = TEXT("/Game/Game/UI/Blueprints/WBP_TitleMenu.WBP_TitleMenu_C");
-	TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
-
 	// PlayerControllerを取得
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
-	if (widgetClass && playerController)
+	if (true)
 	{
-		// Widgetを作成し、Viewportに追加
-		userWidget = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
-		userWidget->AddToViewport(0);
+		// WidgetBlueprintのClassを取得
+		FString path = TEXT("/Game/Game/UI/Blueprints/WBP_TitleMenu.WBP_TitleMenu_C");
+		TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
 
+		if (widgetClass && playerController)
+		{
+			// Widgetを作成し、Viewportに追加
+			userWidget_titleMenu = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+			userWidget_titleMenu->AddToViewport(0);
+		}
+	}
+
+	if (true)
+	{
+		// WidgetBlueprintのClassを取得
+		FString path = TEXT("/Game/Game/UI/Blueprints/WBP_FadeAnimationPanel.WBP_FadeAnimationPanel_C");
+		TSubclassOf<UWidget_FadeAnimationPanel> widgetClass = TSoftClassPtr<UWidget_FadeAnimationPanel>(FSoftObjectPath(*path)).LoadSynchronous();
+
+		if (widgetClass && playerController)
+		{
+			// Widgetを作成し、Viewportに追加
+			userWidget_fadeAnimationPanel = CreateWidget<UWidget_FadeAnimationPanel>(GetWorld(), widgetClass);
+			userWidget_fadeAnimationPanel->AddToViewport(0);
+		}
+	}
+
+	if (playerController)
+	{
 		// InputModeをゲーム&UIにし、MouseCursorを表示
-		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(playerController, userWidget, EMouseLockMode::DoNotLock, true, false);
+		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(playerController);
 		playerController->SetShowMouseCursor(true);
 	}
 }
