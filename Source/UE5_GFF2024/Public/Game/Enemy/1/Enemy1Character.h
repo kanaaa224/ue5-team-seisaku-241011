@@ -156,7 +156,7 @@ public:
 	}
 
 	FVector TargetLocation = { -1, -1, -10000 };
-	FVector OldTargetLocation = { -1, -1, -10000 };
+	
 	float Speed;
 
 	void SetSpeed(float s)
