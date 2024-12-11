@@ -19,29 +19,55 @@ AHUD_PlayerHUD::AHUD_PlayerHUD()
 
 void AHUD_PlayerHUD::BeginPlay()
 {
-	// WidgetBlueprintのClassを取得
-	FString path = TEXT("/Game/Game/UI/Blueprints/WBP_PlayerHUD.WBP_PlayerHUD_C");
-	TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
-
 	// PlayerControllerを取得
 	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
-	if (widgetClass && playerController)
+	if (true)
 	{
-		// Widgetを作成し、Viewportに追加
-		userWidget_playerHUD = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
-		userWidget_playerHUD->AddToViewport(0);
+		// WidgetBlueprintのClassを取得
+		FString path = TEXT("/Game/Game/UI/Blueprints/WBP_PlayerHUD.WBP_PlayerHUD_C");
+		TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
+
+		if (widgetClass && playerController)
+		{
+			// Widgetを作成し、Viewportに追加
+			userWidget_playerHUD = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+			userWidget_playerHUD->AddToViewport(0);
+		}
 	}
 
-	// WidgetBlueprintのClassを取得
-	path = TEXT("/Game/Game/UI/Blueprints/WBP_PauseMenu.WBP_PauseMenu_C");
-	widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
-
-	if (widgetClass && playerController)
+	if (true)
 	{
-		// Widgetを作成し、Viewportに追加
-		userWidget_pauseMenu = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
-		userWidget_pauseMenu->AddToViewport(0);
+		// WidgetBlueprintのClassを取得
+		FString path = TEXT("/Game/Game/UI/Blueprints/WBP_PauseMenu.WBP_PauseMenu_C");
+		TSubclassOf<UUserWidget> widgetClass = TSoftClassPtr<UUserWidget>(FSoftObjectPath(*path)).LoadSynchronous();
+
+		if (widgetClass && playerController)
+		{
+			// Widgetを作成し、Viewportに追加
+			userWidget_pauseMenu = UWidgetBlueprintLibrary::Create(GetWorld(), widgetClass, playerController);
+			userWidget_pauseMenu->AddToViewport(0);
+		}
+	}
+
+	if (true)
+	{
+		// WidgetBlueprintのClassを取得
+		FString path = TEXT("/Game/Game/UI/Blueprints/WBP_FadeAnimationPanel.WBP_FadeAnimationPanel_C");
+		TSubclassOf<UWidget_FadeAnimationPanel> widgetClass = TSoftClassPtr<UWidget_FadeAnimationPanel>(FSoftObjectPath(*path)).LoadSynchronous();
+
+		if (widgetClass && playerController)
+		{
+			// Widgetを作成し、Viewportに追加
+			userWidget_fadeAnimationPanel = CreateWidget<UWidget_FadeAnimationPanel>(GetWorld(), widgetClass);
+			userWidget_fadeAnimationPanel->AddToViewport(0);
+		}
+
+		if (userWidget_fadeAnimationPanel)
+		{
+			userWidget_fadeAnimationPanel->SetRenderOpacity(1.0f);
+			userWidget_fadeAnimationPanel->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
 
 	if (playerController)
