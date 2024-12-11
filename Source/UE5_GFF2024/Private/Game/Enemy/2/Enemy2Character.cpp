@@ -248,6 +248,12 @@ void AEnemy2Character::Die()
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
+			//画面遷移中のErrorを回避
+			if (!IsValid(this)) {
+				return;
+			}
+
+			//レベル遷移
 			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
 		}, _SEC_CHANGE_LEVEL_, false
 	);  // 2秒後に無効化
@@ -264,8 +270,14 @@ void AEnemy2Character::DamageMaterial()
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
+			//画面遷移中のErrorを回避
+			if (!IsValid(this)) {
+				return;
+			}
+			//マテリアル変更
 			NormalMaterial();//sec_ChangeDamageMaterial秒後に元のマテリアルに変える
 			UE_LOG(LogTemp, Log, TEXT("Material---------->normal"));
+			
 		}, _SEC_CHANGE_DAMAGE_MATERIAL, false
 	); 
 }
