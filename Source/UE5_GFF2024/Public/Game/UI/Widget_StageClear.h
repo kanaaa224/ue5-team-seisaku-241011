@@ -13,5 +13,8 @@ UCLASS()
 class UE5_GFF2024_API UWidget_StageClear : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	void OpenNextLevel();
 	
 };

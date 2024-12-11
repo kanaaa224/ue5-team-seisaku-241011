@@ -102,11 +102,13 @@ void AGameMode_InGame::RestartGame()
 		{
 			WidgetInstancec->AddToViewport();
 		}
+
+		UWidget_GameOver* GameOver = Cast<UWidget_GameOver>(GameOverWidget);
+		if (GameOver)
+		{
+			GameOver->OpenNextLevel();
+		}
 	}
-
-	FTimerHandle TimerHandle;
-
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu"); }, 2.f, false);
 }
 
 void AGameMode_InGame::GameClear()
@@ -121,11 +123,13 @@ void AGameMode_InGame::GameClear()
 		{
 			WidgetInstancec->AddToViewport();
 		}
-	}
 
-	FTimerHandle TimerHandle;
-
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu"); }, 2.f, false);
+		UWidget_GameOver* GameClear = Cast<UWidget_GameOver>(GameClearWidget);
+		if (GameClear)
+		{
+			GameClear->OpenNextLevel();
+		}
+	}	
 }
 
 void AGameMode_InGame::StageClear()
@@ -140,11 +144,13 @@ void AGameMode_InGame::StageClear()
 		{
 			WidgetInstancec->AddToViewport();
 		}
+
+		UWidget_GameOver* StageClear = Cast<UWidget_GameOver>(StageClearWidget);
+		if (StageClear)
+		{
+			StageClear->OpenNextLevel();
+		}
 	}
-
-	FTimerHandle TimerHandle;
-
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Stage2"); }, 2.f, false);
 }
 
 void AGameMode_InGame::RespawnPlayer()

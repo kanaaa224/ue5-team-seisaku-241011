@@ -14,4 +14,6 @@ class UE5_GFF2024_API UWidget_GameOver : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	void OpenNextLevel();
 };
