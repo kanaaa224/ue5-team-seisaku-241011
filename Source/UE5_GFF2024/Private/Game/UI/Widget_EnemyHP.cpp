@@ -14,8 +14,6 @@ void UWidget_EnemyHP::NativeConstruct()
 
 void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	bool isShow = false;
-
 	float hp = 0.0f;
 
 	FText name = FText::FromString(TEXT(""));
@@ -24,8 +22,6 @@ void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if (hud)
 	{
-		isShow = hud->isShow_enemyHP;
-
 		float maxHP = hud->enemyHP_max;
 
 		hp = hud->enemyHP_current;
@@ -35,9 +31,6 @@ void UWidget_EnemyHP::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 		name = hud->enemyName;
 	}
-
-	if (isShow) SetVisibility(ESlateVisibility::Visible);
-	else        SetVisibility(ESlateVisibility::Collapsed);
 
 	if (progressBar)
 	{

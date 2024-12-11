@@ -42,8 +42,6 @@ AEnemy2Character::AEnemy2Character()
 	/*:::::変数:::::*/
 	//体力
 	health = _ENEMY2_MAX_HP_;
-	damageMaterialFlg = false;
-	timeCnt = 0;
 
 	/*:::::関数:::::*/
 	PrimaryActorTick.bCanEverTick = true;
@@ -123,7 +121,7 @@ AEnemy2Character::AEnemy2Character()
 	CubeMesh->OnComponentEndOverlap.AddDynamic(this, &AEnemy2Character::OnOverlapEnd);
 
 	//エフェクト
-	NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
+	/*NormalSpark = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent_NormalSpark"));
 	NormalSpark->SetupAttachment(CubeMesh);
 	NormalSpark->bAutoActivate = false;
 	NormalSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_F.P_Sparks_F")));
@@ -136,7 +134,7 @@ AEnemy2Character::AEnemy2Character()
 	SpecialSpark->bAutoActivate = false;
 	SpecialSpark->SetTemplate(LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Sparks/P_Sparks_B.P_Sparks_B")));
 	SpecialSpark->SetRelativeLocation(FVector(0.0f));
-	SpecialSpark->SetWorldScale3D(FVector(100.0f));
+	SpecialSpark->SetWorldScale3D(FVector(100.0f));*/
 }
 	
 
@@ -168,13 +166,6 @@ void AEnemy2Character::BeginPlay()
 void AEnemy2Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (damageMaterialFlg == true) {
-		timeCnt += DeltaTime;
-		if (timeCnt >= 0.7f) {
-			damageMaterialFlg = false;
-			NormalMaterial();
-		}
-	}
 }
 
 void AEnemy2Character::OnSeePlayer(APawn* Pawn)
@@ -188,15 +179,12 @@ void AEnemy2Character::OnSeePlayer(APawn* Pawn)
 		// AIControllerにプレイヤー情報を設定
 		AIController->SetPlayerKey(player);
 	}
-
-	// 視野に入ったら画面に"See"と表示
-	//UKismetSystemLibrary::PrintString(this, "See", true, true, FColor::Blue, 2.f);
 }
 
 void AEnemy2Character::Destroyed()
 {
 	Super::Destroyed();
-	UE_LOG(LogTemp, Log, TEXT("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));	
+	UE_LOG(LogTemp, Log, TEXT("Enemy2---------->destroyed"));	
 }
 
 void AEnemy2Character::ApplyDamage(AActor* Other)
@@ -218,10 +206,10 @@ void AEnemy2Character::ApplyDamage(AActor* Other)
 
 float AEnemy2Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	//受けたダメージ量分HPを減産
+	//受けたダメージ量分HPを減算
 	health -= DamageAmount;
 	//ダメージを受けた時に赤くする
-	//DamageMaterial();
+	DamageMaterial();
 
 	// HPゲージの更新
 	if (true) {
@@ -253,31 +241,54 @@ void AEnemy2Character::Die()
 	// コリジョンを無効化
 	SetActorEnableCollision(false);
 	
-
+	//アクタを削除
 	Destroy();
+	
+	//SetLifeSpan(_SEC_CHANGE_LEVEL_);
 
 	//次のLevelに遷移
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
+			//画面遷移中のErrorを回避
+			if (!IsValid(this)) {
+				return;
+			}
+
+			//レベル遷移
 			UGameplayStatics::OpenLevel(GetWorld(), FName("Level_TitleMenu"));
-		}, 2.f, false
-	);  // 0.1秒後に無効化
+		}, _SEC_CHANGE_LEVEL_, false
+	);  // 2秒後に無効化
 	
 
-	UE_LOG(LogTemp, Log, TEXT("Die"));
+	UE_LOG(LogTemp, Log, TEXT("Enemy2----->Die"));
 }
 
 void AEnemy2Character::DamageMaterial()
 {
+	ChangeDamageMaterial();
+	UE_LOG(LogTemp, Log, TEXT("Material---------->damage"));
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+		{
+			//画面遷移中のErrorを回避
+			if (!IsValid(this)) {
+				return;
+			}
+			//マテリアル変更
+			NormalMaterial();//sec_ChangeDamageMaterial秒後に元のマテリアルに変える
+			UE_LOG(LogTemp, Log, TEXT("Material---------->normal"));
+			
+		}, _SEC_CHANGE_DAMAGE_MATERIAL, false
+	); 
+}
+
+void AEnemy2Character::ChangeDamageMaterial()
+{
 	//マテリアルをロード
 	UMaterialInterface* damageMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Game/enemy/2/Material/M_damage.M_damage"));
-
-	if (damageMaterial) {
-		CubeMesh->SetMaterial(0, damageMaterial);
-		damageMaterialFlg = true;
-		UE_LOG(LogTemp, Warning, TEXT("damageMaterial"));
-	}
+	CubeMesh->SetMaterial(0, damageMaterial);
 }
 
 void AEnemy2Character::NormalMaterial()
@@ -290,25 +301,25 @@ void AEnemy2Character::NormalMaterial()
 	}
 }
 
-void AEnemy2Character::TrueSpecialSparkEffect()
-{
-	SpecialSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseSpecialSparkEffct()
-{
-	SpecialSpark->Activate(false);
-}
-
-void AEnemy2Character::TrueNormalSparkEffect()
-{
-	NormalSpark->Activate(true);
-}
-
-void AEnemy2Character::FalseNormalSparkEffect()
-{
-	NormalSpark->Activate(false);
-}
+//void AEnemy2Character::TrueSpecialSparkEffect()
+//{
+//	SpecialSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseSpecialSparkEffct()
+//{
+//	SpecialSpark->Activate(false);
+//}
+//
+//void AEnemy2Character::TrueNormalSparkEffect()
+//{
+//	NormalSpark->Activate(true);
+//}
+//
+//void AEnemy2Character::FalseNormalSparkEffect()
+//{
+//	NormalSpark->Activate(false);
+//}
 
 void AEnemy2Character::SetLockOnEnable_Implementation(bool LockOnFlg)
 {
@@ -380,7 +391,7 @@ void AEnemy2Character::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 
 				APlayer_Cube* tmpPlayer = Cast<APlayer_Cube>(OtherActor);
 				//ブラックボードから取得したAttack変数がTrueならプレイヤーに攻撃を与える
-				if (AttackFlg == true && tmpPlayer) {
+				if (AttackFlg == true && tmpPlayer && No_ApplyDamage == false) {
 					AttackPlayer();
 				}
 			}

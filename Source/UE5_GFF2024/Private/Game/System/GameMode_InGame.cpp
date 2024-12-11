@@ -15,6 +15,12 @@ AGameMode_InGame::AGameMode_InGame()
 	HUDClass = AHUD_PlayerHUD::StaticClass();
 
 	PrimaryActorTick.bCanEverTick = true;
+
+	ConstructorHelpers::FClassFinder<UUserWidget> FindGameOverWidget(TEXT("/Game/Game/UI/Blueprints/WBP_GameOver"));
+	if (FindGameOverWidget.Succeeded())
+	{
+		GameOverWidget = FindGameOverWidget.Class;
+	}
 }
 
 void AGameMode_InGame::BeginPlay()
@@ -69,8 +75,22 @@ void AGameMode_InGame::KillPlayer(APlayer_Cube* Player)
 }
 
 void AGameMode_InGame::RestartGame()
-{
-	UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu");
+{			
+	//ゲームオーバーのクラスが読み込まれているならウィジェット作成
+	if (GameOverWidget)
+	{
+		UUserWidget* WidgetInstancec = CreateWidget<UUserWidget>(GetWorld(), GameOverWidget);
+
+		//ウィジェットを作成できているならウィジェットを表示
+		if (WidgetInstancec)
+		{
+			WidgetInstancec->AddToViewport();
+		}
+	}
+
+	FTimerHandle TimerHandle;
+
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() {UGameplayStatics::OpenLevel(GetWorld(), "Level_TitleMenu"); }, 2.f, false);
 }
 
 void AGameMode_InGame::RespawnPlayer()
