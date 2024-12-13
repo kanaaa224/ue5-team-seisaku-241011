@@ -112,14 +112,24 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 		startAttack = true;
 		frameCnt_Attack_Down++;
 
+		//Z座標の更新
 		nowLocation.operator-=(FVector(0.0f, 0.0f, 70.0f));
-		nowRotaton.operator-=(FRotator(17.0f,0.0f,0.0f));
+
+		//角度の更新
+		// ターゲット（プレイヤー）を取得
+		AActor* PlayerActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+		FVector PlayerLocation = PlayerActor->GetActorLocation();
+		//プレイヤーの向きへ向くようにYawを計算
+		FVector Direction = PlayerLocation - MyPawn->GetActorLocation();
+		FRotator LookAtRotation = Direction.Rotation();
+		double resultYaw = MyPawn->GetActorRotation().Yaw - LookAtRotation.Yaw;
+		UE_LOG(LogTemp, Log, TEXT("CalcYaw---------->%f"), resultYaw);
+
+		nowRotaton.operator-=(FRotator(17.0f, resultYaw,0.0f));
 		//FMath::RInterpTo(nowRotaton,FRotator(90.0f,0.0f,0.0f), )
 
 		if (frameCnt_Attack_Down == 10) {
 			endAttack = true;
-			//MyPawn->TrueNormalSparkEffect();
-			UE_LOG(LogTemp, Log, TEXT("SparkEffect------------>true"));
 			//効果音の再生
 			PlaySoundEffect(MyPawn);
 		}
@@ -128,8 +138,6 @@ EBTNodeResult::Type UBTT_NormalAttack_Enemy2::ExecuteTask(UBehaviorTreeComponent
 	//攻撃から起き上がる
 	if (endJump == true && endAttack == true && endTask == false) {
 		frameCnt_Attack_Up++;
-		//MyPawn->FalseNormalSparkEffect();
-		UE_LOG(LogTemp, Log, TEXT("SparkEffect------------>false"));
 
 		nowLocation.operator+=(FVector(0.0f, 0.0f, 20.0f));
 
