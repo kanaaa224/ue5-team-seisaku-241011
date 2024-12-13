@@ -16,7 +16,7 @@ void UWidget_PlayerLives::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 
 	UGameInstance_GFF2024* GameInstance = Cast<UGameInstance_GFF2024>(UGameplayStatics::GetGameInstance(GetWorld()));
 
-	if (GameInstance && GameInstance->Life)
+	if (GameInstance)
 	{
 		int32 lives = GameInstance->Life; // 残機数
 
