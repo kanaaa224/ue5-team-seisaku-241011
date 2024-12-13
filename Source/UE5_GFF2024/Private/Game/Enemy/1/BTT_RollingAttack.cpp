@@ -52,7 +52,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                     {
                         Enemy->SetIsMoving(false);
                         FRotator LookAtRotation = FRotationMatrix::MakeFromX(Player->GetActorLocation() - Enemy->GetActorLocation()).Rotator();
-                        //Enemy->SetActorRotation({ 0,LookAtRotation.Yaw,0 });
+                      
                         Vector = Player->GetActorLocation() - Enemy->GetActorLocation();
 
 
@@ -109,20 +109,9 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         FVector Normalize = Vector / Vector.Length();
                         Normalize = { Normalize.X, Normalize.Y, 0. };
                         Enemy->SetIsMoving(false);
-                        //Enemy->SetActorLocation(Enemy->GetActorLocation() + Normalize * 10);
-                        //Enemy->AddMovementInput(Normalize, 100.f);
-                        //AIC->MoveToSpecifiedLocation(Enemy->GetActorLocation() + Normalize * 3, 10.f);
-                        //AIC->MoveToActor(Player);
                       
                         Enemy->IsAttacking = true;
 
-                       /* if ((int)Target.X == 0)
-                        {
-                            Enemy->TargetLocation.X = Target.X * 40 + Player->GetActorLocation().X;
-                            Enemy->TargetLocation.Y = Target.Y * 40 + Player->GetActorLocation().Y;
-                            Enemy->TargetLocation.Z = Target.Z;
-                            Enemy->SetSpeed(5.f);
-                        }*/
 
                         FVector tmp = { };
 
@@ -143,19 +132,11 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         {
                             Enemy->SetSpeed(Speed);
                         }
-                       
-                       /* Enemy->TargetLocation.X = Target.X * 100 + Enemy->GetActorLocation().X;
-                        Enemy->TargetLocation.Y = Target.Y * 100 + Enemy->GetActorLocation().Y;
-                        Enemy->TargetLocation.Z = Target.Z;*/
+                     
 
                         Enemy->MoveDirection = { Target.X * 100 ,Target.Y * 100 ,Target.Z };
                         Enemy->AttackState = 2;
                         
-                        
-
-                       //FVector tmp0 = { Enemy->TargetLocation.X ,Enemy->TargetLocation.Y ,Target.Z };
-                       // FVector tmp1 = Enemy->GetActorLocation() - TargetLocation;
-
                         // エフェクトをスポーン
                         if (NiagaraComp == nullptr)
                         {
@@ -191,32 +172,19 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                                 );
                             }
 
-                            //FTimerHandle TimerHandle;
-                            //GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, NiagaraComp]()
-                            //    {
-                            //        NiagaraComp->DestroyComponent();
-                            //    }, 0.1f, false);  // 2秒後に無効化
                         }
                         else
                         {
                             NiagaraComp->SetWorldLocation(Enemy->GetActorLocation());
 
-                            // FindLookAtRotationを使用してターゲットへの回転を計算
-                           /* FVector ReversalTargetLocation = { -Enemy->TargetLocation.X , -Enemy->TargetLocation.Y , -Enemy->TargetLocation.Z };
-                            FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Enemy->GetActorLocation(), ReversalTargetLocation);*/
-                          
-                            //NiagaraComp->SetWorldRotation(LookAtRotation);
-
-                            //FVector Scale(50 / Count);
-                            //NiagaraComp->SetWorldScale3D(Scale);
                             NiagaraComp->SetWorldScale3D(FVector(5.));
                             
                         }
 
                        
-                        if (/*tmp1.Length() > 100*/Count < 100)
+                        if (Count < 100)
                         {
-                            //return EBTNodeResult::InProgress;
+
                             IsSpawnNiagara = true;
                             return EBTNodeResult::Succeeded;
 
@@ -225,7 +193,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                         {
                             Count = 0;
                             Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-                            //Enemy->SetIsMoving(true);
+                       
                             NiagaraComp->Deactivate();
                             NiagaraComp = nullptr;
 
@@ -234,7 +202,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                             AIC->SetNextState(0);
                             Enemy->TargetLocation = { -1, -1, -10000 };
                             Enemy->GetPolygonRotationManager()->Init();
-                            //Enemy->SetActorRotation({ 0,0,0 });
+                     
                             Speed = 0;
                             IsAttacked = false;
                         }
@@ -243,7 +211,7 @@ EBTNodeResult::Type UBTT_RollingAttack::ExecuteTask(UBehaviorTreeComponent& Owne
                 else {
                     Count = 0;
                     Enemy->GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-                    //Enemy->SetIsMoving(true);
+              
                     NiagaraComp->Deactivate();
                     NiagaraComp = nullptr;
 
