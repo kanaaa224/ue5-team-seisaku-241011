@@ -31,4 +31,23 @@ private:
 
 	UFUNCTION()
 	void onButtonQuitClicked();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* UpAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* DownAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* SelectAction;
+
+	// アクションバインド
+	void NavigateUp(const FInputActionValue& Value);
+	void NavigateDown(const FInputActionValue& Value);
+	void Select(const FInputActionValue& Value);
+
+	// 現在の選択状態を追跡
+	int32 CurrentSelection = 0;
+
+	void UpdateSelection();
 };

@@ -103,7 +103,7 @@ void AGameMode_InGame::RestartGame()
 			WidgetInstancec->AddToViewport();
 		}
 
-		UWidget_GameOver* GameOver = Cast<UWidget_GameOver>(GameOverWidget);
+		UWidget_GameOver* GameOver = Cast<UWidget_GameOver>(WidgetInstancec);
 		if (GameOver)
 		{
 			GameOver->OpenNextLevel();
@@ -124,7 +124,7 @@ void AGameMode_InGame::GameClear()
 			WidgetInstancec->AddToViewport();
 		}
 
-		UWidget_GameClear* GameClear = Cast<UWidget_GameClear>(GameClearWidget);
+		UWidget_GameClear* GameClear = Cast<UWidget_GameClear>(WidgetInstancec);
 		if (GameClear)
 		{
 			GameClear->OpenNextLevel();
@@ -145,7 +145,7 @@ void AGameMode_InGame::StageClear()
 			WidgetInstancec->AddToViewport();
 		}
 
-		UWidget_StageClear* StageClear = Cast<UWidget_StageClear>(StageClearWidget);
+		UWidget_StageClear* StageClear = Cast<UWidget_StageClear>(WidgetInstancec);
 		if (StageClear)
 		{
 			StageClear->OpenNextLevel();
