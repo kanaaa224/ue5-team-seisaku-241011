@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Game/UI/Widget_FadeAnimationPanel.h"
 #include "HUD_PlayerHUD.generated.h"
 
 UCLASS()
@@ -18,8 +19,14 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_playerHUD;
-	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget_pauseMenu;
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UUserWidget* userWidget_playerHUD;
+
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UUserWidget* userWidget_pauseMenu;
+
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UWidget_FadeAnimationPanel* userWidget_fadeAnimationPanel;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")

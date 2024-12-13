@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Game/UI/Widget_FadeAnimationPanel.h"
 #include "HUD_TitleMenu.generated.h"
 
 UCLASS()
@@ -13,8 +14,11 @@ class UE5_GFF2024_API AHUD_TitleMenu : public AHUD
 	
 protected:
 	virtual void BeginPlay() override;
-	//virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, Category = "UI") UUserWidget* userWidget;
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UUserWidget* userWidget_titleMenu;
+
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UWidget_FadeAnimationPanel* userWidget_fadeAnimationPanel;
 };

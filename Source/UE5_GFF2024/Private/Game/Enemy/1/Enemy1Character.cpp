@@ -383,7 +383,7 @@ void AEnemy1Character::Attack()
 		AttackCollisions[BottomCollisionNumber]->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		AttackCollisions[BottomCollisionNumber]->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-		// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+		//攻撃後コリジョンを無効化
 		int32 tmp = BottomCollisionNumber;
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, tmp]()
@@ -399,19 +399,19 @@ void AEnemy1Character::Attack()
 				}
 
 				AttackCollisions[tmp]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			}, 1.f, false);  // 0.1秒後に無効化
+			}, 1.f, false);  //1秒後に無効化
 	}
 	else
 	{
 		for (int i = 0; i < 6; i++)
 		{
-			// コリジョンを有効化して攻撃の範囲を設定
+			//コリジョンを有効化して攻撃の範囲を設定
 			AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 			AttackCollisions[i]->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);  // キャラクターに対してのみ
 			AttackCollisions[i]->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			AttackCollisions[i]->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-			// 攻撃後にすぐコリジョンを無効化（短い遅延を追加する場合も可）
+			//攻撃後にすぐコリジョンを無効化
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, i]()
 				{
@@ -426,7 +426,7 @@ void AEnemy1Character::Attack()
 					}
 
 					AttackCollisions[i]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				}, 1.f, false);  // 0.1秒後に無効化
+				}, 1.f, false);  //1秒後に無効化
 		}
 	}
 }
@@ -471,22 +471,22 @@ void AEnemy1Character::ChangeMaterial(UMaterialInterface* NewMaterial)
 {
 	if (box && NewMaterial)
 	{
-		// 元のマテリアル
+		//元のマテリアル
 		UMaterialInterface* OldMaterial = box->GetMaterial(0);
 
-		// メッシュのマテリアルを変更
+		//メッシュのマテリアルを変更
 		box->SetMaterial(0, NewMaterial);
 
-		// 攻撃ヒット時マテリアルを変更後元に戻す
+		//攻撃ヒット時マテリアルを変更後元に戻す
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, OldMaterial]()
 			{
-				if (!IsValid(this))
+				if (!IsValid(this))//エラー対策
 				{
 					return;
 				}
 				box->SetMaterial(0, OldMaterial);
-			}, 0.3f, false);  // 0.3秒後に無効化
+			}, 0.3f, false);  //0.3秒後に無効化
 	}
 }
 
