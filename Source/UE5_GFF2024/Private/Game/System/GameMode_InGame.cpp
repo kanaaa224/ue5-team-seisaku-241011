@@ -124,7 +124,7 @@ void AGameMode_InGame::GameClear()
 			WidgetInstancec->AddToViewport();
 		}
 
-		UWidget_GameOver* GameClear = Cast<UWidget_GameOver>(GameClearWidget);
+		UWidget_GameClear* GameClear = Cast<UWidget_GameClear>(GameClearWidget);
 		if (GameClear)
 		{
 			GameClear->OpenNextLevel();
@@ -145,7 +145,7 @@ void AGameMode_InGame::StageClear()
 			WidgetInstancec->AddToViewport();
 		}
 
-		UWidget_GameOver* StageClear = Cast<UWidget_GameOver>(StageClearWidget);
+		UWidget_StageClear* StageClear = Cast<UWidget_StageClear>(StageClearWidget);
 		if (StageClear)
 		{
 			StageClear->OpenNextLevel();
